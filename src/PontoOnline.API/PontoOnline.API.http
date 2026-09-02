@@ -1,0 +1,6 @@
+@PontoOnline.API_HostAddress = http://localhost:5136
+
+GET {{PontoOnline.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
