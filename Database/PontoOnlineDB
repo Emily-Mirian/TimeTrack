@@ -1,0 +1,57 @@
+CREATE DATABASE IF NOT EXISTS PontoOnlineDb;
+USE PontoOnlineDb;
+
+CREATE TABLE TipoContrato (
+    ContratoId INT PRIMARY KEY AUTO_INCREMENT,
+    Nome VARCHAR(100) NOT NULL,
+    CargaHorariaDiariaMinutos INT NOT NULL,
+    CargaHorariaSemanaMinutos INT NOT NULL,
+    PermiteHoraExtra BOOLEAN NOT NULL
+);
+
+CREATE TABLE Feriado (
+    FeriadoId INT PRIMARY KEY AUTO_INCREMENT,
+    Data DATE NOT NULL,
+    Descricao VARCHAR(150) NOT NULL
+);
+
+CREATE TABLE Usuario (
+    UsuarioId INT PRIMARY KEY AUTO_INCREMENT,
+    NomeCompleto VARCHAR(150) NOT NULL,
+    Email VARCHAR(150) NOT NULL,
+    SenhaHash VARCHAR(255) NOT NULL,
+    NivelAcesso VARCHAR(50) NOT NULL,
+    IdTipoContrato INT NOT NULL,
+    CONSTRAINT FK_Usuario_TipoContrato FOREIGN KEY (IdTipoContrato) REFERENCES TipoContrato (ContratoId)
+);
+
+CREATE TABLE RegistroPonto (
+    PontoId INT PRIMARY KEY AUTO_INCREMENT,
+    DataRegistro DATE NOT NULL,
+    Entrada1 DATETIME NULL,
+    SaidaAlmoco DATETIME NULL,
+    RetornoAlmoco DATETIME NULL,
+    Saida2 DATETIME NULL,
+    SaldoDiarioMinutos INT NULL,
+    IdUsuario INT NOT NULL,
+    IdFeriado INT NULL,
+    CONSTRAINT FK_RegistroPonto_Usuario FOREIGN KEY (IdUsuario) REFERENCES Usuario (UsuarioId),
+    CONSTRAINT FK_RegistroPonto_Feriado FOREIGN KEY (IdFeriado) REFERENCES Feriado (FeriadoId)
+);
+
+CREATE TABLE AusenciaJustificada (
+    AusenciaID INT PRIMARY KEY AUTO_INCREMENT,
+    DataInicio DATETIME NOT NULL,
+    DataFim DATETIME NOT NULL,
+    Motivo TEXT NOT NULL,
+    IdUsuario INT NOT NULL,
+    CONSTRAINT FK_Ausencia_Usuario FOREIGN KEY (IdUsuario) REFERENCES Usuario (UsuarioId)
+);
+
+CREATE TABLE FechamentoMensal (
+    FechamentoID INT PRIMARY KEY AUTO_INCREMENT,
+    MesAno VARCHAR(7) NOT NULL,
+    SaldoTotalMinutos INT NOT NULL,
+    IdUsuario INT NOT NULL,
+    CONSTRAINT FK_Fechamento_Usuario FOREIGN KEY (IdUsuario) REFERENCES Usuario (UsuarioId)
+);

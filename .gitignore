@@ -1,0 +1,10 @@
+# .NET Core / Visual Studio Code
+bin/
+obj/
+.vs/
+*.user
+*.suo
+
+# Configurações locais
+**/appsettings.Development.json
+appsettings.json
