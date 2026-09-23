@@ -1,4 +1,4 @@
-namespace PontoOnline.API.DTOs;
+namespace PontoOnline.mvc.DTOs;
 
 public class AtestadoRequestDto
 {

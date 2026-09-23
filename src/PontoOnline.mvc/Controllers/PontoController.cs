@@ -81,4 +81,51 @@ public class PontoController : Controller
             return BadRequest(new { erro = ex.Message });
         }
     }
+    [HttpPut("editar")]
+    public async Task<IActionResult> EditarPonto([FromBody] EditarPontoDto dto)
+    {
+        try
+        {
+            var registroPonto = await _context.RegistrosPonto
+                .Include(r => r.Usuario)
+                .ThenInclude(u => u.TipoContrato)
+                .FirstOrDefaultAsync(r => r.PontoId == dto.PontoId);
+
+            if (registroPonto == null)
+            {
+                return NotFound(new { erro = "Registro de ponto não encontrado." });
+            }
+
+            if (dto.Entrada1.HasValue) registroPonto.Entrada1 = dto.Entrada1;
+            if (dto.SaidaAlmoco.HasValue) registroPonto.SaidaAlmoco = dto.SaidaAlmoco;
+            if (dto.RetornoAlmoco.HasValue) registroPonto.RetornoAlmoco = dto.RetornoAlmoco;
+            if (dto.Saida2.HasValue) registroPonto.Saida2 = dto.Saida2;
+
+            if (registroPonto.Usuario?.TipoContrato != null)
+            {
+                int novoSaldo = _calculoService.CalcularSaldoDiario(registroPonto, registroPonto.Usuario.TipoContrato);
+                registroPonto.SaldoDiarioMinutos = novoSaldo;
+            }
+
+            int usuarioResponsavelId = 1;
+            
+            var auditoria = new AuditoriaLog
+            {
+                DataHora = DateTime.Now,
+                UsuarioResponsavelId = usuarioResponsavelId,
+                Acao = "EdicaoManualPonto",
+                Detalhes = $"Ponto ID {dto.PontoId} alterado pelo RH. Justificativa: {dto.Justificativa}"
+            };
+
+            _context.AuditoriaLogs.Add(auditoria);
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { mensagem = "Ponto editado com sucesso e log de auditoria gerado!" });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { erro = ex.Message });
+        }
+    }
 }
