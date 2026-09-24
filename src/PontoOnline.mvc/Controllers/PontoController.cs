@@ -128,4 +128,42 @@ public class PontoController : Controller
             return BadRequest(new { erro = ex.Message });
         }
     }
+    [HttpGet("extrato/{usuarioId}")]
+    public async Task<IActionResult> ObterExtrato(int usuarioId, [FromQuery] DateTime? dataInicio, [FromQuery] DateTime? dataFim)
+    {
+        try
+        {
+            var query = _context.RegistrosPonto
+                .Where(r => r.IdUsuario == usuarioId);
+
+            if (dataInicio.HasValue)
+            {
+                query = query.Where(r => r.DataRegistro.Date >= dataInicio.Value.Date);
+            }
+
+            if (dataFim.HasValue)
+            {
+                query = query.Where(r => r.DataRegistro.Date <= dataFim.Value.Date);
+            }
+
+            var registros = await query
+                .OrderBy(r => r.DataRegistro)
+                .ToListAsync();
+
+            int saldoTotalMinutos = registros.Sum(r => r.SaldoDiarioMinutos ?? 0);
+
+            return Ok(new
+            {
+                usuarioId = usuarioId,
+                totalDiasRegistrados = registros.Count,
+                saldoTotalMinutos = saldoTotalMinutos,
+                saldoTotalFormatado = $"{saldoTotalMinutos / 60}h {Math.Abs(saldoTotalMinutos % 60)}min",
+                historico = registros
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { erro = ex.Message });
+        }
+    }
 }
