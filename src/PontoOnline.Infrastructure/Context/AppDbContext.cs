@@ -13,6 +13,7 @@ public class AppDbContext : DbContext
     public DbSet<Feriado> Feriados => Set<Feriado>();
     public DbSet<AusenciaJustificada> AusenciasJustificadas => Set<AusenciaJustificada>();
     public DbSet<FechamentoMensal> FechamentosMensais => Set<FechamentoMensal>();
+    public DbSet<AuditoriaLog> AuditoriaLogs => Set<AuditoriaLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -67,5 +68,14 @@ public class AppDbContext : DbContext
             .HasOne(fm => fm.Usuario)
             .WithMany(u => u.FechamentosMensais)
             .HasForeignKey(fm => fm.IdUsuario);
+            
+        modelBuilder.Entity<AuditoriaLog>()
+            .ToTable("AuditoriaLog")
+            .HasKey(al => al.LogId);
+
+        modelBuilder.Entity<AuditoriaLog>()
+            .HasOne(al => al.UsuarioResponsavel)
+            .WithMany()
+            .HasForeignKey(al => al.UsuarioResponsavelId);
     }
 }
