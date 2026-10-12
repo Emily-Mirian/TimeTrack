@@ -87,7 +87,7 @@ public class PontoController : Controller
         try
         {
             var registroPonto = await _context.RegistrosPonto
-                .Include(r => r.Usuario)
+                .Include(r => r.Usuario!)
                 .ThenInclude(u => u.TipoContrato)
                 .FirstOrDefaultAsync(r => r.PontoId == dto.PontoId);
 
@@ -159,6 +159,61 @@ public class PontoController : Controller
                 saldoTotalMinutos = saldoTotalMinutos,
                 saldoTotalFormatado = $"{saldoTotalMinutos / 60}h {Math.Abs(saldoTotalMinutos % 60)}min",
                 historico = registros
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { erro = ex.Message });
+        }
+    }
+
+    [HttpGet("status-atual/{usuarioId}")]
+    public async Task<IActionResult> ObterStatusAtual(int usuarioId)
+    {
+        try
+        {
+            var hoje = DateTime.Today;
+
+            var usuario = await _context.Usuarios
+                .Include(u => u.TipoContrato)
+                .FirstOrDefaultAsync(u => u.UsuarioId == usuarioId);
+
+            if (usuario == null || usuario.TipoContrato == null)
+                return NotFound(new { erro = "Usuário ou contrato não encontrado." });
+
+            var registroPonto = await _context.RegistrosPonto
+                .FirstOrDefaultAsync(r => r.IdUsuario == usuarioId && r.DataRegistro.Date == hoje);
+
+            int metaDiariaMinutos = usuario.TipoContrato.CargaHorariaDiariaMinutos;
+            int minutosTrabalhados = 0;
+
+            if (registroPonto != null)
+            {
+                minutosTrabalhados = _calculoService.CalcularMinutosParciais(registroPonto, DateTime.Now);
+            }
+
+            int minutosRestantes = metaDiariaMinutos - minutosTrabalhados;
+            if (minutosRestantes < 0) minutosRestantes = 0;
+
+            string statusCor = "verde";
+
+            if (minutosRestantes > 0 && minutosRestantes <= 15)
+            {
+                statusCor = "amarelo";
+            }
+            else if (minutosTrabalhados > metaDiariaMinutos)
+            {
+                statusCor = "vermelho"; 
+            }
+
+            return Ok(new
+            {
+                minutosTrabalhados = minutosTrabalhados,
+                minutosRestantes = minutosRestantes,
+                metaDiariaMinutos = metaDiariaMinutos,
+                statusCor = statusCor,
+                horasTrabalhadasFormatadas = $"{minutosTrabalhados / 60}h {minutosTrabalhados % 60}min",
+                horasRestantesFormatadas = $"{minutosRestantes / 60}h {minutosRestantes % 60}min"
             });
         }
         catch (Exception ex)
