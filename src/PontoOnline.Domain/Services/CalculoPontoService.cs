@@ -22,13 +22,42 @@ public class CalculoPontoService
 
         return true;
     }
-
     private int ObterMinutosTrabahados(RegistroPonto r)
     {
+        if (!r.Entrada1.HasValue || !r.SaidaAlmoco.HasValue || !r.RetornoAlmoco.HasValue || !r.Saida2.HasValue)
+        {
+            return 0;
+        }
+
         var PeriodoManha = (r.SaidaAlmoco.Value - r.Entrada1.Value).TotalMinutes;
         var PeriodoTarde = (r.Saida2.Value - r.RetornoAlmoco.Value).TotalMinutes;
 
         return (int) (PeriodoManha + PeriodoTarde);
+    }
+
+    public int CalcularMinutosParciais(RegistroPonto r, DateTime agora)
+    {
+        double minutosTotal = 0;
+
+        if (r.Entrada1.HasValue)
+        {
+            var fimPeriodo1 = r.SaidaAlmoco ?? agora;
+            if (fimPeriodo1 > r.Entrada1.Value)
+            {
+                minutosTotal += (fimPeriodo1 - r.Entrada1.Value).TotalMinutes;
+            }
+        }
+
+        if (r.RetornoAlmoco.HasValue)
+        {
+            var fimPeriodo2 = r.Saida2 ?? agora;
+            if (fimPeriodo2 > r.RetornoAlmoco.Value)
+            {
+                minutosTotal += (fimPeriodo2 - r.RetornoAlmoco.Value).TotalMinutes;
+            }
+        }
+
+        return (int)minutosTotal;
     }
 
     public int CalcularSaldoDiario(RegistroPonto registro, TipoContrato contrato)
@@ -36,13 +65,11 @@ public class CalculoPontoService
         if (!ValidarHorasPreenchidas(registro))
         {
             throw new InvalidOperationException("Marcação de pontos ímpares!");
-            return 0;
         }
 
         if (!ValidarOrdemCronologica(registro))
         {
             throw new InvalidOperationException("ERRO: a ordem cronológica é inválida");
-            return 0;
         }
 
         int MinutosTrabalhados = ObterMinutosTrabahados(registro);
