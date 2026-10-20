@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Painel de Ponto | PontoWeb</title>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body class="body-dashboard">
+    <div class="app-container">
+      <!-- Sidebar Navigation -->
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <div class="logo">
+            <i data-lucide="clock"></i>
+          </div>
+        </div>
+
+        <nav class="sidebar-nav">
+          <a href="index.html" class="nav-item active">
+            <i data-lucide="home"></i>
+            <span>Início</span>
+          </a>
+          <a href="#" class="nav-item">
+            <i data-lucide="clock"></i>
+            <span>Ponto</span>
+          </a>
+          <a href="#" class="nav-item">
+            <i data-lucide="bar-chart-2"></i>
+            <span>Relatórios</span>
+          </a>
+          <a href="#" class="nav-item">
+            <i data-lucide="settings"></i>
+            <span>Configurações</span>
+          </a>
+        </nav>
+
+        <div class="sidebar-footer">
+          <a href="#" class="nav-item">
+            <i data-lucide="help-circle"></i>
+            <span>Ajuda</span>
+            <i data-lucide="chevron-right" class="chevron-right"></i>
+          </a>
+        </div>
+      </aside>
+
+      <!-- Main Content Area -->
+      <main class="main-content">
+        <!-- Header -->
+        <header class="top-header">
+          <div class="welcome-section">
+            <h1>Olá, Funcionário 👋</h1>
+            <p>Aqui está um resumo da sua jornada de trabalho.</p>
+          </div>
+          <!-- Clicar no perfil retorna para o login.html -->
+          <a href="login.html" class="user-profile" title="Sair do sistema">
+            <div class="avatar-icon">
+              <i data-lucide="user"></i>
+            </div>
+            <span>Meu Perfil</span>
+            <i
+              data-lucide="log-out"
+              style="width: 16px; height: 16px; margin-left: 4px"
+            ></i>
+          </a>
+        </header>
+
+        <!-- Dashboard Grid Top -->
+        <section class="dashboard-grid-top">
+          <!-- Clock Card -->
+          <div class="card clock-card">
+            <div class="clock-display">
+              <div class="clock-icon-bg">
+                <i data-lucide="clock"></i>
+              </div>
+              <div class="clock-text">
+                <h2 id="live-clock">09:42:17</h2>
+                <p class="date">06 de Setembro de 2026</p>
+                <p class="weekday">Segunda-feira</p>
+              </div>
+            </div>
+
+            <button class="btn-register">
+              <i data-lucide="fingerprint"></i>
+              Registrar Ponto
+            </button>
+
+            <div class="shift-times">
+              <div class="time-box">
+                <i data-lucide="log-in"></i>
+                <div>
+                  <span class="label">Entrada</span>
+                  <span class="time">08:00</span>
+                </div>
+              </div>
+              <div class="time-box">
+                <i data-lucide="utensils"></i>
+                <div>
+                  <span class="label">Saída Almoço</span>
+                  <span class="time">12:00</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Progress Card -->
+          <div class="card progress-card">
+            <div class="progress-header">
+              <div class="status-indicator">
+                <span class="dot green"></span>
+                <div>
+                  <span class="status-title">Jornada Normal</span>
+                  <p class="status-sub">Você está dentro do limite diário.</p>
+                </div>
+              </div>
+              <div class="badge-role">
+                <span>Estagiário</span>
+                <p>Limite diário: 6h</p>
+              </div>
+            </div>
+
+            <div class="progress-body">
+              <div class="donut-chart-container">
+                <svg class="donut-chart" viewBox="0 0 100 100">
+                  <circle
+                    class="donut-ring"
+                    cx="50"
+                    cy="50"
+                    r="40"
+                    stroke-width="10"
+                    fill="transparent"
+                  ></circle>
+                  <circle
+                    class="donut-segment"
+                    cx="50"
+                    cy="50"
+                    r="40"
+                    stroke-width="10"
+                    fill="transparent"
+                    stroke-dasharray="251.2"
+                    stroke-dashoffset="5"
+                  ></circle>
+                </svg>
+                <div class="donut-text">
+                  <span class="percentage">98%</span>
+                  <span class="subtext">da jornada<br />utilizada</span>
+                </div>
+              </div>
+
+              <div class="progress-stats">
+                <div class="stat-item">
+                  <i data-lucide="clock"></i>
+                  <div>
+                    <span class="stat-label">Trabalhadas hoje</span>
+                    <span class="stat-value">5h 53min</span>
+                  </div>
+                </div>
+                <div class="stat-item">
+                  <i data-lucide="clock"></i>
+                  <div>
+                    <span class="stat-label">Restam</span>
+                    <span class="stat-value text-blue">7min</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="alert-box">
+                <div class="alert-header">
+                  <i data-lucide="alert-triangle"></i>
+                  <span>Limite próximo</span>
+                </div>
+                <p>Você já utilizou 98% da jornada diária.</p>
+                <p class="alert-time">Restam 7 min.</p>
+                <a href="#" class="alert-link"
+                  >Saiba mais sobre as regras &gt;</a
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Rules Card -->
+          <div class="card rules-card">
+            <div class="rules-header">
+              <i data-lucide="info"></i>
+              <span>Regras para estagiários</span>
+            </div>
+            <p class="rules-text">
+              Estagiários têm limite diário de 6h e não podem realizar horas
+              extras.
+            </p>
+            <a href="#" class="rules-link">Saiba mais &gt;</a>
+          </div>
+        </section>
+
+        <!-- Middle Metric Cards -->
+        <section class="summary-cards">
+          <div class="card summary-card">
+            <div class="summary-header">
+              <div class="summary-title">
+                <i data-lucide="calendar"></i>
+                <span>Hoje</span>
+              </div>
+              <i data-lucide="chevron-right"></i>
+            </div>
+            <div class="summary-values">
+              <div class="big-value">
+                <span>5h 53min</span>
+                <span class="sub">de 6h00</span>
+              </div>
+              <div class="percentage-badge yellow">
+                <span>98%</span>
+                <span class="sub">da jornada</span>
+              </div>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill yellow" style="width: 98%"></div>
+            </div>
+          </div>
+
+          <div class="card summary-card">
+            <div class="summary-header">
+              <div class="summary-title">
+                <i data-lucide="calendar"></i>
+                <span>Esta semana</span>
+              </div>
+              <i data-lucide="chevron-right"></i>
+            </div>
+            <div class="summary-values">
+              <div class="big-value">
+                <span>23h 17min</span>
+                <span class="sub">de 30h00</span>
+              </div>
+              <div class="percentage-badge yellow">
+                <span>77.6%</span>
+                <span class="sub">da jornada</span>
+              </div>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill yellow" style="width: 77.6%"></div>
+            </div>
+          </div>
+
+          <div class="card summary-card">
+            <div class="summary-header">
+              <div class="summary-title">
+                <i data-lucide="calendar"></i>
+                <span>Este mês</span>
+              </div>
+              <i data-lucide="chevron-right"></i>
+            </div>
+            <div class="summary-values">
+              <div class="big-value">
+                <span>88h 05min</span>
+                <span class="sub">de 120h00</span>
+              </div>
+              <div class="percentage-badge yellow">
+                <span>73.4%</span>
+                <span class="sub">da jornada</span>
+              </div>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill yellow" style="width: 73.4%"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Table Section -->
+        <section class="card table-card">
+          <div class="table-header">
+            <div class="table-title">
+              <i data-lucide="clock"></i>
+              <h3>Histórico de Registros</h3>
+            </div>
+            <div class="filter-dropdown">
+              <i data-lucide="calendar"></i>
+              <select>
+                <option>Últimos 5 registros</option>
+                <option>Últimos 10 registros</option>
+                <option>Este mês</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Entrada</th>
+                  <th>Saída</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>13/09/2026 (Hoje)</td>
+                  <td>08:00</td>
+                  <td>12:00</td>
+                  <td>
+                    <span class="status-tag green"
+                      ><span class="dot"></span> Normal</span
+                    >
+                  </td>
+                  <td class="actions"><i data-lucide="more-horizontal"></i></td>
+                </tr>
+                <tr>
+                  <td>12/09/2026 (Sáb)</td>
+                  <td>08:12</td>
+                  <td>12:03</td>
+                  <td>
+                    <span class="status-tag green"
+                      ><span class="dot"></span> Normal</span
+                    >
+                  </td>
+                  <td class="actions"><i data-lucide="more-horizontal"></i></td>
+                </tr>
+                <tr>
+                  <td>11/09/2026 (Sex)</td>
+                  <td>08:03</td>
+                  <td>12:05</td>
+                  <td>
+                    <span class="status-tag green"
+                      ><span class="dot"></span> Normal</span
+                    >
+                  </td>
+                  <td class="actions"><i data-lucide="more-horizontal"></i></td>
+                </tr>
+                <tr>
+                  <td>10/09/2026 (Qui)</td>
+                  <td>08:00</td>
+                  <td>12:01</td>
+                  <td>
+                    <span class="status-tag red"
+                      ><span class="dot"></span> Pendente da Edição (RH)</span
+                    >
+                  </td>
+                  <td class="actions"><i data-lucide="more-horizontal"></i></td>
+                </tr>
+                <tr>
+                  <td>09/09/2026 (Qua)</td>
+                  <td>08:07</td>
+                  <td>12:00</td>
+                  <td>
+                    <span class="status-tag green"
+                      ><span class="dot"></span> Normal</span
+                    >
+                  </td>
+                  <td class="actions"><i data-lucide="more-horizontal"></i></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      lucide.createIcons();
+
+      function updateClock() {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, "0");
+        const minutes = String(now.getMinutes()).padStart(2, "0");
+        const seconds = String(now.getSeconds()).padStart(2, "0");
+
+        const clockElement = document.getElementById("live-clock");
+        if (clockElement) {
+          clockElement.innerText = `${hours}:${minutes}:${seconds}`;
+        }
+      }
+
+      setInterval(updateClock, 1000);
+      updateClock();
+    </script>
+  </body>
+</html>
