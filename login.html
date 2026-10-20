@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - Time track</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <main class="auth">
+      <section class="auth-destaque">
+        <div class="celular">
+          <h3>Registro de Presença</h3>
+          <p>Sua presença foi registrada com sucesso!</p>
+          <h1>✓</h1>
+        </div>
+      </section>
+
+      <section class="auth-form">
+        <form id="form-login">
+          <h1>Login</h1>
+
+          <input
+            class="campo"
+            type="email"
+            id="email"
+            placeholder="E-mail"
+            required
+          />
+          <input
+            class="campo"
+            type="password"
+            id="senha"
+            placeholder="Senha"
+            required
+          />
+
+          <p class="erro" id="erro"></p>
+
+          <button class="btn" type="submit">Entrar</button>
+          <a href="cadastro.html">Não tem conta? Cadastre-se</a>
+        </form>
+      </section>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+  </body>
+</html>

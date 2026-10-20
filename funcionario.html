@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Painel do Funcionário - Time track</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="menu-lateral">
+        <div class="logo">⏱ Time track</div>
+        <nav>
+          <a href="#registro">Registrar ponto</a>
+          <a href="#jornada">Minha jornada</a>
+          <a href="#historico">Histórico</a>
+        </nav>
+      </aside>
+
+      <main class="conteudo">
+        <header class="topo">
+          <div>
+            <h1>Olá, <span id="nome-usuario"></span> 👋</h1>
+            <small>Resumo da sua jornada de trabalho</small>
+          </div>
+          <details class="perfil">
+            <summary>👤 Meu perfil</summary>
+            <button class="btn" id="btn-sair">Sair</button>
+          </details>
+        </header>
+
+        <section class="card" id="registro">
+          <div class="relogio" id="relogio">--:--:--</div>
+          <p id="data"></p>
+          <button class="btn" id="btn-ponto">Registrar ponto</button>
+        </section>
+
+        <section class="card" id="jornada">
+          <h2>Jornada de hoje</h2>
+          <progress id="barra-jornada" value="0" max="100"></progress>
+          <p>Trabalhadas: <strong id="trabalhadas">0h 00min</strong></p>
+          <p>Restam: <strong id="restantes">0h 00min</strong></p>
+          <small id="limite"></small>
+        </section>
+        <section class="card" id="historico">
+          <h2>Histórico de registros</h2>
+          <div class="tabela-rolagem">
+            <table id="tabela-historico">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Entrada</th>
+                  <th>Saída</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/funcionario.js"></script>
+  </body>
+</html>
