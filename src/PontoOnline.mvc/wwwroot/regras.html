@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Regras e Contratos | Portal do Administrador</title>
+    <style>
+      @import url("../css/style.css");
+    </style>
+  </head>
+  <!-- data-acesso: SÓ ADMIN ([BACKEND] validar no servidor) -->
+  <body class="pagina-app" data-acesso="admin">
+    <!-- ======================================================
+       MENU LATERAL RH + ADMIN (item "Regras e Contratos" ativo)
+       ====================================================== -->
+    <aside class="menu-lateral">
+      <div class="menu-logo">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.2"
+        >
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
+        </svg>
+      </div>
+
+      <nav class="menu-itens">
+        <p class="menu-secao">Portal do RH</p>
+
+        <button class="menu-item" data-ir="../rh/pendencias.html">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <path
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"
+            />
+            <rect x="9" y="3" width="6" height="4" rx="1" />
+            <path d="M12 11v3M12 17h.01" />
+          </svg>
+          Pendências
+        </button>
+        <button class="menu-item" data-ir="../rh/importar.html">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <path d="M7 18a5 5 0 01-.5-9.98A6 6 0 0118 9a4.5 4.5 0 01-1 8.9" />
+            <path d="M12 12v8M9 15l3-3 3 3" />
+          </svg>
+          Importar Planilhas (CSV)
+        </button>
+        <button class="menu-item" data-ir="../rh/exportar.html">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z" />
+            <path d="M14 3v6h6M12 12v6M9 15l3 3 3-3" />
+          </svg>
+          Exportar Relatórios (PDF)
+        </button>
+        <button class="menu-item" data-ir="../rh/auditoria.html">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <circle cx="11" cy="11" r="7" />
+            <path d="M21 21l-4.3-4.3" />
+          </svg>
+          Auditoria de Ponto
+        </button>
+        <button class="menu-item" data-ir="../rh/configuracoes.html">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"
+            />
+          </svg>
+          Configurações
+        </button>
+
+        <!-- ========== SÓ ADMIN ========== -->
+        <p class="menu-secao" data-perfil="admin">Administração</p>
+
+        <button
+          class="menu-item"
+          data-perfil="admin"
+          data-ir="../admin/visao-global.html"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <rect x="3" y="3" width="7" height="7" rx="1.5" />
+            <rect x="14" y="3" width="7" height="7" rx="1.5" />
+            <rect x="3" y="14" width="7" height="7" rx="1.5" />
+            <rect x="14" y="14" width="7" height="7" rx="1.5" />
+          </svg>
+          Visão Global
+        </button>
+        <button
+          class="menu-item"
+          data-perfil="admin"
+          data-ir="../admin/usuarios.html"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <circle cx="9" cy="8" r="4" />
+            <path
+              d="M2 21c0-4 3-6 7-6s7 2 7 6M16 4a4 4 0 010 8M22 21c0-3-2-5-4-5.5"
+            />
+          </svg>
+          Gestão de Usuários
+        </button>
+        <button
+          class="menu-item ativo"
+          data-perfil="admin"
+          data-ir="../admin/regras.html"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z" />
+            <path d="M14 3v6h6M8 13h8M8 17h5" />
+          </svg>
+          Regras e Contratos
+        </button>
+        <button
+          class="menu-item"
+          data-perfil="admin"
+          data-ir="../admin/calendario.html"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <rect x="3" y="5" width="18" height="16" rx="2" />
+            <path d="M3 10h18M8 3v4M16 3v4" />
+          </svg>
+          Calendário e Feriados
+        </button>
+        <button
+          class="menu-item"
+          data-perfil="admin"
+          data-ir="../admin/permissoes.html"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <rect x="5" y="11" width="14" height="10" rx="2" />
+            <path d="M8 11V7a4 4 0 018 0v4" />
+          </svg>
+          Permissões de Acesso
+        </button>
+        <button
+          class="menu-item"
+          data-perfil="admin"
+          data-ir="../admin/configuracoes-globais.html"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <path
+              d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"
+            />
+          </svg>
+          Configurações Globais
+        </button>
+        <button
+          class="menu-item"
+          data-perfil="admin"
+          data-ir="../admin/logs.html"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" />
+            <path d="M9 12h6M9 9h6M9 15h3" />
+          </svg>
+          Auditoria de Logs
+        </button>
+      </nav>
+    </aside>
+
+    <!-- ======================================================
+       CONTEÚDO PRINCIPAL
+       ====================================================== -->
+    <main class="conteudo">
+      <header class="topo">
+        <div>
+          <p class="topo-portal">Portal do Administrador</p>
+          <h1>Políticas de Contrato e Jornada</h1>
+          <p class="texto-suave">
+            Regras de carga horária, tolerância e horas extras por tipo de
+            vínculo.
+          </p>
+        </div>
+
+        <div class="topo-acoes">
+          <button type="button" class="btn btn-primario" id="btnNovaRegra">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              width="18"
+              height="18"
+            >
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            Criar Nova Regra
+          </button>
+
+          <div class="perfil">
+            <button class="perfil-botao" id="btnPerfil">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+              >
+                <circle cx="12" cy="8" r="4" />
+                <path d="M4 21c0-4 4-6 8-6s8 2 8 6" />
+              </svg>
+              <span id="saudacaoPerfil">Olá, Administrador</span>
+              <span class="seta-baixo">⌄</span>
+            </button>
+            <div class="perfil-menu oculto" id="menuPerfil">
+              <button data-ir="../rh/configuracoes.html">Configurações</button>
+              <button
+                data-perfil="admin"
+                data-ir="../admin/configuracoes-globais.html"
+              >
+                Configurações Globais
+              </button>
+              <button data-perfil="admin" data-ir="../admin/permissoes.html">
+                Permissões de Acesso
+              </button>
+              <!-- [BACKEND] Sair: POST /api/auth/logout -->
+              <button id="btnSair">Sair</button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- ======================================================
+         CARDS DAS REGRAS (um por vínculo)
+         [BACKEND] GET /api/regras →
+           [{ "id": "clt", "nome": "Regime CLT (Efetivos)", "cargasDiarias": [8], "limiteSemanal": 44,
+              "toleranciaMin": 10, "bancoHoras": true, "bloqueioHoraExtra": false }]
+         IMPORTANTE: estas regras alimentam o CÁLCULO DA JORNADA feito no back-end
+         (percentual, horas restantes e estado normal/atenção/crítico da tela Início).
+         Toda alteração deve ser registrada na Auditoria de Logs (Fig. 22).
+         ====================================================== -->
+      <section class="grade-regras" id="gradeRegras">
+        <!-- Cards preenchidos pelo main.js -->
+      </section>
+      <p class="mensagem-sucesso esquerda" id="msgRegras" role="status"></p>
+    </main>
+
+    <!-- ======================================================
+       MODAL: CRIAR / EDITAR REGRA
+       ====================================================== -->
+    <div
+      class="modal-fundo oculto"
+      id="modalRegra"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="tituloRegra"
+    >
+      <div class="modal">
+        <div class="modal-topo">
+          <span class="modal-icone">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z" />
+              <path d="M14 3v6h6M8 13h8M8 17h5" />
+            </svg>
+          </span>
+          <h2 id="tituloRegra">Nova Regra</h2>
+          <button
+            type="button"
+            class="modal-fechar"
+            id="btnFecharRegra"
+            aria-label="Fechar"
+          >
+            ✕
+          </button>
+        </div>
+        <p class="texto-suave pequeno">
+          A regra vale para todos os colaboradores com este vínculo.
+        </p>
+
+        <!--
+        [BACKEND] SALVAR REGRA
+          Nova:   POST /api/regras
+          Edição: PUT  /api/regras/{id}
+          Envia:  { nome, cargasDiarias: [6, 4], limiteSemanal, toleranciaMin, bancoHoras, bloqueioHoraExtra }
+        O SERVIDOR deve validar os valores conforme a legislação de cada vínculo.
+      -->
+        <form id="formRegra" class="form-modal" novalidate>
+          <div class="campo-modal" id="campoRegraNome">
+            <label for="regraNome">Nome do regime *</label>
+            <input
+              type="text"
+              id="regraNome"
+              maxlength="60"
+              placeholder="Ex.: Regime CLT (Efetivos)"
+            />
+            <p class="mensagem-erro" id="erroRegraNome"></p>
+          </div>
+
+          <div class="form-linha">
+            <div class="campo-modal" id="campoRegraCargas">
+              <label for="regraCargas">Carga diária (h) *</label>
+              <input
+                type="text"
+                id="regraCargas"
+                placeholder="Ex.: 8 ou 6, 4"
+              />
+              <p class="mensagem-erro" id="erroRegraCargas"></p>
+            </div>
+            <div class="campo-modal" id="campoRegraSemanal">
+              <label for="regraSemanal">Limite semanal (h) *</label>
+              <input type="number" id="regraSemanal" min="1" max="60" />
+              <p class="mensagem-erro" id="erroRegraSemanal"></p>
+            </div>
+          </div>
+
+          <div class="campo-modal" id="campoRegraTolerancia">
+            <label for="regraTolerancia">Tolerância de ponto (min) *</label>
+            <input type="number" id="regraTolerancia" min="0" max="60" />
+            <p class="mensagem-erro" id="erroRegraTolerancia"></p>
+          </div>
+
+          <ul class="lista-toggles">
+            <li class="toggle-linha">
+              <div>
+                <strong>Bloquear hora extra</strong>
+                <span class="texto-suave pequeno"
+                  >Impede registrar ponto além do limite diário.</span
+                >
+              </div>
+              <label class="toggle">
+                <input type="checkbox" id="regraBloqueio" />
+                <span class="toggle-trilho"></span>
+              </label>
+            </li>
+            <li class="toggle-linha">
+              <div>
+                <strong>Permitir banco de horas positivo</strong>
+                <span class="texto-suave pequeno"
+                  >Indisponível quando a hora extra está bloqueada.</span
+                >
+              </div>
+              <label class="toggle">
+                <input type="checkbox" id="regraBanco" />
+                <span class="toggle-trilho"></span>
+              </label>
+            </li>
+          </ul>
+
+          <p
+            class="mensagem-erro erro-geral"
+            id="erroRegraGeral"
+            role="alert"
+          ></p>
+
+          <div class="modal-acoes">
+            <button
+              type="button"
+              class="btn btn-contorno"
+              id="btnCancelarRegra"
+            >
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primario" id="btnSalvarRegra">
+              Salvar Regra
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Arquivo JS único (um nível acima, por isso o ../) -->
+    <script src="../js/main.js"></script>
+  </body>
+</html>

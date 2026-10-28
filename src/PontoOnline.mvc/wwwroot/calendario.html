@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calendário e Feriados | Portal do Administrador</title>
+    <style>
+      @import url("../css/style.css");
+    </style>
+  </head>
+  <!-- data-acesso: SÓ ADMIN ([BACKEND] validar no servidor) -->
+  <body class="pagina-app" data-acesso="admin">
+    <!-- ======================================================
+       MENU LATERAL RH + ADMIN (item "Calendário e Feriados" ativo)
+       ====================================================== -->
+    <aside class="menu-lateral">
+      <div class="menu-logo">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.2"
+        >
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
+        </svg>
+      </div>
+
+      <nav class="menu-itens">
+        <p class="menu-secao">Portal do RH</p>
+
+        <button class="menu-item" data-ir="../rh/pendencias.html">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <path
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"
+            />
+            <rect x="9" y="3" width="6" height="4" rx="1" />
+            <path d="M12 11v3M12 17h.01" />
+          </svg>
+          Pendências
+        </button>
+        <button class="menu-item" data-ir="../rh/importar.html">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <path d="M7 18a5 5 0 01-.5-9.98A6 6 0 0118 9a4.5 4.5 0 01-1 8.9" />
+            <path d="M12 12v8M9 15l3-3 3 3" />
+          </svg>
+          Importar Planilhas (CSV)
+        </button>
+        <button class="menu-item" data-ir="../rh/exportar.html">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z" />
+            <path d="M14 3v6h6M12 12v6M9 15l3 3 3-3" />
+          </svg>
+          Exportar Relatórios (PDF)
+        </button>
+        <button class="menu-item" data-ir="../rh/auditoria.html">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <circle cx="11" cy="11" r="7" />
+            <path d="M21 21l-4.3-4.3" />
+          </svg>
+          Auditoria de Ponto
+        </button>
+        <button class="menu-item" data-ir="../rh/configuracoes.html">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"
+            />
+          </svg>
+          Configurações
+        </button>
+
+        <!-- ========== SÓ ADMIN ========== -->
+        <p class="menu-secao" data-perfil="admin">Administração</p>
+
+        <button
+          class="menu-item"
+          data-perfil="admin"
+          data-ir="../admin/visao-global.html"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <rect x="3" y="3" width="7" height="7" rx="1.5" />
+            <rect x="14" y="3" width="7" height="7" rx="1.5" />
+            <rect x="3" y="14" width="7" height="7" rx="1.5" />
+            <rect x="14" y="14" width="7" height="7" rx="1.5" />
+          </svg>
+          Visão Global
+        </button>
+        <button
+          class="menu-item"
+          data-perfil="admin"
+          data-ir="../admin/usuarios.html"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <circle cx="9" cy="8" r="4" />
+            <path
+              d="M2 21c0-4 3-6 7-6s7 2 7 6M16 4a4 4 0 010 8M22 21c0-3-2-5-4-5.5"
+            />
+          </svg>
+          Gestão de Usuários
+        </button>
+        <button
+          class="menu-item"
+          data-perfil="admin"
+          data-ir="../admin/regras.html"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z" />
+            <path d="M14 3v6h6M8 13h8M8 17h5" />
+          </svg>
+          Regras e Contratos
+        </button>
+        <button
+          class="menu-item ativo"
+          data-perfil="admin"
+          data-ir="../admin/calendario.html"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <rect x="3" y="5" width="18" height="16" rx="2" />
+            <path d="M3 10h18M8 3v4M16 3v4" />
+          </svg>
+          Calendário e Feriados
+        </button>
+        <button
+          class="menu-item"
+          data-perfil="admin"
+          data-ir="../admin/permissoes.html"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <rect x="5" y="11" width="14" height="10" rx="2" />
+            <path d="M8 11V7a4 4 0 018 0v4" />
+          </svg>
+          Permissões de Acesso
+        </button>
+        <button
+          class="menu-item"
+          data-perfil="admin"
+          data-ir="../admin/configuracoes-globais.html"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <path
+              d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"
+            />
+          </svg>
+          Configurações Globais
+        </button>
+        <button
+          class="menu-item"
+          data-perfil="admin"
+          data-ir="../admin/logs.html"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" />
+            <path d="M9 12h6M9 9h6M9 15h3" />
+          </svg>
+          Auditoria de Logs
+        </button>
+      </nav>
+    </aside>
+
+    <!-- ======================================================
+       CONTEÚDO PRINCIPAL
+       ====================================================== -->
+    <main class="conteudo">
+      <header class="topo">
+        <div>
+          <p class="topo-portal">Portal do Administrador</p>
+          <h1>Gestão de Feriados e Dispensas</h1>
+          <p class="texto-suave">
+            Dias sem expediente não geram falta nem pendência para o RH.
+          </p>
+        </div>
+
+        <div class="topo-acoes">
+          <button
+            type="button"
+            class="btn btn-primario"
+            id="btnCadastrarFeriado"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              width="18"
+              height="18"
+            >
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            Cadastrar Feriado
+          </button>
+
+          <div class="perfil">
+            <button class="perfil-botao" id="btnPerfil">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+              >
+                <circle cx="12" cy="8" r="4" />
+                <path d="M4 21c0-4 4-6 8-6s8 2 8 6" />
+              </svg>
+              <span id="saudacaoPerfil">Olá, Administrador</span>
+              <span class="seta-baixo">⌄</span>
+            </button>
+            <div class="perfil-menu oculto" id="menuPerfil">
+              <button data-ir="../rh/configuracoes.html">Configurações</button>
+              <button
+                data-perfil="admin"
+                data-ir="../admin/configuracoes-globais.html"
+              >
+                Configurações Globais
+              </button>
+              <button data-perfil="admin" data-ir="../admin/permissoes.html">
+                Permissões de Acesso
+              </button>
+              <!-- [BACKEND] Sair: POST /api/auth/logout -->
+              <button id="btnSair">Sair</button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <section class="linha-calendario">
+        <!-- ======================================================
+           CALENDÁRIO MENSAL (montado pelo main.js)
+           ====================================================== -->
+        <div class="card" id="cardCalendario">
+          <div class="cal-topo">
+            <button
+              type="button"
+              class="cal-nav"
+              id="btnMesAnterior"
+              aria-label="Mês anterior"
+            >
+              ‹
+            </button>
+            <h2 id="tituloMes">--</h2>
+            <button
+              type="button"
+              class="cal-nav"
+              id="btnMesSeguinte"
+              aria-label="Próximo mês"
+            >
+              ›
+            </button>
+          </div>
+          <button type="button" class="link-acao cal-hoje" id="btnMesHoje">
+            Voltar para o mês atual
+          </button>
+
+          <div class="cal-semana">
+            <span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span
+            ><span>Qui</span><span>Sex</span><span>Sáb</span>
+          </div>
+          <!-- Clique em um dia: cadastra (dia livre) ou edita (dia com feriado) -->
+          <div class="cal-grade" id="gradeCalendario"></div>
+
+          <div class="cal-legenda">
+            <span><i class="leg leg-feriado"></i> Feriado</span>
+            <span><i class="leg leg-dispensa"></i> Facultativo / Dispensa</span>
+            <span><i class="leg leg-hoje"></i> Hoje</span>
+          </div>
+        </div>
+
+        <!-- ======================================================
+           FERIADOS REGISTRADOS
+           [BACKEND] GET /api/feriados?ano=2026
+             [{ "id": 1, "data": "2026-09-07", "descricao": "...", "tipo": "nacional" }]
+           ====================================================== -->
+        <div class="card card-historico">
+          <div class="historico-topo">
+            <h2>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+              >
+                <path d="M4 6h16M4 12h16M4 18h10" />
+              </svg>
+              Feriados Registrados de <span id="anoFeriados">--</span>
+            </h2>
+          </div>
+
+          <div class="tabela-wrap">
+            <table class="tabela">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Descrição</th>
+                  <th>Tipo</th>
+                  <th class="acoes">Ação</th>
+                </tr>
+              </thead>
+              <!-- Linhas preenchidas pelo main.js -->
+              <tbody id="tabelaFeriados"></tbody>
+            </table>
+          </div>
+          <p
+            class="mensagem-sucesso esquerda"
+            id="msgFeriados"
+            role="status"
+          ></p>
+        </div>
+      </section>
+    </main>
+
+    <!-- ======================================================
+       MODAL: CADASTRAR / EDITAR FERIADO
+       Abre por: botão "Cadastrar Feriado", clique no dia, botão "Editar"
+       ou pelo atalho da Visão Global (calendario.html#novo)
+       ====================================================== -->
+    <div
+      class="modal-fundo oculto"
+      id="modalFeriado"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="tituloFeriado"
+    >
+      <div class="modal">
+        <div class="modal-topo">
+          <span class="modal-icone">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <rect x="3" y="5" width="18" height="16" rx="2" />
+              <path d="M3 10h18M8 3v4M16 3v4" />
+            </svg>
+          </span>
+          <h2 id="tituloFeriado">Cadastrar Feriado</h2>
+          <button
+            type="button"
+            class="modal-fechar"
+            id="btnFecharFeriado"
+            aria-label="Fechar"
+          >
+            ✕
+          </button>
+        </div>
+        <p class="texto-suave pequeno">
+          O dia será considerado sem expediente no cálculo da jornada.
+        </p>
+
+        <!--
+        [BACKEND] SALVAR / EXCLUIR FERIADO
+          Novo:    POST   /api/feriados        { "data": "2026-09-07", "descricao": "...", "tipo": "nacional" }
+          Editar:  PUT    /api/feriados/{id}   (mesmo corpo)
+          Excluir: DELETE /api/feriados/{id}
+        O SERVIDOR deve:
+          - recusar data duplicada
+          - recalcular jornadas e banco de horas do dia afetado
+          - registrar a alteração na Auditoria de Logs (Fig. 22)
+      -->
+        <form id="formFeriado" class="form-modal" novalidate>
+          <div class="form-linha">
+            <div class="campo-modal" id="campoFeriadoData">
+              <label for="feriadoData">Data *</label>
+              <input type="date" id="feriadoData" required />
+              <p class="mensagem-erro" id="erroFeriadoData"></p>
+            </div>
+            <div class="campo-modal" id="campoFeriadoTipo">
+              <label for="feriadoTipo">Tipo *</label>
+              <select id="feriadoTipo" required>
+                <option value="" disabled selected>Selecione</option>
+                <option value="nacional">Feriado Nacional</option>
+                <option value="estadual">Feriado Estadual</option>
+                <option value="municipal">Feriado Municipal</option>
+                <option value="facultativo">Ponto Facultativo</option>
+                <option value="dispensa">Dispensa / Recesso</option>
+              </select>
+              <p class="mensagem-erro" id="erroFeriadoTipo"></p>
+            </div>
+          </div>
+
+          <div class="campo-modal" id="campoFeriadoDescricao">
+            <label for="feriadoDescricao">Descrição *</label>
+            <input
+              type="text"
+              id="feriadoDescricao"
+              maxlength="80"
+              placeholder="Ex.: Dia da Independência"
+            />
+            <p class="mensagem-erro" id="erroFeriadoDescricao"></p>
+          </div>
+
+          <p
+            class="mensagem-erro erro-geral"
+            id="erroFeriadoGeral"
+            role="alert"
+          ></p>
+
+          <div class="modal-acoes">
+            <button
+              type="button"
+              class="btn btn-perigo oculto"
+              id="btnExcluirFeriado"
+            >
+              Excluir
+            </button>
+            <button
+              type="button"
+              class="btn btn-contorno"
+              id="btnCancelarFeriado"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="btn btn-primario"
+              id="btnSalvarFeriado"
+            >
+              Salvar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Arquivo JS único (um nível acima, por isso o ../) -->
+    <script src="../js/main.js"></script>
+  </body>
+</html>

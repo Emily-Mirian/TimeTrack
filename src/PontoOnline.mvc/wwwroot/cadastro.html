@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cadastrar-se | Registro de Presença</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body class="pagina-cadastro">
+    <!-- ===================== ELEMENTOS DECORATIVOS DO FUNDO ===================== -->
+    <div class="cadastro-decor" aria-hidden="true">
+      <span class="decor-mais c1">+</span>
+      <span class="decor-mais c2">+</span>
+      <span class="decor-mais c3">+</span>
+
+      <!-- Ícone de usuário (canto superior esquerdo) -->
+      <div class="decor-circulo decor-usuario">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+        >
+          <circle cx="12" cy="8" r="4" />
+          <path d="M4 21c0-4 4-6 8-6s8 2 8 6" />
+        </svg>
+      </div>
+
+      <!-- Joinha (canto superior direito) -->
+      <div class="decor-circulo decor-joinha">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path
+            d="M2 10h4v12H2zM22 11c0-1.1-.9-2-2-2h-6.3l1-4.6v-.3c0-.4-.2-.8-.4-1.1L13.2 2 7.6 7.6C7.2 8 7 8.5 7 9v10c0 1.1.9 2 2 2h9c.8 0 1.5-.5 1.8-1.2l3-7.1c.1-.2.2-.5.2-.7v-2z"
+          />
+        </svg>
+      </div>
+
+      <!-- Relógio (lado direito) -->
+      <div class="decor-relogio">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.6"
+        >
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
+        </svg>
+      </div>
+
+      <!-- Planta (canto inferior esquerdo) -->
+      <!-- [FRONT] Se quiser a planta igual ao layout, salve a imagem em img/planta.png
+         e troque este <svg> por: <img src="img/planta.png" alt="" class="decor-planta"> -->
+      <svg class="decor-planta" viewBox="0 0 120 160">
+        <path
+          d="M60 110 C40 80 20 70 15 40 C40 50 55 70 60 110Z"
+          fill="#4f86f0"
+        />
+        <path
+          d="M60 110 C55 70 60 40 80 15 C90 45 75 80 60 110Z"
+          fill="#3b74e6"
+        />
+        <path
+          d="M60 110 C75 85 95 75 110 60 C105 90 85 105 60 110Z"
+          fill="#6c9cf5"
+        />
+        <path
+          d="M60 110 C45 95 30 95 20 85 C35 80 50 88 60 110Z"
+          fill="#82acf7"
+        />
+        <rect x="35" y="108" width="50" height="10" rx="3" fill="#7aa3f2" />
+        <path d="M38 118 H82 L76 155 H44 Z" fill="#9dbcf7" />
+      </svg>
+    </div>
+
+    <!-- ===================== FORMULÁRIO ===================== -->
+    <main class="cadastro-card">
+      <h1>Cadastrar-se</h1>
+
+      <!--
+      [BACKEND] CRIAÇÃO DE CONTA
+      Endpoint sugerido: POST /api/usuarios
+        Envia:   { "nome": "...", "email": "...", "senha": "...", "tipoContrato": "clt" | "estagio" | "jovem_aprendiz" }
+        Retorna: 201 (criado) ou erro (ex.: 409 = e-mail já cadastrado)
+      [BACKEND] O perfil (funcionario / rh / admin) NÃO é escolhido aqui.
+      Toda conta nova nasce como "funcionario"; quem altera é o Admin (Fig. 19).
+    -->
+      <form id="formCadastro" novalidate>
+        <div class="grupo">
+          <div class="campo" id="campoNome">
+            <svg
+              class="icone"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4 21c0-4 4-6 8-6s8 2 8 6" />
+            </svg>
+            <input
+              type="text"
+              id="nome"
+              name="nome"
+              placeholder="Nome"
+              autocomplete="name"
+              required
+            />
+          </div>
+          <p class="mensagem-erro" id="erroNome"></p>
+        </div>
+
+        <div class="grupo">
+          <div class="campo" id="campoEmail">
+            <svg
+              class="icone"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <rect x="3" y="5" width="18" height="14" rx="2" />
+              <path d="M3 7l9 6 9-6" />
+            </svg>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              placeholder="Email"
+              autocomplete="email"
+              required
+            />
+          </div>
+          <p class="mensagem-erro" id="erroEmail"></p>
+        </div>
+
+        <div class="grupo">
+          <div class="campo" id="campoSenha">
+            <svg
+              class="icone"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <rect x="5" y="11" width="14" height="10" rx="2" />
+              <path d="M8 11V7a4 4 0 018 0v4" />
+            </svg>
+            <input
+              type="password"
+              id="senha"
+              name="senha"
+              placeholder="Senha"
+              autocomplete="new-password"
+              required
+            />
+          </div>
+          <p class="mensagem-erro" id="erroSenha"></p>
+        </div>
+
+        <div class="grupo">
+          <div class="campo" id="campoConfirmar">
+            <svg
+              class="icone"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <rect x="5" y="11" width="14" height="10" rx="2" />
+              <path d="M8 11V7a4 4 0 018 0v4" />
+            </svg>
+            <input
+              type="password"
+              id="confirmarSenha"
+              name="confirmarSenha"
+              placeholder="Confirmar Senha"
+              autocomplete="new-password"
+              required
+            />
+          </div>
+          <p class="mensagem-erro" id="erroConfirmar"></p>
+        </div>
+
+        <div class="grupo">
+          <div class="campo campo-select" id="campoContrato">
+            <svg
+              class="icone"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z" />
+              <path d="M14 3v6h6M8 13h8M8 17h5" />
+            </svg>
+            <!-- [BACKEND] Opções podem vir do banco (GET /api/tipos-contrato),
+               pois as regras de cada contrato são definidas na Fig. 20. -->
+            <select id="tipoContrato" name="tipoContrato" required>
+              <option value="" disabled selected>Tipo de Contrato</option>
+              <option value="clt">CLT</option>
+              <option value="estagio">Estágio</option>
+              <option value="jovem_aprendiz">Jovem Aprendiz</option>
+            </select>
+            <svg
+              class="seta"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </div>
+          <p class="mensagem-erro" id="erroContrato"></p>
+        </div>
+
+        <!-- [BACKEND] Mensagem retornada pela API (ex.: "Este e-mail já está cadastrado") -->
+        <p class="mensagem-erro erro-geral" id="erroGeral" role="alert"></p>
+        <p class="mensagem-sucesso" id="sucessoGeral" role="status"></p>
+
+        <button
+          type="submit"
+          class="btn btn-escuro btn-login"
+          id="btnCadastrar"
+        >
+          Cadastrar
+        </button>
+      </form>
+
+      <p class="link-cadastro">
+        Já tem conta? <a href="login.html">Fazer login</a>
+      </p>
+    </main>
+
+    <script src="js/main.js"></script>
+  </body>
+</html>
