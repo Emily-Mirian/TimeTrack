@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Início | Registro de Presença</title>
+    <style>
+      @import url("../css/style.css");
+    </style>
+  </head>
+  <body class="pagina-app">
+    <!-- ======================================================
+       MENU LATERAL DO FUNCIONÁRIO
+       (os botões navegam pelo atributo data-ir, tratado no main.js)
+       ====================================================== -->
+    <aside class="menu-lateral">
+      <div class="menu-logo">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.2"
+        >
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
+        </svg>
+      </div>
+
+      <nav class="menu-itens">
+        <button class="menu-item ativo" data-ir="inicio.html">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <path d="M3 11l9-7 9 7v9a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z" />
+          </svg>
+          Início
+        </button>
+        <button class="menu-item" data-ir="ponto.html">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 7v5l3 2" />
+          </svg>
+          Ponto
+        </button>
+        <button class="menu-item" data-ir="relatorios.html">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <path d="M8 16v-3M12 16V9M16 16v-5" />
+          </svg>
+          Relatórios
+        </button>
+        <!-- [FRONT] Atestados abre um modal (Fig. 6). Será ligado quando fizermos essa tela. -->
+        <button class="menu-item" data-ir="inicio.html#atestado">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <rect x="5" y="4" width="14" height="17" rx="2" />
+            <path d="M9 4V3h6v1M12 10v6M9 13h6" />
+          </svg>
+          Atestados
+        </button>
+        <button class="menu-item" data-ir="configuracoes.html">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"
+            />
+          </svg>
+          Configurações
+        </button>
+      </nav>
+
+      <button class="menu-item menu-ajuda">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+        >
+          <circle cx="12" cy="12" r="9" />
+          <path d="M9.5 9a2.5 2.5 0 015 .5c0 1.5-2.5 2-2.5 3.5M12 17h.01" />
+        </svg>
+        Ajuda
+        <span class="seta-direita">›</span>
+      </button>
+    </aside>
+
+    <!-- ======================================================
+       CONTEÚDO PRINCIPAL
+       ====================================================== -->
+    <main class="conteudo">
+      <!-- ---------- Cabeçalho ---------- -->
+      <header class="topo">
+        <div>
+          <!-- [BACKEND] Nome do usuário logado (GET /api/me → "nome") -->
+          <h1>Olá, <span id="nomeUsuario">Funcionário</span> 👋</h1>
+          <p class="texto-suave">
+            Aqui está um resumo da sua jornada de trabalho.
+          </p>
+        </div>
+
+        <div class="perfil">
+          <button class="perfil-botao" id="btnPerfil">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4 21c0-4 4-6 8-6s8 2 8 6" />
+            </svg>
+            Meu Perfil
+            <span class="seta-baixo">⌄</span>
+          </button>
+          <div class="perfil-menu oculto" id="menuPerfil">
+            <button data-ir="configuracoes.html">Configurações</button>
+            <!-- [BACKEND] Sair: encerrar a sessão (POST /api/auth/logout) antes de voltar ao login -->
+            <button id="btnSair">Sair</button>
+          </div>
+        </div>
+      </header>
+
+      <!-- ======================================================
+         LINHA 1: RELÓGIO | JORNADA | REGRAS
+         [BACKEND] O estado da jornada vem do cálculo do servidor.
+         O main.js aplica a classe jornada-normal / jornada-atencao /
+         jornada-critico no elemento #painelJornada.
+         ====================================================== -->
+      <section class="linha-topo">
+        <!-- ---------- Relógio + Registrar Ponto ---------- -->
+        <div class="card card-relogio">
+          <div class="relogio-linha">
+            <div class="relogio-icone">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+              >
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 7v5l3 2" />
+              </svg>
+            </div>
+            <div>
+              <!-- [BACKEND] O relógio usa a hora do navegador só para exibição.
+                 O horário oficial da batida deve ser gravado pelo SERVIDOR. -->
+              <p class="relogio-hora" id="relogioHora">--:--:--</p>
+              <p class="relogio-data" id="relogioData">--</p>
+              <p class="relogio-dia" id="relogioDia">--</p>
+            </div>
+          </div>
+
+          <!-- [BACKEND] Registrar batida: POST /api/pontos -->
+          <button class="btn btn-primario btn-registrar" id="btnRegistrar">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path
+                d="M12 11v4M8 9a4 4 0 018 0v5M5 12a7 7 0 0114 0v3M9 20c.5-1.5.5-3 .5-5"
+              />
+            </svg>
+            Registrar Ponto
+          </button>
+          <p class="mensagem-sucesso" id="msgRegistro"></p>
+
+          <!-- [BACKEND] Últimas batidas do dia (GET /api/pontos/hoje) -->
+          <div class="batidas">
+            <div class="batida">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+              >
+                <path
+                  d="M10 17l5-5-5-5M15 12H3M14 3h5a2 2 0 012 2v14a2 2 0 01-2 2h-5"
+                />
+              </svg>
+              <div>
+                <span>Entrada</span><strong id="batidaEntrada">--:--</strong>
+              </div>
+            </div>
+            <div class="batida">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+              >
+                <path
+                  d="M7 3v8M5 3v4a2 2 0 004 0V3M7 11v10M17 3c-2 0-3 2-3 5s1 4 3 4v9"
+                />
+              </svg>
+              <div>
+                <span>Saída Almoço</span
+                ><strong id="batidaAlmoco">--:--</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ---------- Jornada do dia ---------- -->
+        <div class="card card-jornada jornada-normal" id="painelJornada">
+          <div class="jornada-cabecalho">
+            <div>
+              <p class="jornada-status">
+                <span class="bolinha"></span
+                ><span id="textoStatus">Jornada Normal</span>
+              </p>
+              <p class="texto-suave pequeno" id="textoStatusSub">
+                Você está dentro do limite diário.
+              </p>
+            </div>
+            <div class="direita">
+              <!-- [BACKEND] Tipo de contrato e limite diário vêm das regras do contrato (Fig. 20) -->
+              <span class="badge badge-info" id="tipoContrato">Estagiário</span>
+              <p class="texto-suave pequeno">
+                Limite diário: <span id="limiteDiario">6h</span>
+              </p>
+            </div>
+          </div>
+
+          <div class="jornada-corpo">
+            <!-- Gráfico circular: o preenchimento usa a variável --pct (0 a 100) -->
+            <div class="donut" id="donut" style="--pct: 0">
+              <div class="donut-centro">
+                <strong id="pctJornada">0%</strong>
+                <span>da jornada<br />utilizada</span>
+              </div>
+            </div>
+
+            <div class="jornada-numeros">
+              <div class="numero">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                >
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M12 7v5l3 2" />
+                </svg>
+                <div>
+                  <span>Trabalhadas hoje</span
+                  ><strong id="horasTrabalhadas">--</strong>
+                </div>
+              </div>
+              <div class="numero">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                >
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M12 7v5l3 2" />
+                </svg>
+                <div>
+                  <span>Restam</span><strong id="horasRestantes">--</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Alerta: muda de cor e ícone conforme o estado -->
+            <div class="alerta-limite" id="alertaLimite">
+              <p class="alerta-titulo">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2L1 21h22L12 2zm1 15h-2v-2h2v2zm0-4h-2V9h2v4z" />
+                </svg>
+                <span id="alertaTitulo">Limite próximo</span>
+              </p>
+              <p id="alertaTexto">Você já utilizou 0% da jornada diária.</p>
+              <p id="alertaRestante">Restam --.</p>
+              <button class="link-acao" data-ir="relatorios.html">
+                Saiba mais sobre as regras ›
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ---------- Regras do contrato ---------- -->
+        <!-- [BACKEND] Título e texto vêm das regras do contrato do usuário (GET /api/regras/meu-contrato) -->
+        <div class="card card-regras">
+          <p class="regras-titulo">
+            <span class="icone-info">i</span>
+            <span id="regrasTitulo">Regras para estagiários</span>
+          </p>
+          <p class="texto-suave pequeno" id="regrasTexto">
+            Estagiários têm limite diário de 6h e não podem realizar horas
+            extras.
+          </p>
+          <button class="link-acao">Saiba mais ›</button>
+        </div>
+      </section>
+
+      <!-- ======================================================
+         LINHA 2: HOJE | ESTA SEMANA | ESTE MÊS
+         [BACKEND] GET /api/jornada/resumo → cada período traz
+         horas, meta, percentual e estado (normal/atencao/critico).
+         ====================================================== -->
+      <section class="linha-periodos">
+        <div class="card card-periodo cor-verde" id="periodoHoje">
+          <div class="periodo-topo">
+            <span>📅 Hoje</span><span class="seta-direita">›</span>
+          </div>
+          <div class="periodo-valores">
+            <div>
+              <strong class="periodo-horas">--</strong
+              ><span class="periodo-meta">de --</span>
+            </div>
+            <div class="direita">
+              <strong class="periodo-pct">0%</strong><span>da jornada</span>
+            </div>
+          </div>
+          <div class="barra">
+            <div class="barra-preenchida" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <div class="card card-periodo cor-azul" id="periodoSemana">
+          <div class="periodo-topo">
+            <span>📅 Esta semana</span><span class="seta-direita">›</span>
+          </div>
+          <div class="periodo-valores">
+            <div>
+              <strong class="periodo-horas">--</strong
+              ><span class="periodo-meta">de --</span>
+            </div>
+            <div class="direita">
+              <strong class="periodo-pct">0%</strong><span>da jornada</span>
+            </div>
+          </div>
+          <div class="barra">
+            <div class="barra-preenchida" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <div class="card card-periodo cor-roxo" id="periodoMes">
+          <div class="periodo-topo">
+            <span>📅 Este mês</span><span class="seta-direita">›</span>
+          </div>
+          <div class="periodo-valores">
+            <div>
+              <strong class="periodo-horas">--</strong
+              ><span class="periodo-meta">de --</span>
+            </div>
+            <div class="direita">
+              <strong class="periodo-pct">0%</strong><span>da jornada</span>
+            </div>
+          </div>
+          <div class="barra">
+            <div class="barra-preenchida" style="width: 0%"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================
+         LINHA 3: HISTÓRICO DE REGISTROS
+         [BACKEND] GET /api/pontos/historico?limite=5
+         ====================================================== -->
+      <section class="card card-historico">
+        <div class="historico-topo">
+          <h2>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 7v5l3 2" />
+            </svg>
+            Histórico de Registros
+          </h2>
+          <select class="filtro" id="filtroHistorico">
+            <option value="5">Últimos 5 registros</option>
+            <option value="10">Últimos 10 registros</option>
+            <option value="30">Últimos 30 registros</option>
+          </select>
+        </div>
+
+        <div class="tabela-wrap">
+          <table class="tabela">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Entrada</th>
+                <th>Saída</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <!-- As linhas são preenchidas pelo main.js -->
+            <tbody id="tabelaHistorico"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+    <!-- ======================================================
+       MODAL: ENVIAR ATESTADO MÉDICO (Figura 6)
+       Abre pelo botão "Atestados" do menu (inicio.html#atestado)
+       ====================================================== -->
+    <div
+      class="modal-fundo oculto"
+      id="modalAtestado"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="tituloAtestado"
+    >
+      <div class="modal">
+        <div class="modal-topo">
+          <span class="modal-icone">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <rect x="5" y="4" width="14" height="17" rx="2" />
+              <path d="M9 4V3h6v1M12 10v6M9 13h6" />
+            </svg>
+          </span>
+          <h2 id="tituloAtestado">Enviar atestado médico</h2>
+          <button
+            type="button"
+            class="modal-fechar"
+            id="btnFecharAtestado"
+            aria-label="Fechar"
+          >
+            ✕
+          </button>
+        </div>
+        <p class="texto-suave pequeno">
+          O atestado será enviado para análise do RH.
+        </p>
+
+        <!--
+        [BACKEND] ENVIO DO ATESTADO
+        Endpoint sugerido: POST /api/atestados  (multipart/form-data)
+          Envia: dataInicio, dataFim, motivo, arquivo
+          Retorna: 201 (criado) → o atestado entra como "Atestado Médico Enviado"
+                   na tela de Pendências do RH (Fig. 10)
+        [BACKEND] Validar tipo e tamanho do arquivo também no servidor.
+      -->
+        <form id="formAtestado" class="form-modal" novalidate>
+          <div class="form-linha">
+            <div class="campo-modal" id="campoAtestadoInicio">
+              <label for="atestadoInicio">Data Início *</label>
+              <input
+                type="date"
+                id="atestadoInicio"
+                name="dataInicio"
+                required
+              />
+              <p class="mensagem-erro" id="erroAtestadoInicio"></p>
+            </div>
+            <div class="campo-modal" id="campoAtestadoFim">
+              <label for="atestadoFim">Data Fim *</label>
+              <input type="date" id="atestadoFim" name="dataFim" required />
+              <p class="mensagem-erro" id="erroAtestadoFim"></p>
+            </div>
+          </div>
+
+          <div class="campo-modal" id="campoAtestadoMotivo">
+            <label for="atestadoMotivo">Motivo *</label>
+            <!-- [BACKEND] Opções podem vir do banco (GET /api/atestados/motivos) -->
+            <select id="atestadoMotivo" name="motivo" required>
+              <option value="" disabled selected>Selecione o motivo</option>
+              <option value="doenca">Doença</option>
+              <option value="consulta">Consulta médica</option>
+              <option value="exame">Exame</option>
+              <option value="acompanhamento">Acompanhamento familiar</option>
+              <option value="outro">Outro</option>
+            </select>
+            <p class="mensagem-erro" id="erroAtestadoMotivo"></p>
+          </div>
+
+          <div class="campo-modal" id="campoAtestadoArquivo">
+            <label>Documento do atestado *</label>
+            <label class="upload" for="atestadoArquivo" id="areaUpload">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+              >
+                <path
+                  d="M7 18a5 5 0 01-.5-9.98A6 6 0 0118 9a4.5 4.5 0 01-1 8.9"
+                />
+                <path d="M12 12v8M9 15l3-3 3 3" />
+              </svg>
+              <strong>Arraste o arquivo aqui ou clique para selecionar</strong>
+              <span>PDF, JPG ou PNG — até 5 MB</span>
+              <span class="upload-arquivo" id="nomeArquivoAtestado"></span>
+            </label>
+            <input
+              type="file"
+              id="atestadoArquivo"
+              name="arquivo"
+              accept=".pdf,.jpg,.jpeg,.png"
+              class="oculto"
+            />
+            <p class="mensagem-erro" id="erroAtestadoArquivo"></p>
+          </div>
+
+          <!-- [BACKEND] Mensagem de erro retornada pela API -->
+          <p
+            class="mensagem-erro erro-geral"
+            id="erroAtestadoGeral"
+            role="alert"
+          ></p>
+          <p class="mensagem-sucesso" id="sucessoAtestado" role="status"></p>
+
+          <div class="modal-acoes">
+            <button
+              type="button"
+              class="btn btn-contorno"
+              id="btnCancelarAtestado"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="btn btn-primario"
+              id="btnEnviarAtestado"
+            >
+              Enviar atestado
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <!-- Arquivo JS único (um nível acima, por isso o ../) -->
+    <script src="../js/main.js"></script>
+  </body>
+</html>
