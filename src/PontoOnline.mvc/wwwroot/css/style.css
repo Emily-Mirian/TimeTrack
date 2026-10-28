@@ -1,0 +1,2948 @@
+/* =========================================================
+   SISTEMA DE REGISTRO DE PRESENÇA — CSS ÚNICO
+   Seções:
+     1. Variáveis e base
+     2. Componentes globais (botões, campos, cards, badges)
+     3. Estados da jornada
+     4. Tela: Login
+   (as próximas telas serão adicionadas no final)
+   ========================================================= */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+
+/* =========================================================
+   1. VARIÁVEIS E BASE
+   ========================================================= */
+:root {
+  --azul-escuro: #0b3c6b;
+  --azul-primario: #1e7bf2;
+  --azul-hover: #1767d1;
+  --azul-claro: #e8f1fd;
+  --azul-fundo: #f3f7fc;
+  --menu-escuro: #0f2a47;
+
+  --branco: #ffffff;
+  --texto: #1f2a37;
+  --texto-suave: #6b7a90;
+  --borda: #dfe7f1;
+
+  --estado-normal: #22c55e; /* verde    → jornada dentro do limite */
+  --estado-atencao: #f5b400; /* amarelo  → limite próximo */
+  --estado-critico: #ef4444; /* vermelho → limite crítico */
+  --estado-info: #1e7bf2;
+
+  --raio: 12px;
+  --raio-grande: 18px;
+  --sombra: 0 4px 18px rgba(15, 42, 71, 0.08);
+  --fonte: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--fonte);
+  color: var(--texto);
+  background: var(--azul-fundo);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--azul-primario);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+.oculto {
+  display: none !important;
+}
+.texto-suave {
+  color: var(--texto-suave);
+}
+
+/* =========================================================
+   2. COMPONENTES GLOBAIS
+   ========================================================= */
+
+/* ---------- Botões ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: var(--raio);
+  padding: 12px 20px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    transform 0.1s,
+    box-shadow 0.2s;
+}
+.btn:active {
+  transform: scale(0.98);
+}
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primario {
+  background: var(--azul-primario);
+  color: var(--branco);
+}
+.btn-primario:hover {
+  background: var(--azul-hover);
+}
+
+.btn-escuro {
+  background: var(--azul-escuro);
+  color: var(--branco);
+}
+.btn-escuro:hover {
+  background: #082f55;
+}
+
+.btn-contorno {
+  background: var(--branco);
+  color: var(--azul-primario);
+  border: 1px solid var(--azul-primario);
+}
+
+/* ---------- Campos ---------- */
+.campo {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.campo .icone {
+  position: absolute;
+  left: 18px;
+  width: 20px;
+  height: 20px;
+  color: #a9bfdc;
+  pointer-events: none;
+}
+.campo input,
+.campo select {
+  width: 100%;
+  height: 52px;
+  padding: 0 18px 0 50px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--branco);
+  font-family: inherit;
+  font-size: 16px;
+  color: var(--texto);
+  box-shadow: var(--sombra);
+  outline: none;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+.campo input::placeholder {
+  color: #b3c4da;
+}
+.campo input:focus,
+.campo select:focus {
+  border-color: var(--azul-primario);
+  box-shadow: 0 0 0 4px rgba(30, 123, 242, 0.15);
+}
+.campo.erro input {
+  border-color: var(--estado-critico);
+}
+
+.mensagem-erro {
+  color: var(--estado-critico);
+  font-size: 13px;
+  margin-top: 6px;
+  padding-left: 18px;
+  min-height: 16px;
+}
+
+/* ---------- Cards ---------- */
+.card {
+  background: var(--branco);
+  border-radius: var(--raio-grande);
+  box-shadow: var(--sombra);
+  padding: 24px;
+}
+
+/* ---------- Badges ---------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.badge-normal {
+  background: #e7f8ee;
+  color: #15803d;
+}
+.badge-atencao {
+  background: #fff6dc;
+  color: #a16207;
+}
+.badge-critico {
+  background: #fde8e8;
+  color: #b91c1c;
+}
+.badge-info {
+  background: var(--azul-claro);
+  color: var(--azul-primario);
+}
+
+/* =========================================================
+   3. ESTADOS DA JORNADA
+   [BACKEND] O back-end calcula o percentual e devolve o estado:
+   "normal" | "atencao" | "critico". O front só aplica a classe.
+   ========================================================= */
+.jornada-normal {
+  --cor-jornada: var(--estado-normal);
+}
+.jornada-atencao {
+  --cor-jornada: var(--estado-atencao);
+}
+.jornada-critico {
+  --cor-jornada: var(--estado-critico);
+}
+
+/* =========================================================
+   4. TELA: LOGIN (Figura 1)
+   ========================================================= */
+.pagina-login {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eaf2fc;
+  padding: 24px;
+}
+
+.login-container {
+  width: 100%;
+  max-width: 1100px;
+  min-height: 600px;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  background: var(--branco);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(15, 42, 71, 0.12);
+}
+
+/* ----- Lado esquerdo ----- */
+.login-ilustracao {
+  position: relative;
+  background: linear-gradient(160deg, #ffffff 0%, #eef5ff 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.ilustracao-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.decor-mais {
+  position: absolute;
+  color: #b9cff0;
+  font-size: 26px;
+  font-weight: 300;
+}
+.d1 {
+  top: 12%;
+  left: 10%;
+}
+.d2 {
+  top: 45%;
+  right: 12%;
+}
+.d3 {
+  bottom: 14%;
+  left: 22%;
+}
+
+.balao-like {
+  position: absolute;
+  top: 10%;
+  right: 22%;
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  background: var(--branco);
+  border: 3px solid var(--azul-escuro);
+  color: var(--azul-primario);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--sombra);
+}
+.balao-like svg {
+  width: 40px;
+  height: 40px;
+}
+
+.relogio-decor {
+  position: absolute;
+  bottom: 22%;
+  right: 10%;
+  width: 70px;
+  height: 70px;
+  color: #a9bfdc;
+}
+.relogio-decor svg {
+  width: 100%;
+  height: 100%;
+}
+
+.mockup {
+  width: 240px;
+  border-radius: 28px;
+  background: var(--azul-escuro);
+  padding: 10px;
+  box-shadow: 0 25px 50px rgba(11, 60, 107, 0.3);
+  transform: rotate(-4deg);
+}
+.mockup-topo {
+  color: var(--branco);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  padding: 10px 0;
+}
+.mockup-corpo {
+  background: var(--branco);
+  border-radius: 20px;
+  padding: 18px 16px;
+  text-align: center;
+}
+.mockup-avatar {
+  width: 42px;
+  height: 42px;
+  margin: 0 auto 8px;
+  border-radius: 50%;
+  background: var(--azul-claro);
+}
+.mockup-ola {
+  font-weight: 700;
+  color: var(--azul-escuro);
+}
+.mockup-sub {
+  font-size: 11px;
+  color: var(--texto-suave);
+  margin-top: 2px;
+}
+.mockup-check {
+  width: 48px;
+  height: 48px;
+  margin: 14px auto;
+  border-radius: 50%;
+  background: var(--azul-escuro);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mockup-check svg {
+  width: 24px;
+  height: 24px;
+}
+.mockup-lista {
+  list-style: none;
+  text-align: left;
+  font-size: 11px;
+}
+.mockup-lista li {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--borda);
+}
+.mockup-lista li span:first-child {
+  color: var(--texto-suave);
+}
+.mockup-botao {
+  margin-top: 12px;
+  background: var(--azul-escuro);
+  color: var(--branco);
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 8px;
+}
+
+/* ----- Lado direito ----- */
+.login-formulario {
+  background: #edf3fb;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 48px 56px;
+}
+.login-formulario h1 {
+  font-size: 44px;
+  font-weight: 800;
+  color: var(--azul-escuro);
+  text-align: center;
+  margin-bottom: 40px;
+}
+#formLogin {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.erro-geral {
+  text-align: center;
+  padding-left: 0;
+}
+.btn-login {
+  height: 54px;
+  width: 100%;
+  border-radius: 999px;
+  font-size: 18px;
+  margin-top: 8px;
+}
+.link-cadastro {
+  margin-top: 24px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--texto-suave);
+}
+.link-cadastro a {
+  font-weight: 600;
+}
+
+/* ----- Responsivo ----- */
+@media (max-width: 860px) {
+  .login-container {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+  .login-ilustracao {
+    display: none;
+  }
+  .login-formulario {
+    padding: 40px 28px;
+  }
+  .login-formulario h1 {
+    font-size: 36px;
+  }
+}
+/* =========================================================
+   5. TELA: CADASTRO (Figura 2)
+   ========================================================= */
+.pagina-cadastro {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 10% 20%, #ffffff 0%, transparent 45%),
+    radial-gradient(ellipse at 90% 90%, #dce8fb 0%, transparent 50%), #eaf2fc;
+}
+
+/* ----- Decoração ----- */
+.cadastro-decor {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.c1 {
+  top: 8%;
+  left: 16%;
+}
+.c2 {
+  top: 7%;
+  right: 22%;
+}
+.c3 {
+  top: 52%;
+  left: 11%;
+}
+
+.decor-circulo {
+  position: absolute;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--branco);
+  border: 3px solid #8fb2f2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--sombra);
+}
+.decor-circulo svg {
+  width: 34px;
+  height: 34px;
+}
+.decor-usuario {
+  top: 13%;
+  left: 8%;
+  color: var(--azul-escuro);
+}
+.decor-joinha {
+  top: 8%;
+  right: 8%;
+  color: var(--azul-primario);
+}
+
+.decor-relogio {
+  position: absolute;
+  top: 48%;
+  right: 7%;
+  width: 80px;
+  height: 80px;
+  color: #6f9cef;
+}
+.decor-relogio svg {
+  width: 100%;
+  height: 100%;
+}
+
+.decor-planta {
+  position: absolute;
+  bottom: 4%;
+  left: 3%;
+  width: 140px;
+}
+
+/* ----- Card do formulário ----- */
+.cadastro-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 620px;
+  padding: 40px 90px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 24px;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 20px 60px rgba(15, 42, 71, 0.08);
+}
+.cadastro-card h1 {
+  font-size: 48px;
+  font-weight: 800;
+  color: var(--azul-escuro);
+  text-align: center;
+  margin-bottom: 28px;
+}
+#formCadastro {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* ----- Select com ícone e seta ----- */
+.campo-select select {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  color: #b3c4da; /* cor de placeholder enquanto nada for escolhido */
+  font-weight: 500;
+}
+.campo-select select.preenchido {
+  color: var(--texto);
+}
+.campo-select select option {
+  color: var(--texto);
+}
+.campo-select .seta {
+  position: absolute;
+  right: 20px;
+  width: 18px;
+  height: 18px;
+  color: #8fa9cc;
+  pointer-events: none;
+}
+.campo.erro select {
+  border-color: var(--estado-critico);
+}
+
+.mensagem-sucesso {
+  color: #15803d;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  min-height: 18px;
+}
+
+/* ----- Responsivo ----- */
+@media (max-width: 860px) {
+  .cadastro-decor {
+    display: none;
+  }
+  .cadastro-card {
+    padding: 32px 24px;
+  }
+  .cadastro-card h1 {
+    font-size: 36px;
+  }
+}
+/* =========================================================
+   6. LAYOUT DAS ÁREAS LOGADAS (menu lateral + conteúdo)
+      Reaproveitado nas telas do Funcionário, RH e Admin.
+   ========================================================= */
+.pagina-app {
+  display: flex;
+  min-height: 100vh;
+  background: #f1f6fd;
+}
+
+.menu-lateral {
+  width: 200px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px 12px;
+  background: linear-gradient(180deg, #f7faff 70%, #e6effc 100%);
+  border-right: 1px solid var(--borda);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+.menu-logo {
+  width: 44px;
+  height: 44px;
+  margin-left: 8px;
+  color: var(--azul-primario);
+}
+.menu-logo svg {
+  width: 100%;
+  height: 100%;
+}
+
+.menu-itens {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid transparent;
+  border-radius: var(--raio);
+  background: transparent;
+  color: var(--azul-escuro);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.menu-item svg {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+.menu-item:hover {
+  background: var(--azul-claro);
+}
+.menu-item.ativo {
+  background: #dde9fb;
+  color: var(--azul-primario);
+  font-weight: 600;
+}
+.menu-ajuda .seta-direita {
+  margin-left: auto;
+}
+
+.conteudo {
+  flex: 1;
+  min-width: 0;
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* ---------- Cabeçalho ---------- */
+.topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.topo h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--azul-escuro);
+}
+.topo p {
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+.perfil {
+  position: relative;
+}
+.perfil-botao {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px 8px 8px;
+  border: none;
+  border-radius: 999px;
+  background: var(--branco);
+  box-shadow: var(--sombra);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--azul-escuro);
+  cursor: pointer;
+}
+.perfil-botao svg {
+  width: 32px;
+  height: 32px;
+  padding: 6px;
+  border-radius: 50%;
+  background: var(--azul-claro);
+  color: var(--azul-primario);
+}
+.perfil-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  min-width: 170px;
+  background: var(--branco);
+  border-radius: var(--raio);
+  box-shadow: var(--sombra);
+  padding: 6px;
+  z-index: 10;
+}
+.perfil-menu button {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  font-family: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+.perfil-menu button:hover {
+  background: var(--azul-claro);
+}
+
+/* ---------- Utilitários das telas logadas ---------- */
+.pequeno {
+  font-size: 12px;
+}
+.direita {
+  text-align: right;
+}
+.link-acao {
+  border: none;
+  background: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--azul-primario);
+  cursor: pointer;
+}
+
+/* =========================================================
+   7. TELA: INÍCIO DO FUNCIONÁRIO (Figuras 3, 8 e 9)
+   ========================================================= */
+.linha-topo {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr 0.8fr;
+  gap: 16px;
+  align-items: start;
+}
+.card {
+  padding: 20px;
+}
+
+/* ----- Relógio ----- */
+.relogio-linha {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.relogio-icone {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--azul-claro);
+  color: var(--azul-primario);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.relogio-icone svg {
+  width: 34px;
+  height: 34px;
+}
+.relogio-hora {
+  font-size: 38px;
+  font-weight: 800;
+  color: var(--azul-escuro);
+  line-height: 1.1;
+}
+.relogio-data,
+.relogio-dia {
+  font-size: 13px;
+  color: var(--texto-suave);
+}
+
+.btn-registrar {
+  width: 100%;
+  margin-top: 16px;
+  border-radius: 999px;
+  height: 46px;
+}
+.btn-registrar svg {
+  width: 20px;
+  height: 20px;
+}
+
+.batidas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-top: 12px;
+  padding-top: 14px;
+  border-top: 1px solid var(--borda);
+}
+.batida {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.batida + .batida {
+  border-left: 1px solid var(--borda);
+  padding-left: 14px;
+}
+.batida svg {
+  width: 26px;
+  height: 26px;
+  color: var(--azul-escuro);
+}
+.batida span {
+  display: block;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+.batida strong {
+  font-size: 15px;
+  color: var(--azul-escuro);
+}
+
+/* ----- Jornada (muda de cor pelo estado) ----- */
+.jornada-cabecalho {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.jornada-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  color: var(--cor-jornada);
+}
+.bolinha {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--cor-jornada);
+}
+
+.jornada-corpo {
+  display: grid;
+  grid-template-columns: auto 1fr 1.1fr;
+  align-items: center;
+  gap: 18px;
+  margin-top: 14px;
+}
+
+/* Gráfico circular desenhado só com CSS */
+.donut {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--cor-jornada) calc(var(--pct) * 1%),
+    #e8eef6 0
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.6s;
+}
+.donut-centro {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: var(--branco);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.donut-centro strong {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--azul-escuro);
+}
+.donut-centro span {
+  font-size: 11px;
+  color: var(--texto-suave);
+  line-height: 1.2;
+}
+
+.jornada-numeros {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.numero {
+  display: flex;
+  gap: 8px;
+}
+.numero svg {
+  width: 18px;
+  height: 18px;
+  color: var(--azul-primario);
+  margin-top: 2px;
+}
+.numero span {
+  display: block;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+.numero strong {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--azul-primario);
+}
+
+/* Cartão de alerta: azul (normal), amarelo (atenção), vermelho (crítico) */
+.alerta-limite {
+  padding: 14px;
+  border-radius: var(--raio);
+  font-size: 12px;
+  line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--azul-claro);
+  border: 1px solid #cfe0fa;
+}
+.alerta-titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.alerta-titulo svg {
+  width: 20px;
+  height: 20px;
+}
+.alerta-limite .link-acao {
+  margin-top: 6px;
+  align-self: flex-start;
+}
+
+.jornada-normal .alerta-titulo {
+  color: var(--azul-primario);
+}
+.jornada-atencao .alerta-limite {
+  background: #fff8e1;
+  border-color: #fbe3a0;
+}
+.jornada-atencao .alerta-titulo {
+  color: #d39a00;
+}
+.jornada-critico .alerta-limite {
+  background: #fdecec;
+  border-color: #f7c4c4;
+}
+.jornada-critico .alerta-titulo {
+  color: var(--estado-critico);
+}
+
+/* ----- Regras ----- */
+.regras-titulo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--azul-escuro);
+  margin-bottom: 8px;
+}
+.icone-info {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--azul-primario);
+  color: var(--branco);
+  font-size: 13px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.card-regras .texto-suave {
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+
+/* ----- Cards de período ----- */
+.linha-periodos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+/* Cor padrão de cada card (estado normal) */
+.card-periodo.cor-verde {
+  --cor-barra: var(--estado-normal);
+}
+.card-periodo.cor-azul {
+  --cor-barra: var(--azul-primario);
+}
+.card-periodo.cor-roxo {
+  --cor-barra: #7c3aed;
+}
+/* Estados vindos do back-end sobrescrevem a cor */
+.card-periodo.jornada-atencao {
+  --cor-barra: var(--estado-atencao);
+}
+.card-periodo.jornada-critico {
+  --cor-barra: var(--estado-critico);
+}
+
+.periodo-topo {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--azul-escuro);
+}
+.periodo-valores {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin: 10px 0 12px;
+}
+.periodo-valores span {
+  display: block;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+.periodo-horas {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--azul-escuro);
+}
+.periodo-pct {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--cor-barra);
+}
+
+.barra {
+  height: 8px;
+  border-radius: 999px;
+  background: #e8eef6;
+  overflow: hidden;
+}
+.barra-preenchida {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--cor-barra);
+  transition: width 0.6s;
+}
+
+/* ----- Histórico ----- */
+.historico-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.historico-topo h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--azul-escuro);
+}
+.historico-topo h2 svg {
+  width: 24px;
+  height: 24px;
+  color: var(--azul-primario);
+}
+.filtro {
+  padding: 8px 12px;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  background: var(--branco);
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--azul-escuro);
+  cursor: pointer;
+}
+
+.tabela-wrap {
+  overflow-x: auto;
+}
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.tabela th {
+  text-align: left;
+  font-weight: 500;
+  color: var(--texto-suave);
+  background: #f3f7fc;
+  padding: 10px 16px;
+}
+.tabela td {
+  padding: 10px 16px;
+  border-bottom: 1px solid #eef2f8;
+  color: var(--azul-escuro);
+}
+.tabela tr:last-child td {
+  border-bottom: none;
+}
+.tabela .acoes {
+  text-align: right;
+}
+.btn-mais {
+  border: none;
+  background: none;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--azul-escuro);
+  cursor: pointer;
+  letter-spacing: 1px;
+}
+.badge::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* ----- Responsivo ----- */
+@media (max-width: 1200px) {
+  .linha-topo {
+    grid-template-columns: 1fr 1.6fr;
+  }
+  .card-regras {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 900px) {
+  .menu-lateral {
+    display: none;
+  }
+  .linha-topo,
+  .linha-periodos {
+    grid-template-columns: 1fr;
+  }
+  .jornada-corpo {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+}
+/* =========================================================
+   8. TELA: PONTO DO FUNCIONÁRIO (Figura 4)
+   ========================================================= */
+.topo-direita {
+  justify-content: flex-end;
+}
+
+.card-ponto {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 32px 40px 28px;
+}
+.ponto-hora {
+  font-size: 64px;
+  font-weight: 800;
+  color: var(--azul-escuro);
+  line-height: 1;
+  letter-spacing: 1px;
+}
+.ponto-data {
+  font-size: 16px;
+  color: var(--texto);
+  margin-top: 12px;
+}
+.ponto-dia {
+  font-size: 13px;
+  color: var(--texto-suave);
+  margin-top: 2px;
+}
+
+.btn-ponto {
+  width: 100%;
+  max-width: 400px;
+  height: 56px;
+  margin: 24px 0 28px;
+  border-radius: 999px;
+  font-size: 18px;
+  box-shadow: 0 10px 24px rgba(30, 123, 242, 0.3);
+}
+.btn-ponto svg {
+  width: 26px;
+  height: 26px;
+}
+
+/* ----- Linha do tempo ----- */
+.linha-tempo {
+  list-style: none;
+  width: 100%;
+  max-width: 640px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+.etapa {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 0 4px 10px;
+  border-radius: var(--raio);
+}
+/* Linha que liga uma etapa à próxima */
+.etapa:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 18px;
+  left: calc(50% + 24px);
+  width: calc(100% - 48px);
+  height: 2px;
+  background: #dbe6f5;
+}
+.etapa.concluida:not(:last-child)::after {
+  background: #b9d3f8;
+}
+
+.etapa-icone {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid #c9dbf4;
+  background: var(--branco);
+  color: var(--azul-primario);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+.etapa-icone svg {
+  width: 18px;
+  height: 18px;
+}
+.etapa-nome {
+  font-size: 13px;
+  color: var(--texto);
+  margin-top: 6px;
+}
+.etapa-hora {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--texto-suave);
+}
+
+/* Concluída: círculo azul cheio com check */
+.etapa.concluida .etapa-icone {
+  background: var(--azul-primario);
+  border-color: var(--azul-primario);
+  color: var(--branco);
+}
+.etapa.concluida .ic-padrao {
+  display: none;
+}
+.etapa.concluida .etapa-icone::before {
+  content: "✓";
+  font-size: 18px;
+  font-weight: 800;
+}
+.etapa.concluida .etapa-hora {
+  color: var(--azul-escuro);
+}
+
+/* Próxima: destaque com fundo azul-claro */
+.etapa.proxima {
+  background: var(--azul-claro);
+  padding-top: 0;
+}
+.etapa.proxima .etapa-icone {
+  border-color: var(--azul-primario);
+  box-shadow: 0 0 0 4px rgba(30, 123, 242, 0.12);
+}
+.etapa.proxima .etapa-nome {
+  color: var(--azul-primario);
+  font-weight: 600;
+}
+
+/* ----- Barra de aviso ----- */
+.aviso {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: var(--raio);
+  font-size: 14px;
+}
+.aviso-icone {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  color: var(--branco);
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.aviso-sucesso {
+  background: #ecfaf1;
+  border: 1px solid #bfe9cf;
+  color: #15803d;
+}
+.aviso-sucesso .aviso-icone {
+  background: var(--estado-normal);
+}
+.aviso-erro {
+  background: #fdecec;
+  border: 1px solid #f7c4c4;
+  color: #b91c1c;
+}
+.aviso-erro .aviso-icone {
+  background: var(--estado-critico);
+}
+
+@media (max-width: 700px) {
+  .ponto-hora {
+    font-size: 46px;
+  }
+  .linha-tempo {
+    grid-template-columns: repeat(2, 1fr);
+    row-gap: 16px;
+  }
+  .etapa::after {
+    display: none;
+  }
+}
+/* =========================================================
+   9. TELA: RELATÓRIOS DO FUNCIONÁRIO (Figura 5)
+   ========================================================= */
+.linha-relatorios {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 16px;
+}
+
+/* Título padrão de card (reaproveitado nas próximas telas) */
+.card-titulo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--azul-escuro);
+  margin-bottom: 6px;
+}
+.card-titulo svg {
+  width: 22px;
+  height: 22px;
+  color: var(--azul-primario);
+  flex-shrink: 0;
+}
+
+/* ----- Exportar ----- */
+.exportar-linha {
+  display: flex;
+  gap: 12px;
+  margin-top: 18px;
+  flex-wrap: wrap;
+}
+.filtro-grande {
+  flex: 1;
+  min-width: 200px;
+  height: 46px;
+  padding: 0 14px;
+  font-size: 14px;
+  border-radius: var(--raio);
+}
+.exportar-linha .btn {
+  height: 46px;
+}
+.mensagem-sucesso.esquerda {
+  text-align: left;
+  margin-top: 10px;
+}
+
+/* ----- Saldo ----- */
+.card-saldo {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.saldo-valor {
+  font-size: 40px;
+  font-weight: 800;
+  margin: 10px 0 4px;
+  color: var(--cor-saldo);
+}
+.saldo-positivo {
+  --cor-saldo: #16a34a;
+  background: linear-gradient(135deg, #ffffff 60%, #ecfaf1 100%);
+}
+.saldo-negativo {
+  --cor-saldo: var(--estado-critico);
+  background: linear-gradient(135deg, #ffffff 60%, #fdecec 100%);
+}
+.saldo-inativo {
+  --cor-saldo: var(--texto-suave);
+}
+.saldo-inativo .saldo-valor {
+  font-size: 20px;
+}
+
+/* ----- Botão de download da tabela ----- */
+.btn-baixar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: 1px solid var(--azul-primario);
+  border-radius: 8px;
+  background: var(--branco);
+  color: var(--azul-primario);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-baixar:hover {
+  background: var(--azul-claro);
+}
+.btn-baixar svg {
+  width: 14px;
+  height: 14px;
+}
+
+.tabela-vazia {
+  text-align: center;
+  color: var(--texto-suave);
+  padding: 24px !important;
+}
+
+@media (max-width: 900px) {
+  .linha-relatorios {
+    grid-template-columns: 1fr;
+  }
+}
+/* =========================================================
+   10. MODAL: ENVIAR ATESTADO (Figura 6)
+       Estrutura de modal reaproveitada no RH (Editar Ponto, Fig. 11)
+   ========================================================= */
+body.com-modal {
+  overflow: hidden;
+}
+.com-modal .menu-lateral,
+.com-modal .conteudo {
+  filter: blur(3px);
+}
+
+.modal-fundo {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(15, 42, 71, 0.35);
+}
+
+.modal {
+  width: 100%;
+  max-width: 520px;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  padding: 28px;
+  background: var(--branco);
+  border-radius: 20px;
+  box-shadow: 0 30px 70px rgba(15, 42, 71, 0.25);
+}
+
+.modal-topo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+.modal-topo h2 {
+  flex: 1;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--azul-escuro);
+}
+.modal-icone {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--azul-claro);
+  color: var(--azul-primario);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.modal-icone svg {
+  width: 22px;
+  height: 22px;
+}
+.modal-fechar {
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--texto-suave);
+  font-size: 16px;
+  cursor: pointer;
+}
+.modal-fechar:hover {
+  background: var(--azul-claro);
+}
+
+/* ----- Formulário do modal ----- */
+.form-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+}
+.form-linha {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.campo-modal label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--azul-escuro);
+  margin-bottom: 6px;
+}
+.campo-modal input,
+.campo-modal select {
+  width: 100%;
+  height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  background: var(--branco);
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--texto);
+  outline: none;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+.campo-modal input:focus,
+.campo-modal select:focus {
+  border-color: var(--azul-primario);
+  box-shadow: 0 0 0 4px rgba(30, 123, 242, 0.12);
+}
+.campo-modal.erro input,
+.campo-modal.erro select,
+.campo-modal.erro .upload {
+  border-color: var(--estado-critico);
+}
+.campo-modal .mensagem-erro {
+  padding-left: 0;
+  margin-top: 4px;
+  min-height: 14px;
+  font-size: 12px;
+}
+
+/* ----- Área de upload ----- */
+.upload {
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 22px;
+  border: 2px dashed #b9d3f8;
+  border-radius: 14px;
+  background: #f7faff;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+}
+.upload:hover,
+.upload.arrastando {
+  background: var(--azul-claro);
+  border-color: var(--azul-primario);
+}
+.upload svg {
+  width: 42px;
+  height: 42px;
+  color: var(--azul-primario);
+}
+.upload strong {
+  font-size: 14px;
+  color: var(--azul-escuro);
+}
+.upload span {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--texto-suave);
+}
+.upload .upload-arquivo {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--azul-primario);
+}
+
+.modal-acoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+@media (max-width: 520px) {
+  .form-linha {
+    grid-template-columns: 1fr;
+  }
+  .modal {
+    padding: 22px;
+  }
+  .modal-acoes {
+    flex-direction: column-reverse;
+  }
+  .modal-acoes .btn {
+    width: 100%;
+  }
+}
+/* =========================================================
+   11. TELA: CONFIGURAÇÕES DO FUNCIONÁRIO (Figura 7)
+       Toggle e campo de senha reaproveitados no RH e no Admin
+   ========================================================= */
+.linha-config {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.card-cabecalho {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Selo "Dados do RH" com cadeado */
+.badge-bloqueado {
+  background: #eef2f8;
+  color: var(--texto-suave);
+}
+.badge-bloqueado::before {
+  display: none;
+}
+.badge-bloqueado svg {
+  width: 13px;
+  height: 13px;
+}
+
+/* ----- Dados somente leitura ----- */
+.dados-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+.dado {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #f5f8fc;
+  border: 1px solid #edf1f7;
+}
+.dado span {
+  display: block;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+.dado strong {
+  font-size: 15px;
+  color: var(--azul-escuro);
+}
+.nota-rh {
+  margin-top: 12px;
+}
+
+/* ----- Campo de senha com olho ----- */
+.campo-senha {
+  position: relative;
+}
+.campo-senha input {
+  padding-right: 44px;
+}
+.btn-olho {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: var(--texto-suave);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-olho svg {
+  width: 18px;
+  height: 18px;
+}
+.btn-olho.visivel {
+  color: var(--azul-primario);
+}
+.btn-alinhado {
+  align-self: flex-start;
+}
+
+/* ----- Toggles (botão liga/desliga) ----- */
+.lista-toggles {
+  list-style: none;
+  margin-top: 10px;
+}
+.toggle-linha {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid #eef2f8;
+}
+.toggle-linha:last-child {
+  border-bottom: none;
+}
+.toggle-linha strong {
+  display: block;
+  font-size: 14px;
+  color: var(--azul-escuro);
+}
+
+.toggle {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 26px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.toggle input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.toggle-trilho {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: #cfd9e6;
+  transition: background 0.2s;
+}
+.toggle-trilho::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--branco);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s;
+}
+.toggle input:checked + .toggle-trilho {
+  background: var(--azul-primario);
+}
+.toggle input:checked + .toggle-trilho::before {
+  transform: translateX(20px);
+}
+.toggle input:focus-visible + .toggle-trilho {
+  box-shadow: 0 0 0 4px rgba(30, 123, 242, 0.2);
+}
+.toggle input:disabled + .toggle-trilho {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 900px) {
+  .linha-config {
+    grid-template-columns: 1fr;
+  }
+}
+/* =========================================================
+   12. MENU RH/ADMIN + TELA: PENDÊNCIAS (Figura 10)
+   ========================================================= */
+.menu-secao {
+  margin: 14px 14px 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--texto-suave);
+}
+.menu-secao:first-child {
+  margin-top: 0;
+}
+.menu-lateral {
+  overflow-y: auto;
+  width: 230px;
+} /* menu do RH/Admin tem mais itens */
+
+.topo-portal {
+  font-size: 12px !important;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--azul-primario) !important;
+  margin-bottom: 2px;
+}
+
+.contador {
+  min-width: 26px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--azul-claro);
+  color: var(--azul-primario);
+  font-size: 12px;
+  text-align: center;
+}
+
+.colaborador strong {
+  display: block;
+}
+.colaborador span {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+/* Botões pequenos de ação na tabela */
+.acoes-grupo {
+  display: inline-flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.btn-acao {
+  padding: 7px 12px;
+  border: 1px solid var(--azul-primario);
+  border-radius: 8px;
+  background: var(--branco);
+  color: var(--azul-primario);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+.btn-acao:hover {
+  background: var(--azul-claro);
+}
+.btn-acao.primario {
+  background: var(--azul-primario);
+  color: var(--branco);
+}
+.btn-acao.primario:hover {
+  background: var(--azul-hover);
+}
+.btn-acao.perigo {
+  border-color: var(--estado-critico);
+  color: var(--estado-critico);
+}
+.btn-acao.perigo:hover {
+  background: #fdecec;
+}
+
+/* Linha some ao ser resolvida */
+.tabela tr.resolvida {
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+/* =========================================================
+   13. MODAL: EDITAR PONTO (Figura 11)
+       Usa a estrutura de modal da seção 10
+   ========================================================= */
+.modal-colaborador {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f5f8fc;
+  border: 1px solid #edf1f7;
+}
+.modal-colaborador strong {
+  display: block;
+  color: var(--azul-escuro);
+}
+
+.avatar-letra {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--azul-primario);
+  color: var(--branco);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Campo bloqueado (Horário Original) */
+.campo-modal input.campo-bloqueado {
+  background: #f1f4f9;
+  color: var(--texto-suave);
+  cursor: not-allowed;
+}
+
+/* Textarea da justificativa */
+.campo-modal textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--texto);
+  resize: vertical;
+  outline: none;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+.campo-modal textarea:focus {
+  border-color: var(--azul-primario);
+  box-shadow: 0 0 0 4px rgba(30, 123, 242, 0.12);
+}
+.campo-modal.erro textarea {
+  border-color: var(--estado-critico);
+}
+
+.textarea-rodape {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+.contador-texto {
+  font-size: 12px;
+  color: var(--texto-suave);
+  margin-top: 4px;
+  white-space: nowrap;
+}
+.contador-texto.limite {
+  color: var(--estado-critico);
+  font-weight: 600;
+}
+/* =========================================================
+   13. MODAL: EDITAR PONTO (Figura 11)
+       Usa a estrutura de modal da seção 10
+   ========================================================= */
+.modal-colaborador {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f5f8fc;
+  border: 1px solid #edf1f7;
+}
+.modal-colaborador strong {
+  display: block;
+  color: var(--azul-escuro);
+}
+.avatar-letra {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--azul-primario);
+  color: var(--branco);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Campo bloqueado (Horário Original) */
+.campo-modal input.campo-bloqueado,
+.campo-modal input:disabled {
+  background: #f1f4f8;
+  color: var(--texto-suave);
+  cursor: not-allowed;
+}
+
+/* Textarea da justificativa */
+.campo-modal textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--texto);
+  resize: vertical;
+  outline: none;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+.campo-modal textarea:focus {
+  border-color: var(--azul-primario);
+  box-shadow: 0 0 0 4px rgba(30, 123, 242, 0.12);
+}
+.campo-modal.erro textarea {
+  border-color: var(--estado-critico);
+}
+
+.textarea-rodape {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+.contador-texto {
+  font-size: 12px;
+  color: var(--texto-suave);
+  margin-top: 4px;
+  white-space: nowrap;
+}
+.contador-texto.limite {
+  color: var(--estado-critico);
+  font-weight: 600;
+}
+/* =========================================================
+   14. TELA: IMPORTAR PLANILHAS (Figura 12)
+       Reaproveita .upload (seção 10) e .barra (seção 7)
+   ========================================================= */
+.upload-grande {
+  margin-top: 14px;
+  padding: 40px 20px;
+}
+.upload-grande svg {
+  width: 56px;
+  height: 56px;
+}
+.upload-grande strong {
+  font-size: 16px;
+}
+.upload.com-arquivo {
+  border-style: solid;
+  border-color: var(--azul-primario);
+  background: var(--azul-claro);
+}
+
+.info-importar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--azul-claro);
+  font-size: 13px;
+  color: var(--azul-escuro);
+}
+.info-importar .icone-info {
+  flex-shrink: 0;
+}
+
+.progresso {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.progresso .barra-preenchida {
+  background: var(--azul-primario);
+}
+
+.importar-acoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+#cardImportar .aviso {
+  margin-top: 12px;
+}
+
+/* Lista de erros de uma importação */
+.erros-importacao {
+  font-size: 12px;
+  color: #b91c1c;
+  margin-top: 4px;
+}
+
+@media (max-width: 520px) {
+  .importar-acoes .btn {
+    width: 100%;
+  }
+}
+/* =========================================================
+   15. TELA: EXPORTAR RELATÓRIOS DO RH (Figura 13)
+       Reaproveita .campo-modal, .btn-baixar, .tabela e .aviso
+   ========================================================= */
+.exportar-grade {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr auto;
+  gap: 14px;
+  align-items: start;
+  margin-top: 16px;
+}
+.btn-exportar {
+  height: 44px;
+  margin-top: 25px; /* alinha com os campos, que têm rótulo em cima */
+  white-space: nowrap;
+}
+
+.nota-iso {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--azul-claro);
+  font-size: 12px;
+  color: var(--azul-escuro);
+}
+.nota-iso .icone-info {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+}
+#cardExportarRh .aviso {
+  margin-top: 12px;
+}
+
+@media (max-width: 900px) {
+  .exportar-grade {
+    grid-template-columns: 1fr;
+  }
+  .btn-exportar {
+    margin-top: 0;
+    width: 100%;
+  }
+}
+/* =========================================================
+   16. TELA: AUDITORIA DE PONTO (Figura 14)
+       .filtros-grade será reaproveitada na Auditoria de Logs (Fig. 22)
+   ========================================================= */
+.filtros-grade {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr) auto;
+  gap: 14px;
+  align-items: end;
+  margin-top: 14px;
+}
+.filtros-botoes {
+  display: flex;
+  gap: 8px;
+}
+.filtros-botoes .btn {
+  height: 44px;
+  white-space: nowrap;
+}
+
+/* Autor com bolinha colorida */
+.autor {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+.autor::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--cor-autor);
+}
+.autor-rh {
+  --cor-autor: var(--azul-primario);
+}
+.autor-admin {
+  --cor-autor: #7c3aed;
+}
+.autor-sistema {
+  --cor-autor: var(--texto-suave);
+}
+
+.detalhe-log {
+  font-size: 12px;
+  color: var(--texto-suave);
+  line-height: 1.5;
+}
+.detalhe-log strong {
+  color: var(--azul-escuro);
+}
+.data-log {
+  white-space: nowrap;
+}
+
+@media (max-width: 1000px) {
+  .filtros-grade {
+    grid-template-columns: 1fr 1fr;
+  }
+  .filtros-botoes {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+}
+@media (max-width: 600px) {
+  .filtros-grade {
+    grid-template-columns: 1fr;
+  }
+  .filtros-botoes .btn {
+    flex: 1;
+  }
+}
+/* =========================================================
+   16. TELA: CONFIGURAÇÕES DO RH (Figura 15)
+       Reaproveita .linha-config, .dado, .toggle (seção 11) e o modal (seção 10)
+   ========================================================= */
+.btn-config {
+  margin-top: 16px;
+}
+.campo-preferencia {
+  margin-top: 16px;
+  max-width: 360px;
+}
+/* =========================================================
+   16. TELA: VISÃO GLOBAL DO ADMIN (Figura 16)
+       Reaproveita .toggle e .lista-toggles (seção 11)
+   ========================================================= */
+.acoes-rapidas {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+}
+.acoes-rapidas .btn {
+  height: 52px;
+}
+
+.linha-admin {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 16px;
+  align-items: start;
+}
+
+/* Linha de módulo desligado fica mais apagada */
+.toggle-linha.desligado strong {
+  color: var(--texto-suave);
+}
+
+/* Badge por tipo de usuário na auditoria */
+.badge-sistema {
+  background: #eef2f8;
+  color: var(--texto-suave);
+}
+.badge-admin {
+  background: #efe9fe;
+  color: #6d28d9;
+}
+
+@media (max-width: 1000px) {
+  .acoes-rapidas {
+    grid-template-columns: 1fr;
+  }
+  .linha-admin {
+    grid-template-columns: 1fr;
+  }
+}
+/* =========================================================
+   CONFIGURAÇÕES GLOBAIS DO ADMIN (Figura 17)
+   Reaproveita .linha-config, .toggle, .campo-modal (seções anteriores)
+   ========================================================= */
+#formSeguranca .lista-toggles {
+  margin-top: 0;
+}
+
+.backup-grade {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr auto;
+  gap: 16px;
+  align-items: center;
+  margin-top: 16px;
+}
+.backup-grade .campo-modal span {
+  display: block;
+  margin-top: 4px;
+}
+
+.backup-info {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #f5f8fc;
+  border: 1px solid #edf1f7;
+}
+.backup-info span {
+  display: block;
+}
+.backup-info strong {
+  font-size: 15px;
+  color: var(--azul-escuro);
+}
+
+@media (max-width: 900px) {
+  .backup-grade {
+    grid-template-columns: 1fr;
+  }
+  #btnExportarLog {
+    width: 100%;
+  }
+}
+/* =========================================================
+   17. TELA: PERMISSÕES DE ACESSO (Figura 18)
+       Reaproveita .toggle (seção 11) e .tabela (seção 7)
+   ========================================================= */
+.permissoes-acoes {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+#avisoPendentes {
+  margin-top: 4px;
+}
+#cardPermissoes .card-cabecalho {
+  align-items: flex-start;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+/* ----- Matriz ----- */
+.matriz th.centro,
+.matriz td.centro {
+  text-align: center;
+  width: 160px;
+}
+.matriz td {
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+.matriz .funcao strong {
+  display: block;
+}
+.matriz .funcao span {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+/* Célula alterada e ainda não salva */
+.matriz td.alterada {
+  background: #fff8e1;
+}
+
+/* ----- Ícones das células ----- */
+.perm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 15px;
+  font-weight: 800;
+  vertical-align: middle;
+}
+.perm svg {
+  width: 15px;
+  height: 15px;
+}
+.perm-fixo {
+  background: #e7f8ee;
+  color: #16a34a;
+}
+.perm-na {
+  background: transparent;
+  color: #a3b1c4;
+}
+.perm-bloqueado {
+  background: #eef2f8;
+  color: var(--texto-suave);
+}
+
+/* ----- Legenda ----- */
+.legenda {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #eef2f8;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+.legenda li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.legenda .perm {
+  width: 22px;
+  height: 22px;
+  font-size: 12px;
+}
+.legenda .perm svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* Toggle pequeno, só para a legenda */
+.toggle-mini {
+  position: relative;
+  width: 30px;
+  height: 17px;
+  border-radius: 999px;
+  background: var(--azul-primario);
+}
+.toggle-mini::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--branco);
+}
+
+@media (max-width: 700px) {
+  .permissoes-acoes {
+    width: 100%;
+  }
+  .permissoes-acoes .btn {
+    flex: 1;
+  }
+  .matriz th.centro,
+  .matriz td.centro {
+    width: auto;
+  }
+}
+/* =========================================================
+   FIG. 19 — GESTÃO DE USUÁRIOS (Admin)
+   Reaproveita: .modal / .campo-modal (Atestado), .colaborador e
+   .btn-acao (Pendências), .contador, .tabela, .filtro
+   ========================================================= */
+.usr-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.usr-topo .card-titulo {
+  margin-bottom: 0;
+}
+
+.usr-filtros {
+  display: flex;
+  gap: 12px;
+  margin: 18px 0 12px;
+  flex-wrap: wrap;
+}
+.usr-busca {
+  position: relative;
+  flex: 1;
+  min-width: 220px;
+}
+.usr-busca svg {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  color: var(--texto-suave);
+  pointer-events: none;
+}
+.usr-busca input {
+  width: 100%;
+  height: 42px;
+  padding: 0 14px 0 42px;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--texto);
+  outline: none;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+.usr-busca input:focus {
+  border-color: var(--azul-primario);
+  box-shadow: 0 0 0 4px rgba(30, 123, 242, 0.12);
+}
+.usr-filtros .filtro {
+  height: 42px;
+}
+
+/* Selos de perfil */
+.usr-perfil-func {
+  background: #eef2f8;
+  color: var(--azul-escuro);
+}
+.usr-perfil-rh {
+  background: var(--azul-claro);
+  color: var(--azul-primario);
+}
+.usr-perfil-admin {
+  background: #efe9fe;
+  color: #6d28d9;
+}
+
+/* Nota do convite por e-mail */
+.usr-nota {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--azul-claro);
+  font-size: 12px;
+  color: var(--azul-escuro);
+}
+.usr-nota .icone-info {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+}
+
+/* Botão Remover (fica à esquerda no rodapé do modal) */
+.usr-btn-remover {
+  margin-right: auto;
+  background: var(--branco);
+  color: var(--estado-critico);
+  border: 1px solid var(--estado-critico);
+}
+.usr-btn-remover:hover {
+  background: #fdecec;
+}
+
+@media (max-width: 520px) {
+  .usr-topo .btn {
+    width: 100%;
+  }
+  .usr-btn-remover {
+    margin-right: 0;
+  }
+}
+/* =========================================================
+   TELA: REGRAS E CONTRATOS (Figura 20)
+   Reaproveita .card-titulo, .toggle, .aviso e o modal da seção de Atestados
+   ========================================================= */
+.topo-acoes {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.grade-regras {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  align-items: stretch;
+}
+
+.card-regra {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border-top: 4px solid var(--azul-primario);
+}
+.card-regra.com-bloqueio {
+  border-top-color: var(--estado-critico);
+}
+.card-regra .card-titulo {
+  margin-bottom: 0;
+}
+
+.regra-dados {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.regra-dados div {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f5f8fc;
+  border: 1px solid #edf1f7;
+}
+.regra-dados dt {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+.regra-dados dd {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--azul-escuro);
+}
+
+.aviso-compacto {
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.aviso-compacto .aviso-icone {
+  width: 22px;
+  height: 22px;
+  font-size: 13px;
+}
+
+.card-regra .toggle-linha {
+  padding: 0;
+  border-bottom: none;
+}
+.btn-editar-regra {
+  margin-top: auto;
+  width: 100%;
+}
+
+.form-modal .lista-toggles {
+  margin-top: 0;
+}
+
+@media (max-width: 600px) {
+  .topo {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .topo-acoes {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+/* =========================================================
+   17. TELA: CALENDÁRIO E FERIADOS (Figura 21)
+       .topo-acoes e .btn-perigo serão reaproveitados nas Figs. 18, 19 e 20
+   ========================================================= */
+.topo-acoes {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.btn-perigo {
+  background: var(--branco);
+  color: var(--estado-critico);
+  border: 1px solid var(--estado-critico);
+  margin-right: auto;
+}
+.btn-perigo:hover {
+  background: #fdecec;
+}
+
+.linha-calendario {
+  display: grid;
+  grid-template-columns: minmax(300px, 1fr) 1.3fr;
+  gap: 16px;
+  align-items: start;
+}
+
+/* ----- Cabeçalho do calendário ----- */
+.cal-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.cal-topo h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--azul-escuro);
+}
+.cal-nav {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  background: var(--branco);
+  color: var(--azul-escuro);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+.cal-nav:hover {
+  background: var(--azul-claro);
+}
+.cal-hoje {
+  display: block;
+  margin: 6px auto 14px;
+}
+
+/* ----- Grade ----- */
+.cal-semana,
+.cal-grade {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+.cal-semana span {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--texto-suave);
+  padding-bottom: 4px;
+}
+
+.dia {
+  aspect-ratio: 1;
+  border: none;
+  border-radius: 10px;
+  background: #f5f8fc;
+  color: var(--azul-escuro);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    transform 0.1s;
+}
+.dia:hover {
+  background: var(--azul-claro);
+}
+.dia:active {
+  transform: scale(0.95);
+}
+.dia.vazio {
+  background: transparent;
+  cursor: default;
+}
+.dia.fim-semana {
+  color: var(--texto-suave);
+}
+.dia.hoje {
+  box-shadow: inset 0 0 0 2px var(--azul-primario);
+}
+
+/* Feriados: azul cheio (como o dia 7 no layout) */
+.dia.feriado {
+  background: var(--azul-primario);
+  color: var(--branco);
+  font-weight: 700;
+}
+.dia.feriado:hover {
+  background: var(--azul-hover);
+}
+/* Facultativo e dispensa: amarelo claro */
+.dia.tipo-facultativo,
+.dia.tipo-dispensa {
+  background: #fff1c2;
+  color: #a16207;
+}
+
+/* ----- Legenda ----- */
+.cal-legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 16px;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+.cal-legenda span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.leg {
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+  display: inline-block;
+}
+.leg-feriado {
+  background: var(--azul-primario);
+}
+.leg-dispensa {
+  background: #fff1c2;
+  border: 1px solid #f5d77a;
+}
+.leg-hoje {
+  box-shadow: inset 0 0 0 2px var(--azul-primario);
+}
+
+.data-feriado strong {
+  color: var(--azul-escuro);
+}
+
+@media (max-width: 1000px) {
+  .linha-calendario {
+    grid-template-columns: 1fr;
+  }
+}
+/* =========================================================
+   17. TELA: AUDITORIA DE LOGS DO ADMIN (Figura 22)
+       Reaproveita .campo-modal, .btn-exportar, .badge-admin e .badge-sistema
+   ========================================================= */
+.filtros-logs {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr 1fr auto;
+  gap: 14px;
+  align-items: start;
+  margin-top: 14px;
+}
+
+/* Ícone de criticidade */
+.nivel-icone {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  color: var(--branco);
+  font-size: 12px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.nivel-baixa {
+  background: var(--azul-primario);
+}
+.nivel-media {
+  background: var(--estado-atencao);
+}
+.nivel-alta {
+  background: var(--estado-critico);
+}
+
+.log-usuario {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.log-data {
+  white-space: nowrap;
+  color: var(--texto-suave);
+}
+
+/* Detalhes técnicos em fonte de código */
+.detalhe-tecnico {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #f5f8fc;
+  border: 1px solid #edf1f7;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+/* Linhas de criticidade alta ficam destacadas */
+.tabela tr.linha-critica td {
+  background: #fff7f7;
+}
+
+.legenda-niveis {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+.legenda-niveis > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.legenda-niveis .nivel-icone {
+  width: 18px;
+  height: 18px;
+  font-size: 11px;
+}
+
+@media (max-width: 1000px) {
+  .filtros-logs {
+    grid-template-columns: 1fr 1fr;
+  }
+  .filtros-logs .btn-exportar {
+    grid-column: 1 / -1;
+    margin-top: 0;
+    width: 100%;
+  }
+}
+@media (max-width: 560px) {
+  .filtros-logs {
+    grid-template-columns: 1fr;
+  }
+}
