@@ -1,10 +1,28 @@
-namespace PontoOnline.Domain.Entities;
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-public class Feriado
+namespace PontoOnline.Domain.Entities
 {
-    public int FeriadoId { get; set; }
-    public DateTime Data { get; set; }
-    public string Descricao { get; set; } = string.Empty;
+    [Table("feriado")]
+    public class Feriado
+    {
+        [Key]
+        [Column("FeriadoId")]
+        public int FeriadoId { get; set; }
 
-    public ICollection<RegistroPonto> RegistrosPonto { get; set; } = new List<RegistroPonto>();
+        [Required]
+        [Column("Data")]
+        public DateTime Data { get; set; }
+
+        [Required]
+        [MaxLength(150)]
+        [Column("Descricao")]
+        public string Descricao { get; set; } = string.Empty;
+
+        [Required]
+        [MaxLength(50)]
+        [Column("Tipo")]
+        public string Tipo { get; set; } = "nacional";
+    }
 }

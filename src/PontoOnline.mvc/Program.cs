@@ -1,25 +1,74 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using PontoOnline.Domain.Entities;
+using PontoOnline.Domain.Services;
+using PontoOnline.Infrastructure.Context;
+
+using QuestPDF.Infrastructure;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 36))));
+
 builder.Services.AddControllersWithViews();
+builder.Services.AddCors(o => o.AddPolicy("front", p =>
+    p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
+builder.Services.AddScoped<CalculoPontoService>();
+builder.Services.AddScoped<LogService>();
+
+QuestPDF.Settings.License = LicenseType.Community;
+
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        db.Database.Migrate();
+
+        var hasher = new PasswordHasher<Usuario>();
+        void GarantirUsuario(string nome, string email, string nivel)
+        {
+            if (db.Usuarios.Any(x => x.Email == email)) return;
+            var novo = new Usuario
+            {
+                NomeCompleto = nome,
+                Email = email,
+                NivelAcesso = nivel,
+                IdTipoContrato = 1,
+                DataAdmissao = new DateTime(2026, 1, 1)
+            };
+            novo.SenhaHash = hasher.HashPassword(novo, "Senha123!");
+            db.Usuarios.Add(novo);
+            db.SaveChanges();
+        }
+
+        GarantirUsuario("Administrador Master", "admin@empresa.com", "admin");
+        GarantirUsuario("Gestor RH Padrão", "rh@empresa.com", "rh");
+        Console.WriteLine("[BANCO] Pronto.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("[BANCO ERRO] " + ex);
+    }
+}
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+app.UseCors("front");
 app.UseStaticFiles();
-
 app.UseRouting();
-
 app.UseAuthorization();
 
+app.MapControllers();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

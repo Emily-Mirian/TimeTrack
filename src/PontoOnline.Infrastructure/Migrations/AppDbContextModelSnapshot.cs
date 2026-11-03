@@ -22,6 +22,35 @@ namespace PontoOnline.Infrastructure.Migrations
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
+            modelBuilder.Entity("PontoOnline.Domain.Entities.AuditoriaLog", b =>
+                {
+                    b.Property<int>("LogId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("LogId"));
+
+                    b.Property<string>("Acao")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("DataHora")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Detalhes")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("UsuarioResponsavelId")
+                        .HasColumnType("int");
+
+                    b.HasKey("LogId");
+
+                    b.HasIndex("UsuarioResponsavelId");
+
+                    b.ToTable("AuditoriaLog", (string)null);
+                });
+
             modelBuilder.Entity("PontoOnline.Domain.Entities.AusenciaJustificada", b =>
                 {
                     b.Property<int>("AusenciaId")
@@ -41,6 +70,9 @@ namespace PontoOnline.Infrastructure.Migrations
 
                     b.Property<string>("Motivo")
                         .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Status")
                         .HasColumnType("longtext");
 
                     b.HasKey("AusenciaId");
@@ -93,6 +125,37 @@ namespace PontoOnline.Infrastructure.Migrations
                     b.HasKey("FeriadoId");
 
                     b.ToTable("Feriado", (string)null);
+                });
+
+            modelBuilder.Entity("PontoOnline.Domain.Entities.PreferenciaUsuario", b =>
+                {
+                    b.Property<int>("PreferenciaId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("PreferenciaId"));
+
+                    b.Property<bool>("AlertaAtestado")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("AlertaEstagiario")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("FormatoExportacao")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<bool>("ResumoPendencias")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("int");
+
+                    b.HasKey("PreferenciaId");
+
+                    b.HasIndex("UsuarioId");
+
+                    b.ToTable("PreferenciaUsuario", (string)null);
                 });
 
             modelBuilder.Entity("PontoOnline.Domain.Entities.RegistroPonto", b =>
@@ -160,6 +223,32 @@ namespace PontoOnline.Infrastructure.Migrations
                     b.HasKey("ContratoId");
 
                     b.ToTable("TipoContrato", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            ContratoId = 1,
+                            CargaHorariaDiariaMinutos = 0,
+                            CargaHorariaSemanaMinutos = 0,
+                            Nome = "CLT",
+                            PermiteHoraExtra = false
+                        },
+                        new
+                        {
+                            ContratoId = 2,
+                            CargaHorariaDiariaMinutos = 0,
+                            CargaHorariaSemanaMinutos = 0,
+                            Nome = "Estágio",
+                            PermiteHoraExtra = false
+                        },
+                        new
+                        {
+                            ContratoId = 3,
+                            CargaHorariaDiariaMinutos = 0,
+                            CargaHorariaSemanaMinutos = 0,
+                            Nome = "Jovem Aprendiz",
+                            PermiteHoraExtra = false
+                        });
                 });
 
             modelBuilder.Entity("PontoOnline.Domain.Entities.Usuario", b =>
@@ -169,6 +258,9 @@ namespace PontoOnline.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("UsuarioId"));
+
+                    b.Property<DateTime>("DataAdmissao")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -196,6 +288,17 @@ namespace PontoOnline.Infrastructure.Migrations
                     b.ToTable("Usuario", (string)null);
                 });
 
+            modelBuilder.Entity("PontoOnline.Domain.Entities.AuditoriaLog", b =>
+                {
+                    b.HasOne("PontoOnline.Domain.Entities.Usuario", "UsuarioResponsavel")
+                        .WithMany()
+                        .HasForeignKey("UsuarioResponsavelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("UsuarioResponsavel");
+                });
+
             modelBuilder.Entity("PontoOnline.Domain.Entities.AusenciaJustificada", b =>
                 {
                     b.HasOne("PontoOnline.Domain.Entities.Usuario", "Usuario")
@@ -212,6 +315,17 @@ namespace PontoOnline.Infrastructure.Migrations
                     b.HasOne("PontoOnline.Domain.Entities.Usuario", "Usuario")
                         .WithMany("FechamentosMensais")
                         .HasForeignKey("IdUsuario")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("PontoOnline.Domain.Entities.PreferenciaUsuario", b =>
+                {
+                    b.HasOne("PontoOnline.Domain.Entities.Usuario", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

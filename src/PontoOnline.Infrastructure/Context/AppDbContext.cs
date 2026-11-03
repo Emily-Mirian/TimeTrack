@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using PontoOnline.Domain.Entities;
+using System;
 
 namespace PontoOnline.Infrastructure.Context;
 
@@ -14,6 +15,11 @@ public class AppDbContext : DbContext
     public DbSet<AusenciaJustificada> AusenciasJustificadas => Set<AusenciaJustificada>();
     public DbSet<FechamentoMensal> FechamentosMensais => Set<FechamentoMensal>();
     public DbSet<AuditoriaLog> AuditoriaLogs => Set<AuditoriaLog>();
+    public DbSet<PreferenciaUsuario> PreferenciasUsuario => Set<PreferenciaUsuario>();
+    public DbSet<Feriado> Feriado => Set<Feriado>();
+    public DbSet<LogSistema> LogsSistema => Set<LogSistema>();
+    public DbSet<PermissaoPerfil> PermissoesPerfil => Set<PermissaoPerfil>();
+    public DbSet<ConfiguracaoGlobal> ConfiguracoesGlobais => Set<ConfiguracaoGlobal>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -54,9 +60,9 @@ public class AppDbContext : DbContext
             .HasForeignKey(rp => rp.IdUsuario);
 
         modelBuilder.Entity<RegistroPonto>()
-            .HasOne(rp => rp.Feriado)
-            .WithMany(f => f.RegistrosPonto)
-            .HasForeignKey(rp => rp.IdFeriado)
+            .HasOne(r => r.Feriado)
+            .WithMany()
+            .HasForeignKey(r => r.IdFeriado)
             .IsRequired(false);
 
         modelBuilder.Entity<AusenciaJustificada>()
@@ -77,5 +83,38 @@ public class AppDbContext : DbContext
             .HasOne(al => al.UsuarioResponsavel)
             .WithMany()
             .HasForeignKey(al => al.UsuarioResponsavelId);
+
+        modelBuilder.Entity<PreferenciaUsuario>()
+            .ToTable("PreferenciaUsuario")
+            .HasKey(p => p.PreferenciaId);
+
+        modelBuilder.Entity<PermissaoPerfil>().ToTable("permissoesperfil").HasKey(p => p.Id);
+
+        modelBuilder.Entity<TipoContrato>().HasData(
+    new TipoContrato 
+    { 
+        ContratoId = 1, 
+        Nome = "CLT", 
+        CargaHorariaDiariaMinutos = 480,  
+        CargaHorariaSemanaMinutos = 2640, 
+        PermiteHoraExtra = true           
+    },
+    new TipoContrato 
+    { 
+        ContratoId = 2, 
+        Nome = "Estágio", 
+        CargaHorariaDiariaMinutos = 360,  
+        CargaHorariaSemanaMinutos = 1800, 
+        PermiteHoraExtra = false          
+    },
+    new TipoContrato 
+    { 
+        ContratoId = 3, 
+        Nome = "Jovem Aprendiz", 
+        CargaHorariaDiariaMinutos = 360,  
+        CargaHorariaSemanaMinutos = 1800, 
+        PermiteHoraExtra = false          
+    }
+);
     }
 }

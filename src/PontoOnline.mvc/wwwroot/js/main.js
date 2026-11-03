@@ -1,14 +1,4 @@
 /* =========================================================
-   SISTEMA DE REGISTRO DE PRESENÇA — JS ÚNICO
-   Seções:
-     1. Funções compartilhadas
-     2. Tela: Login
-     3. Tela: Cadastro
-   (as próximas telas serão adicionadas no final)
-   Cada tela só executa se o seu formulário/elemento existir na página.
-   ========================================================= */
-
-/* =========================================================
    1. FUNÇÕES COMPARTILHADAS
    ========================================================= */
 function mostrarErro(campoId, erroId, mensagem) {
@@ -239,7 +229,7 @@ function emailValido(valor) {
    ========================================================= */
 (function telaInicioFuncionario() {
   const painel = document.getElementById("painelJornada");
-  if (!painel) return; // não está na tela inicial
+  if (!painel) return;
 
   const ESTADOS = ["jornada-normal", "jornada-atencao", "jornada-critico"];
   const TEXTOS_STATUS = {
@@ -259,148 +249,6 @@ function emailValido(valor) {
       alerta: "Limite próximo",
     },
   };
-
-  /* -------------------------------------------------------
-     [PROTÓTIPO] DADOS FICTÍCIOS — simulam a resposta do back-end.
-     Para testar os 3 estados, abra a página com:
-       inicio.html?estado=normal   (Fig. 3)
-       inicio.html?estado=atencao  (Fig. 8)
-       inicio.html?estado=critico  (Fig. 9)
-     REMOVER quando a API estiver pronta.
-     ------------------------------------------------------- */
-  const EXEMPLOS = {
-    normal: {
-      jornada: {
-        percentual: 48,
-        trabalhadas: "4h 12min",
-        restantes: "3h 48min",
-        estado: "normal",
-      },
-      periodos: {
-        hoje: {
-          horas: "4h 12min",
-          meta: "6h00",
-          percentual: 48,
-          estado: "normal",
-        },
-        semana: {
-          horas: "21h 36min",
-          meta: "30h00",
-          percentual: 72,
-          estado: "normal",
-        },
-        mes: {
-          horas: "86h 24min",
-          meta: "120h00",
-          percentual: 68,
-          estado: "normal",
-        },
-      },
-    },
-    atencao: {
-      jornada: {
-        percentual: 72,
-        trabalhadas: "4h 19min",
-        restantes: "1h 41min",
-        estado: "atencao",
-      },
-      periodos: {
-        hoje: {
-          horas: "4h 19min",
-          meta: "6h00",
-          percentual: 72,
-          estado: "atencao",
-        },
-        semana: {
-          horas: "21h 43min",
-          meta: "30h00",
-          percentual: 72,
-          estado: "atencao",
-        },
-        mes: {
-          horas: "86h 31min",
-          meta: "120h00",
-          percentual: 72,
-          estado: "atencao",
-        },
-      },
-    },
-    critico: {
-      jornada: {
-        percentual: 98,
-        trabalhadas: "5h 53min",
-        restantes: "7min",
-        estado: "critico",
-      },
-      periodos: {
-        hoje: {
-          horas: "5h 53min",
-          meta: "6h00",
-          percentual: 98,
-          estado: "atencao",
-        },
-        semana: {
-          horas: "23h 17min",
-          meta: "30h00",
-          percentual: 77.6,
-          estado: "atencao",
-        },
-        mes: {
-          horas: "88h 05min",
-          meta: "120h00",
-          percentual: 73.4,
-          estado: "atencao",
-        },
-      },
-    },
-  };
-
-  const DADOS_FICTICIOS = {
-    usuario: {
-      nome: "Funcionário",
-      contrato: "Estagiário",
-      limiteDiario: "6h",
-    },
-    regras: {
-      titulo: "Regras para estagiários",
-      texto:
-        "Estagiários têm limite diário de 6h e não podem realizar horas extras.",
-    },
-    batidasHoje: { entrada: "08:00", saidaAlmoco: "12:00" },
-    historico: [
-      {
-        data: "13/09/2026 (Hoje)",
-        entrada: "08:00",
-        saida: "12:00",
-        status: "normal",
-      },
-      {
-        data: "12/09/2026 (Sáb)",
-        entrada: "08:12",
-        saida: "12:03",
-        status: "normal",
-      },
-      {
-        data: "11/09/2026 (Sex)",
-        entrada: "08:03",
-        saida: "12:05",
-        status: "normal",
-      },
-      {
-        data: "10/09/2026 (Qui)",
-        entrada: "08:00",
-        saida: "12:01",
-        status: "pendente",
-      },
-      {
-        data: "09/09/2026 (Qua)",
-        entrada: "08:07",
-        saida: "12:00",
-        status: "normal",
-      },
-    ],
-  };
-
   /* ---------- Relógio (hora do navegador, só exibição) ---------- */
   function atualizarRelogio() {
     const agora = new Date();
@@ -490,78 +338,144 @@ function emailValido(valor) {
       .join("");
   }
 
-  /* ---------- Carregar a tela ---------- */
   async function carregar() {
-    /* -----------------------------------------------------
-       [BACKEND] SUBSTITUIR PELAS CHAMADAS REAIS:
+    
+    try {
 
-       const [me, jornada, resumo, regras, hoje, historico] = await Promise.all([
-         fetch("/api/me").then(r => r.json()),                          // nome, contrato, limiteDiario
-         fetch("/api/jornada/hoje").then(r => r.json()),                // percentual, trabalhadas, restantes, estado
-         fetch("/api/jornada/resumo").then(r => r.json()),              // hoje, semana, mes
-         fetch("/api/regras/meu-contrato").then(r => r.json()),         // titulo, texto
-         fetch("/api/pontos/hoje").then(r => r.json()),                 // entrada, saidaAlmoco
-         fetch("/api/pontos/historico?limite=5").then(r => r.json())    // lista
-       ]);
+      const usuarioId = sessionStorage.getItem("usuarioId") || 1;
+      const nomeUsuario = sessionStorage.getItem("nome") || "Colaborador";
 
-       IMPORTANTE: o "estado" (normal / atencao / critico) e o percentual
-       são CALCULADOS NO BACK-END com base nas regras do contrato (Fig. 20).
-       O front apenas exibe.
-       ----------------------------------------------------- */
+      const [statusAtual, extrato] = await Promise.all([
+        chamarApi(`/Ponto/status-atual/${usuarioId}`, "GET"),
+        chamarApi(`/Ponto/extrato/${usuarioId}`, "GET")
+      ]);
 
-    // [PROTÓTIPO] usa os dados fictícios
-    const estadoTeste =
-      new URLSearchParams(location.search).get("estado") || "normal";
-    const exemplo = EXEMPLOS[estadoTeste] || EXEMPLOS.normal;
-    const d = DADOS_FICTICIOS;
+      document.getElementById("nomeUsuario").textContent = nomeUsuario;
+      document.getElementById("regrasTitulo").textContent = "Regras de Carga Horária";
+      document.getElementById("regrasTexto").textContent = `Você tem uma meta de ${statusAtual.horasRestantesFormatadas} restantes para cumprir hoje.`;
 
-    document.getElementById("nomeUsuario").textContent = d.usuario.nome;
-    document.getElementById("regrasTitulo").textContent = d.regras.titulo;
-    document.getElementById("regrasTexto").textContent = d.regras.texto;
-    document.getElementById("batidaEntrada").textContent =
-      d.batidasHoje.entrada;
-    document.getElementById("batidaAlmoco").textContent =
-      d.batidasHoje.saidaAlmoco;
+      const formatoDataBd = new Date().toISOString().split('T')[0];
+      const batidaHoje = extrato.historico.find(r => r.dataRegistro && r.dataRegistro.startsWith(formatoDataBd));
 
-    renderizarJornada(exemplo.jornada, d.usuario);
-    renderizarPeriodo("periodoHoje", exemplo.periodos.hoje);
-    renderizarPeriodo("periodoSemana", exemplo.periodos.semana);
-    renderizarPeriodo("periodoMes", exemplo.periodos.mes);
-    renderizarHistorico(d.historico);
+      const formatarHora = (dataString) => {
+        if (!dataString) return "--:--";
+        return new Date(dataString).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+      };
+
+      document.getElementById("batidaEntrada").textContent = batidaHoje ? formatarHora(batidaHoje.entrada1) : "--:--";
+      document.getElementById("batidaAlmoco").textContent = batidaHoje ? formatarHora(batidaHoje.saidaAlmoco) : "--:--";
+
+      const mapaCores = { verde: "normal", amarelo: "atencao", vermelho: "critico" };
+      const estadoFront = mapaCores[statusAtual.statusCor] || "normal";
+
+      let percentual = Math.round((statusAtual.minutosTrabalhados / statusAtual.metaDiariaMinutos) * 100);
+      if (percentual > 100) percentual = 100;
+
+      const dadosJornada = {
+        percentual: percentual,
+        trabalhadas: statusAtual.horasTrabalhadasFormatadas,
+        restantes: statusAtual.horasRestantesFormatadas,
+        estado: estadoFront
+      };
+
+      const dadosContrato = {
+        contrato: "Regime Padrão",
+        limiteDiario: `${statusAtual.metaDiariaMinutos / 60}h`
+      };
+
+      renderizarJornada(dadosJornada, dadosContrato);
+      
+      const periodoInfo = { horas: dadosJornada.trabalhadas, meta: dadosContrato.limiteDiario, percentual: percentual, estado: estadoFront };
+      renderizarPeriodo("periodoHoje", {
+        horas: dadosJornada.trabalhadas,
+        meta: dadosContrato.limiteDiario,
+        percentual: dadosJornada.percentual,
+        estado: dadosJornada.estado
+      });
+
+      let minSemana = statusAtual.minutosTrabalhados; 
+      let minMes = statusAtual.minutosTrabalhados;
+      
+      const hoje = new Date();
+      const inicioSemana = new Date(hoje);
+      inicioSemana.setDate(hoje.getDate() - hoje.getDay()); 
+      inicioSemana.setHours(0,0,0,0);
+
+      if (extrato && extrato.historico) {
+        extrato.historico.forEach(reg => {
+          if (!reg.dataRegistro || reg.saldoDiarioMinutos === null) return;
+          
+          const dataReg = new Date(reg.dataRegistro);
+        
+          const minTrabalhadosDia = statusAtual.metaDiariaMinutos + reg.saldoDiarioMinutos;
+
+          if (dataReg.toDateString() === hoje.toDateString()) return;
+
+          if (dataReg.getMonth() === hoje.getMonth() && dataReg.getFullYear() === hoje.getFullYear()) {
+            minMes += minTrabalhadosDia;
+          }
+
+          if (dataReg >= inicioSemana) {
+            minSemana += minTrabalhadosDia;
+          }
+        });
+      }
+      const formatarCard = (minTrabalhados, diasMeta) => {
+        const metaMin = statusAtual.metaDiariaMinutos * diasMeta;
+        const pct = Math.min(Math.round((minTrabalhados / Math.max(metaMin, 1)) * 100), 100) || 0;
+        return {
+          horas: `${Math.floor(minTrabalhados / 60)}h ${minTrabalhados % 60}min`,
+          meta: `${metaMin / 60}h`,
+          percentual: pct,
+          estado: pct >= 97 ? "critico" : pct >= 85 ? "atencao" : "normal"
+        };
+      };
+
+      renderizarPeriodo("periodoSemana", formatarCard(minSemana, 5));
+      renderizarPeriodo("periodoMes", formatarCard(minMes, 20));    
+
+      if (extrato && extrato.historico) {
+        const historicoFormatado = extrato.historico.map(reg => {
+          const formatarData = (dataStr) => {
+            if (!dataStr) return "--/--/----";
+            return new Date(dataStr).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
+          };
+          return {
+            data: formatarData(reg.dataRegistro),
+            entrada: formatarHora(reg.entrada1),
+            saida: formatarHora(reg.saida2),
+            status: "normal"
+          };
+        });
+        
+        renderizarHistorico(historicoFormatado.reverse().slice(0, 5));
+      }
+    } catch (e) {
+      console.error("Erro ao carregar dados do C#:", e);
+    }
   }
 
-  /* ---------- Botão Registrar Ponto ---------- */
+  carregar();
+
+  setInterval(() => {
+    carregar();
+  }, 60000);
+
+  /* ---------- Botão Registrar Ponto (Atalho) ---------- */
   const btnRegistrar = document.getElementById("btnRegistrar");
-  btnRegistrar.addEventListener("click", async () => {
-    btnRegistrar.disabled = true;
-
-    /* [BACKEND] Registrar batida:
-       const resposta = await fetch("/api/pontos", { method: "POST" });
-       - O SERVIDOR grava o horário oficial e define o tipo da batida
-         (entrada, saída almoço, retorno, saída).
-       - O servidor também deve BLOQUEAR a batida se ultrapassar o limite do contrato.
-       Depois do sucesso, chamar carregar() para atualizar a jornada. */
-
-    // [PROTÓTIPO] Apenas mostra a mensagem
-    const hora = new Date().toLocaleTimeString("pt-BR", {
-      hour: "2-digit",
-      minute: "2-digit",
+  if (btnRegistrar) {
+    btnRegistrar.addEventListener("click", () => {
+      window.location.href = "ponto.html"; 
     });
-    document.getElementById("msgRegistro").textContent =
-      `Ponto registrado às ${hora}.`;
-    setTimeout(() => {
-      document.getElementById("msgRegistro").textContent = "";
-      btnRegistrar.disabled = false;
-    }, 3000);
-  });
+  }
 
   /* ---------- Filtro do histórico ---------- */
-  document.getElementById("filtroHistorico").addEventListener("change", (e) => {
-    // [BACKEND] Buscar novamente: GET /api/pontos/historico?limite=${e.target.value}
-    console.log("Filtro do histórico:", e.target.value);
-  });
-
-  carregar();
+  const filtroHistorico = document.getElementById("filtroHistorico");
+  if (filtroHistorico) {
+    filtroHistorico.addEventListener("change", (e) => {
+      console.log("Filtro do histórico pendente de ligação com a API:", e.target.value);
+    });
+  }
 })();
 /* =========================================================
    6. TELA: PONTO DO FUNCIONÁRIO (Figura 4)
@@ -636,19 +550,41 @@ function emailValido(valor) {
       : "Registrar Ponto";
   }
 
-  /* ---------- Carregar batidas do dia ---------- */
+  /* ---------- Carregar batidas do dia (Real do Banco) ---------- */
   async function carregar() {
-    /* [BACKEND] SUBSTITUIR PELA CHAMADA REAL:
-       batidas = await fetch("/api/pontos/hoje").then(r => r.json());
-       // { entrada: "08:00", saidaAlmoco: "12:00", retornoAlmoco: null, saida: null } */
+    try {
+      const usuarioId = sessionStorage.getItem("usuarioId") || 1;
+      
+      // 1. URL corrigida sem o "/api" extra
+      const extrato = await chamarApi(`/Ponto/extrato/${usuarioId}`, "GET");
 
-    // [PROTÓTIPO] Igual à Fig. 4: entrada e saída para almoço já registradas. REMOVER depois.
-    batidas = {
-      entrada: "08:00",
-      saidaAlmoco: "12:00",
-      retornoAlmoco: null,
-      saida: null,
-    };
+      // 2. Formata a data protegendo contra a mudança de fuso horário à noite
+      const hoje = new Date();
+      const formatoDataBd = hoje.getFullYear() + "-" + 
+                            String(hoje.getMonth() + 1).padStart(2, '0') + "-" + 
+                            String(hoje.getDate()).padStart(2, '0');
+
+      const registroHoje = extrato?.historico?.find(r => r.dataRegistro && r.dataRegistro.startsWith(formatoDataBd));
+
+      const formatarHora = (dataString) => {
+        if (!dataString) return null;
+        return new Date(dataString).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+      };
+
+      if (registroHoje) {
+        batidas = {
+          entrada: formatarHora(registroHoje.entrada1),
+          saidaAlmoco: formatarHora(registroHoje.saidaAlmoco),
+          retornoAlmoco: formatarHora(registroHoje.retornoAlmoco),
+          saida: formatarHora(registroHoje.saida2)
+        };
+      } else {
+        batidas = { entrada: null, saidaAlmoco: null, retornoAlmoco: null, saida: null };
+      }
+    } catch (e) {
+      console.error("Erro ao carregar batidas de hoje:", e);
+    }
+    
     renderizar();
   }
 
@@ -656,32 +592,23 @@ function emailValido(valor) {
   btn.addEventListener("click", async () => {
     const proxima = ETAPAS.find(({ chave }) => !batidas[chave]);
     if (!proxima) return;
+    
     btn.disabled = true;
 
-    /* [BACKEND] SUBSTITUIR PELA CHAMADA REAL:
-       const resposta = await fetch("/api/pontos", { method: "POST" });
-       - O SERVIDOR define o horário oficial e o tipo da batida.
-       - O SERVIDOR deve BLOQUEAR a batida se ultrapassar o limite do contrato
-         (ex.: estagiário com 6h) e devolver a mensagem do motivo.
-       if (!resposta.ok) {
-         const erro = await resposta.json();   // { mensagem: "Limite diário de 6h atingido." }
-         mostrarErroPonto(erro.mensagem);
-         return;
-       }
-       const dados = await resposta.json();    // { tipo: "retornoAlmoco", hora: "13:00" }
-       batidas[dados.tipo] = dados.hora; */
-
-    // [PROTÓTIPO] Usa a hora do navegador. REMOVER depois.
-    batidas[proxima.chave] = new Date().toLocaleTimeString("pt-BR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
-    renderizar();
-    mostrarAviso(
-      "sucesso",
-      `Último registro de ${proxima.nome} efetuado com sucesso.`,
-    );
+    try {
+      const tipos = { entrada: "entrada1", saidaAlmoco: "saidaalmoco", retornoAlmoco: "retornoalmoco", saida: "saida2" };
+      
+      // Pega o ID de quem está logado
+      const usuarioLogado = sessionStorage.getItem("usuarioId") || 1; 
+      
+      // Coloca o ID direto na URL: /Ponto/Registrar/3
+      await chamarApi(`/Ponto/Registrar/${usuarioLogado}`, "POST", { TipoMarcacao: tipos[proxima.chave] });
+      
+      await carregar();
+      mostrarAviso("sucesso", `${proxima.nome} registrado com sucesso.`);
+    } catch (e) {
+      mostrarErroPonto(e.message || "Erro ao comunicar com o servidor.");
+    }
   });
 
   // [BACKEND] Usar quando a API recusar a batida (limite, fora do horário etc.)
@@ -697,38 +624,14 @@ function emailValido(valor) {
    ========================================================= */
 (function telaRelatorios() {
   const cardExportar = document.getElementById("cardExportar");
-  if (!cardExportar) return; // não está na tela de relatórios
+  if (!cardExportar) return;
 
   const selectMes = document.getElementById("mesReferencia");
   const btnGerar = document.getElementById("btnGerarPdf");
   const tabela = document.getElementById("tabelaRelatorios");
 
-  const ICONE_DOWNLOAD =
-    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v12M7 11l5 5 5-5M5 20h14"/></svg>';
+  const ICONE_DOWNLOAD = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="margin-right:5px; vertical-align:text-bottom;"><path d="M12 4v12M7 11l5 5 5-5M5 20h14"/></svg>';
 
-  function nomeMes(data) {
-    const texto = data.toLocaleDateString("pt-BR", {
-      month: "long",
-      year: "numeric",
-    });
-    return texto.charAt(0).toUpperCase() + texto.slice(1); // "Setembro de 2026"
-  }
-
-  /* ---------- Preenche o select com os últimos 12 meses ---------- */
-  function preencherMeses() {
-    // [BACKEND] Trocar por: GET /api/relatorios/meses-disponiveis
-    const hoje = new Date();
-    for (let i = 0; i < 12; i++) {
-      const d = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
-      const valor = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-      selectMes.insertAdjacentHTML(
-        "beforeend",
-        `<option value="${valor}">${nomeMes(d)}</option>`,
-      );
-    }
-  }
-
-  /* ---------- Saldo acumulado ---------- */
   function renderizarSaldo(s) {
     const card = document.getElementById("cardSaldo");
     card.classList.remove("saldo-positivo", "saldo-negativo", "saldo-inativo");
@@ -736,109 +639,63 @@ function emailValido(valor) {
     if (!s.bancoHorasAtivo) {
       card.classList.add("saldo-inativo");
       document.getElementById("saldoValor").textContent = "Não se aplica";
-      document.getElementById("saldoInfo").textContent =
-        "Seu tipo de contrato não possui banco de horas.";
+      document.getElementById("saldoInfo").textContent = "Seu tipo de contrato não possui banco de horas.";
       return;
     }
     card.classList.add(s.positivo ? "saldo-positivo" : "saldo-negativo");
     document.getElementById("saldoValor").textContent = s.saldo;
-    document.getElementById("saldoInfo").textContent =
-      `Banco de horas atualizado em ${s.atualizadoEm}.`;
+    document.getElementById("saldoInfo").textContent = `Banco de horas atualizado em ${s.atualizadoEm}.`;
   }
 
-  /* ---------- Tabela de relatórios ---------- */
-  let relatorios = [];
-
-  function renderizarTabela() {
-    if (!relatorios.length) {
-      tabela.innerHTML =
-        '<tr><td colspan="3" class="tabela-vazia">Nenhum relatório gerado ainda.</td></tr>';
-      return;
-    }
-    tabela.innerHTML = relatorios
-      .map(
-        (r) => `
-        <tr>
-          <td><strong>${r.mes}</strong></td>
-          <td>${r.emissao}</td>
-          <td class="acoes">
-            <button class="btn-baixar" data-id="${r.id}">${ICONE_DOWNLOAD} Baixar PDF</button>
-          </td>
-        </tr>`,
-      )
-      .join("");
-  }
-
-  // Clique em "Baixar PDF" (um único listener para todas as linhas)
-  tabela.addEventListener("click", (e) => {
-    const botao = e.target.closest(".btn-baixar");
-    if (!botao) return;
-    /* [BACKEND] Baixar o arquivo:
-       window.location.href = `/api/relatorios/espelho/${botao.dataset.id}/download`; */
-    // [PROTÓTIPO] REMOVER depois
-    alert(
-      `[Protótipo] Download do relatório ${botao.dataset.id} será feito pelo back-end.`,
-    );
-  });
-
-  /* ---------- Gerar novo relatório ---------- */
-  btnGerar.addEventListener("click", async () => {
-    btnGerar.disabled = true;
-    const mesTexto = selectMes.options[selectMes.selectedIndex].text;
-
-    /* [BACKEND] SUBSTITUIR PELA CHAMADA REAL:
-       const resposta = await fetch("/api/relatorios/espelho", {
-         method: "POST",
-         headers: { "Content-Type": "application/json" },
-         body: JSON.stringify({ mes: selectMes.value })
-       });
-       const novo = await resposta.json();   // { id, mes, emissao }
-       O PDF é montado pelo SERVIDOR com as batidas do banco de dados. */
-
-    // [PROTÓTIPO] Simula o relatório gerado. REMOVER depois.
-    const novo = {
-      id: "rel-" + Date.now(),
-      mes: mesTexto,
-      emissao: new Date().toLocaleDateString("pt-BR"),
-    };
-
-    relatorios.unshift(novo);
-    renderizarTabela();
-    document.getElementById("msgRelatorio").textContent =
-      `Espelho de ${mesTexto} gerado com sucesso.`;
-    setTimeout(() => {
-      document.getElementById("msgRelatorio").textContent = "";
-      btnGerar.disabled = false;
-    }, 2500);
-  });
-
-  /* ---------- Carregar a tela ---------- */
   async function carregar() {
-    /* [BACKEND] SUBSTITUIR PELAS CHAMADAS REAIS:
-       const [saldo, lista] = await Promise.all([
-         fetch("/api/banco-horas/saldo").then(r => r.json()),
-         fetch("/api/relatorios/espelho").then(r => r.json())
-       ]);
-       O SALDO é CALCULADO NO BACK-END conforme as regras do contrato (Fig. 20). */
+    try {
+      const usuarioId = sessionStorage.getItem("usuarioId") || 1;
 
-    // [PROTÓTIPO] Dados fictícios. REMOVER depois.
-    // Para testar contrato sem banco de horas, troque bancoHorasAtivo para false.
-    const saldo = {
-      bancoHorasAtivo: true,
-      saldo: "+12h 30min",
-      positivo: true,
-      atualizadoEm: "13/09/2026",
-    };
-    relatorios = [
-      { id: "rel-08", mes: "Agosto de 2026", emissao: "01/09/2026" },
-      { id: "rel-07", mes: "Julho de 2026", emissao: "01/08/2026" },
-      { id: "rel-06", mes: "Junho de 2026", emissao: "01/07/2026" },
-    ];
+      // 1. Carrega o Saldo Real
+      const saldo = await chamarApi(`/Relatorios/saldo/${usuarioId}`, "GET");
+      renderizarSaldo(saldo);
 
-    preencherMeses();
-    renderizarSaldo(saldo);
-    renderizarTabela();
+      // 2. Carrega os meses trabalhados para o Select e para a Tabela
+      const meses = await chamarApi(`/Relatorios/meses/${usuarioId}`, "GET");
+      
+      selectMes.innerHTML = "";
+      if (meses.length === 0) {
+        selectMes.innerHTML = '<option value="">Sem registros</option>';
+        tabela.innerHTML = '<tr><td colspan="3" class="tabela-vazia">Nenhum mês com registros encontrado no banco.</td></tr>';
+        btnGerar.disabled = true;
+        return;
+      }
+
+      meses.forEach(m => {
+        selectMes.insertAdjacentHTML("beforeend", `<option value="${m.valor}">${m.texto}</option>`);
+      });
+
+      // 3. Monta a tabela de downloads substituindo o botão falso por uma âncora real para a API de PDF
+      tabela.innerHTML = meses.map(m => `
+        <tr>
+          <td><strong>${m.texto}</strong></td>
+          <td>Disponível</td>
+          <td class="acoes">
+            <a href="/api/Relatorios/espelho/${usuarioId}/${m.valor}" target="_blank" class="btn-baixar" style="text-decoration:none; display:inline-flex; align-items:center;">
+              ${ICONE_DOWNLOAD} Baixar PDF
+            </a>
+          </td>
+        </tr>
+      `).join("");
+
+    } catch (e) {
+      console.error("Erro ao carregar relatórios:", e);
+      tabela.innerHTML = '<tr><td colspan="3" class="tabela-vazia" style="color:red;">Erro ao comunicar com o servidor.</td></tr>';
+    }
   }
+
+  // O botão superior exporta o mês escolhido no select
+  btnGerar.addEventListener("click", () => {
+    const mesValor = selectMes.value;
+    if (!mesValor) return;
+    const usuarioId = sessionStorage.getItem("usuarioId") || 1;
+    window.open(`/api/Relatorios/espelho/${usuarioId}/${mesValor}`, "_blank");
+  });
 
   carregar();
 })();
@@ -1015,25 +872,42 @@ function emailValido(valor) {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     document.getElementById("erroAtestadoGeral").textContent = "";
+    
     if (!validar()) return;
 
     btnEnviar.disabled = true;
     btnEnviar.textContent = "Enviando...";
 
-    /* [BACKEND] SUBSTITUIR PELA CHAMADA REAL:
-       const dados = new FormData(form);   // dataInicio, dataFim, motivo, arquivo
-       const resposta = await fetch("/api/atestados", { method: "POST", body: dados });
-       if (!resposta.ok) {
-         document.getElementById("erroAtestadoGeral").textContent = "Não foi possível enviar o atestado.";
-         btnEnviar.disabled = false; btnEnviar.textContent = "Enviar atestado";
-         return;
-       }
-       Depois do envio, o atestado aparece para o RH em Pendências (Fig. 10). */
+    try {
+      const usuarioId = sessionStorage.getItem("usuarioId") || 1;
+      
+      const payload = new FormData();
+      payload.append("UsuarioId", usuarioId);
+      payload.append("DataInicio", inicio.value);
+      payload.append("DataFim", fim.value);
+      payload.append("Motivo", motivo.value);
+      payload.append("Arquivo", arquivo.files[0]); 
 
-    // [PROTÓTIPO] Simula sucesso. REMOVER depois.
-    document.getElementById("sucessoAtestado").textContent =
-      "Atestado enviado para análise do RH.";
-    setTimeout(fechar, 1800);
+      const resposta = await fetch("/api/Atestado/enviar", {
+        method: "POST",
+        body: payload 
+      });
+
+      const dados = await resposta.json();
+      
+      if (!resposta.ok) {
+        throw new Error(dados.erro || "Erro na comunicação com o servidor.");
+      }
+
+      document.getElementById("sucessoAtestado").textContent = dados.mensagem;
+      setTimeout(fechar, 1800);
+      
+    } catch (erro) {
+      console.error("Erro no envio:", erro);
+      document.getElementById("erroAtestadoGeral").textContent = erro.message || "Falha ao enviar o atestado.";
+      btnEnviar.disabled = false;
+      btnEnviar.textContent = "Enviar atestado";
+    }
   });
 })();
 /* =========================================================
@@ -1059,28 +933,72 @@ function emailValido(valor) {
 
   /* ---------- Carregar dados ---------- */
   async function carregar() {
-    /* [BACKEND] SUBSTITUIR PELAS CHAMADAS REAIS:
-       const [me, prefs] = await Promise.all([
-         fetch("/api/me").then(r => r.json()),
-         fetch("/api/me/notificacoes").then(r => r.json())
-       ]); */
+    try {
+      const usuarioId = sessionStorage.getItem("usuarioId") || 1;
+      
+      const me = await chamarApi(`/me/${usuarioId}`, "GET");
+      const prefs = await chamarApi(`/me/preferencias/${usuarioId}`, "GET");
 
-    // [PROTÓTIPO] Dados fictícios. REMOVER depois.
-    const me = {
-      nome: "Funcionário Exemplo",
-      email: "funcionario@empresa.com",
-      contrato: "Estágio (6h diárias)",
-    };
-    const prefs = { alertaLimiteEmail: true, atestadoValidado: true };
+      document.getElementById("dadoNome").textContent = me.nome;
+      document.getElementById("dadoEmail").textContent = me.email;
+      document.getElementById("dadoContrato").textContent = me.contrato;
 
-    document.getElementById("dadoNome").textContent = me.nome;
-    document.getElementById("dadoEmail").textContent = me.email;
-    document.getElementById("dadoContrato").textContent = me.contrato;
-
-    document.querySelectorAll("[data-preferencia]").forEach((chk) => {
-      chk.checked = !!prefs[chk.dataset.preferencia];
-    });
+      document.querySelectorAll("[data-preferencia]").forEach((chk) => {
+        chk.checked = !!prefs[chk.dataset.preferencia];
+      });
+    } catch (e) {
+      console.error("Erro ao carregar configurações:", e);
+    }
   }
+
+  // (Mantenha sua função validarSenha() intacta aqui)
+
+  formSenha.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    document.getElementById("erroSenhaGeral").textContent = "";
+    document.getElementById("sucessoSenha").textContent = "";
+    if (!validarSenha()) return;
+
+    btnAlterar.disabled = true;
+    btnAlterar.textContent = "Salvando...";
+
+    try {
+      const usuarioId = sessionStorage.getItem("usuarioId") || 1;
+      await chamarApi(`/me/senha/${usuarioId}`, "PUT", { 
+        senhaAtual: senhaAtual.value, 
+        novaSenha: novaSenha.value 
+      });
+
+      formSenha.reset();
+      document.getElementById("sucessoSenha").textContent = "Senha alterada com sucesso.";
+    } catch (e) {
+      mostrarErro("campoSenhaAtual", "erroSenhaAtual", "Senha atual incorreta ou erro no servidor.");
+    } finally {
+      btnAlterar.disabled = false;
+      btnAlterar.textContent = "Alterar Senha";
+    }
+  });
+
+  /* ---------- Notificações (salva a cada clique) ---------- */
+  document.querySelectorAll("[data-preferencia]").forEach((chk) => {
+    chk.addEventListener("change", async () => {
+      const usuarioId = sessionStorage.getItem("usuarioId") || 1;
+      try {
+        await chamarApi(`/me/preferencias/${usuarioId}`, "PUT", { 
+          [chk.dataset.preferencia]: chk.checked 
+        });
+        
+        const msg = document.getElementById("msgPreferencias");
+        if(msg) {
+          msg.textContent = "Preferência salva.";
+          setTimeout(() => (msg.textContent = ""), 1800);
+        }
+      } catch (e) {
+        chk.checked = !chk.checked; // Reverte se der erro
+        console.error("Erro ao salvar preferência:", e);
+      }
+    });
+  });
 
   /* ---------- Alterar senha ---------- */
   const senhaAtual = document.getElementById("senhaAtual");
@@ -1289,17 +1207,35 @@ function emailValido(valor) {
         break;
 
       case "anexo":
-        // [BACKEND] Abrir o arquivo: window.open(p.anexoUrl, "_blank");
-        alert(`[Protótipo] Abrir anexo do atestado de ${p.colaborador}.`);
+        if (p.anexoUrl) {
+          window.open(p.anexoUrl, "_blank");
+        } else {
+          alert("O link do anexo não foi gerado.");
+        }
         break;
 
       case "aprovar":
-        // [BACKEND] PUT /api/rh/atestados/{id}/aprovar  → abona os dias e notifica o funcionário
-        resolver(p.id, `Atestado de ${p.colaborador} aprovado.`);
+        btn.disabled = true;
+        try {
+          const idNumerico = p.id.split("_")[1];
+          
+          // Pega exatamente o ID real de quem está logado no navegador (seja Admin ou RH)
+          const usuarioLogadoId = sessionStorage.getItem("usuarioId") || localStorage.getItem("usuarioId") || 1;
+
+          // Envia o ID correto para a API
+          await chamarApi(`/Pendencias/atestado/${idNumerico}/aprovar`, "PUT", {
+            UsuarioResponsavelId: parseInt(usuarioLogadoId)
+          });
+
+          resolver(p.id, `Atestado de ${p.colaborador} aprovado.`);
+        } catch (erro) {
+          console.error("Erro na aprovação:", erro);
+          alert("Erro ao aprovar atestado.");
+          btn.disabled = false;
+        }
         break;
 
       case "tratar":
-        // [BACKEND] PUT /api/rh/pendencias/{id}/tratar  → ex.: confirmar desconto ou justificar
         if (
           confirm(
             `Confirmar a falta de ${p.colaborador} em ${p.data} como tratada?`,
@@ -1314,45 +1250,14 @@ function emailValido(valor) {
 
   /* ---------- Carregar ---------- */
   async function carregar() {
-    /* [BACKEND] SUBSTITUIR PELA CHAMADA REAL:
-       pendencias = await fetch("/api/rh/pendencias").then(r => r.json()); */
-
-    // [PROTÓTIPO] Dados fictícios. REMOVER depois.
-    pendencias = [
-      {
-        id: 1,
-        colaborador: "Emily Mirian",
-        contrato: "Estágio 6h",
-        data: "10/09/2026",
-        tipo: "batida_impar",
-        detalhe: "3 batidas registradas (falta a saída)",
-      },
-      {
-        id: 2,
-        colaborador: "Lucas Andrade",
-        contrato: "CLT 8h",
-        data: "11/09/2026",
-        tipo: "atestado",
-        detalhe: "Atestado de 11/09 a 12/09",
-      },
-      {
-        id: 3,
-        colaborador: "Rafael Costa",
-        contrato: "Jovem Aprendiz",
-        data: "12/09/2026",
-        tipo: "falta",
-        detalhe: "Nenhuma batida no dia",
-      },
-      {
-        id: 4,
-        colaborador: "Ana Beatriz",
-        contrato: "CLT 8h",
-        data: "12/09/2026",
-        tipo: "batida_impar",
-        detalhe: "Retorno do almoço não registrado",
-      },
-    ];
-    renderizar();
+    try {
+      // Chama o nosso novo PendenciasController
+      pendencias = await chamarApi("/Pendencias", "GET");
+      renderizar();
+    } catch (erro) {
+      console.error("Erro ao carregar pendências:", erro);
+      tabela.innerHTML = '<tr><td colspan="5" class="tabela-vazia" style="color:red;">Erro ao buscar dados do servidor. Tente novamente.</td></tr>';
+    }
   }
 
   carregar();
@@ -1376,28 +1281,13 @@ function emailValido(valor) {
   let pendenciaAtual = null;
   let aoSalvar = null;
 
-  // "10/09/2026" → "2026-09-10" (formato do campo de data)
   function paraISO(dataBR) {
     const [d, m, a] = dataBR.split("/");
     return `${a}-${m}-${d}`;
   }
 
   /* ---------- Busca o horário original ---------- */
-  async function carregarOriginal() {
-    /* [BACKEND] SUBSTITUIR PELA CHAMADA REAL:
-       const r = await fetch(`/api/rh/pontos?colaboradorId=${pendenciaAtual.colaboradorId}&data=${data.value}&tipo=${tipo.value}`)
-                   .then(r => r.json());   // { horario: "08:12" } ou { horario: null }
-       original.value = r.horario || "Não registrado"; */
-
-    // [PROTÓTIPO] Horários fictícios. REMOVER depois.
-    const FICTICIOS = {
-      entrada: "08:00",
-      saidaAlmoco: "12:00",
-      retornoAlmoco: "13:00",
-      saida: null,
-    };
-    original.value = FICTICIOS[tipo.value] || "Não registrado";
-  }
+  async function carregarOriginal() {}
 
   /* ---------- Abrir / fechar ---------- */
   function abrir(pendencia, callback) {
@@ -1507,7 +1397,6 @@ function emailValido(valor) {
 
     return ok;
   }
-
   /* ---------- Salvar ---------- */
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -1517,256 +1406,48 @@ function emailValido(valor) {
     btnSalvar.disabled = true;
     btnSalvar.textContent = "Salvando...";
 
-    /* [BACKEND] SUBSTITUIR PELA CHAMADA REAL:
-       const resposta = await fetch("/api/rh/pontos", {
-         method: "PUT",
-         headers: { "Content-Type": "application/json" },
-         body: JSON.stringify({
-           pendenciaId: pendenciaAtual.id,
-           colaboradorId: pendenciaAtual.colaboradorId,
-           data: data.value,
-           tipo: tipo.value,
-           novoHorario: novo.value,
-           justificativa: justificativa.value.trim()
-         })
-       });
-       if (!resposta.ok) {
-         document.getElementById("erroEditarGeral").textContent = "Não foi possível salvar o ajuste.";
-         btnSalvar.disabled = false; btnSalvar.textContent = "Salvar";
-         return;
-       }
-       O SERVIDOR recalcula a jornada do colaborador e grava o registro na auditoria. */
+    try {
+      // Extrai apenas o ID numérico (ex.: "ponto_15" -> 15)
+      const pontoId = parseInt(pendenciaAtual.id.split("_")[1]);
+      
+      // Monta o horário completo com a data e o novo horário indicado
+      const [ano, mes, dia] = data.value.split("-");
+      const [hora, minuto] = novo.value.split(":");
+      const dataHoraCompleta = new Date(ano, mes - 1, dia, hora, minuto, 0);
 
-    // [PROTÓTIPO] Simula sucesso. REMOVER depois.
-    const callback = aoSalvar;
-    fechar();
-    if (callback) callback();
+      // Obtém o utilizador atualmente autenticado a partir do armazenamento local
+      const usuarioConectado = JSON.parse(localStorage.getItem("usuario") || sessionStorage.getItem("usuario") || "{}");
+      // Se não encontrar o id no objeto, coloque o ID da sua conta de Administrador no banco
+      const idAutor = usuarioConectado.id || usuarioConectado.usuarioId || 2;
+
+      const resposta = await fetch(`/api/pendencias/ponto/${pontoId}/resolver`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          novaSaida: dataHoraCompleta.toISOString(),
+          usuarioResponsavelId: idAutor
+        })
+      });
+
+      if (!resposta.ok) {
+        const erroJson = await resposta.json().catch(() => ({}));
+        throw new Error(erroJson.erro || "Não foi possível salvar o ajuste no servidor.");
+      }
+
+      fechar();
+      window.location.reload();
+
+    } catch (error) {
+      console.error(error);
+      document.getElementById("erroEditarGeral").textContent = error.message;
+      btnSalvar.disabled = false; 
+      btnSalvar.textContent = "Salvar";
+    }
   });
 })();
+
 /* =========================================================
-   12. TELA: IMPORTAR PLANILHAS (Figura 12)
-   ========================================================= */
-(function telaImportar() {
-  const card = document.getElementById("cardImportar");
-  if (!card) return; // não está na tela de importação
-
-  const input = document.getElementById("arquivoImport");
-  const area = document.getElementById("areaImport");
-  const caixaArquivo = document.getElementById("arquivoSelecionado");
-  const btnImportar = document.getElementById("btnImportar");
-  const erro = document.getElementById("erroImport");
-  const tabela = document.getElementById("tabelaImportacoes");
-
-  const LIMITE_LINHAS = 5000;
-  const EXTENSOES = [".csv", ".xlsx", ".xls"];
-  const TAMANHO_MAX = 10 * 1024 * 1024; // 10 MB  [BACKEND] confirmar o limite com o back-end
-
-  const STATUS = {
-    concluido: '<span class="badge badge-normal">Concluído</span>',
-    processando: '<span class="badge badge-info">Processando</span>',
-    erro: '<span class="badge badge-critico">Erro</span>',
-  };
-
-  let arquivoAtual = null;
-  let importacoes = [];
-
-  // Evita que nomes de arquivo com caracteres especiais quebrem a tabela
-  function escaparHTML(texto) {
-    return String(texto).replace(
-      /[&<>"']/g,
-      (c) =>
-        ({
-          "&": "&amp;",
-          "<": "&lt;",
-          ">": "&gt;",
-          '"': "&quot;",
-          "'": "&#39;",
-        })[c],
-    );
-  }
-
-  function formatarTamanho(bytes) {
-    return bytes < 1024 * 1024
-      ? (bytes / 1024).toFixed(0) + " KB"
-      : (bytes / 1024 / 1024).toFixed(1) + " MB";
-  }
-
-  /* ---------- Limpar seleção ---------- */
-  function limpar() {
-    arquivoAtual = null;
-    input.value = "";
-    caixaArquivo.classList.add("oculto");
-    area.classList.remove("oculto");
-    btnImportar.disabled = true;
-    erro.textContent = "";
-  }
-
-  /* ---------- Validar o arquivo escolhido ---------- */
-  async function selecionar(arquivo) {
-    limpar();
-    if (!arquivo) return;
-
-    const nome = arquivo.name.toLowerCase();
-    if (!EXTENSOES.some((ext) => nome.endsWith(ext))) {
-      erro.textContent =
-        "Formato inválido. Envie um arquivo .csv, .xlsx ou .xls.";
-      return;
-    }
-    if (arquivo.size > TAMANHO_MAX) {
-      erro.textContent = "O arquivo deve ter no máximo 10 MB.";
-      return;
-    }
-
-    let info = formatarTamanho(arquivo.size);
-
-    // CSV: o front já conta as linhas. Excel: a contagem é feita pelo back-end.
-    if (nome.endsWith(".csv")) {
-      const texto = await arquivo.text();
-      const linhas = texto.split(/\r?\n/).filter((l) => l.trim()).length - 1; // tira o cabeçalho
-      if (linhas <= 0) {
-        erro.textContent = "O arquivo está vazio ou só tem o cabeçalho.";
-        return;
-      }
-      if (linhas > LIMITE_LINHAS) {
-        erro.textContent = `O arquivo tem ${linhas.toLocaleString("pt-BR")} linhas. O limite é ${LIMITE_LINHAS.toLocaleString("pt-BR")}.`;
-        return;
-      }
-      info += ` · ${linhas.toLocaleString("pt-BR")} linhas`;
-    } else {
-      info += " · linhas verificadas na importação";
-    }
-
-    arquivoAtual = arquivo;
-    document.getElementById("nomeArquivoImport").textContent = arquivo.name;
-    document.getElementById("infoArquivoImport").textContent = info;
-    caixaArquivo.classList.remove("oculto");
-    area.classList.add("oculto");
-    btnImportar.disabled = false;
-  }
-
-  /* ---------- Clique ou arrastar ---------- */
-  input.addEventListener("change", () => selecionar(input.files[0]));
-  document
-    .getElementById("btnRemoverArquivo")
-    .addEventListener("click", limpar);
-
-  ["dragenter", "dragover"].forEach((ev) =>
-    area.addEventListener(ev, (e) => {
-      e.preventDefault();
-      area.classList.add("arrastando");
-    }),
-  );
-  ["dragleave", "drop"].forEach((ev) =>
-    area.addEventListener(ev, (e) => {
-      e.preventDefault();
-      area.classList.remove("arrastando");
-    }),
-  );
-  area.addEventListener("drop", (e) => selecionar(e.dataTransfer.files[0]));
-
-  /* ---------- Tabela ---------- */
-  function renderizarTabela() {
-    if (!importacoes.length) {
-      tabela.innerHTML =
-        '<tr><td colspan="4" class="tabela-vazia">Nenhuma importação realizada ainda.</td></tr>';
-      return;
-    }
-    tabela.innerHTML = importacoes
-      .map(
-        (i) => `
-        <tr>
-          <td><strong>${escaparHTML(i.arquivo)}</strong></td>
-          <td>${i.data}</td>
-          <td>${i.linhas != null ? i.linhas.toLocaleString("pt-BR") : "--"}</td>
-          <td>${STATUS[i.status] || i.status}</td>
-        </tr>`,
-      )
-      .join("");
-  }
-
-  /* ---------- Importar ---------- */
-  btnImportar.addEventListener("click", async () => {
-    if (!arquivoAtual) return;
-    btnImportar.disabled = true;
-
-    /* [BACKEND] SUBSTITUIR PELA CHAMADA REAL:
-       const dados = new FormData();
-       dados.append("arquivo", arquivoAtual);
-       const resposta = await fetch("/api/rh/importacoes", { method: "POST", body: dados });
-       if (!resposta.ok) {
-         const e = await resposta.json();  // { mensagem: "Coluna 'data' não encontrada na linha 1." }
-         erro.textContent = e.mensagem || "Não foi possível importar o arquivo.";
-         btnImportar.disabled = false;
-         return;
-       }
-       const nova = await resposta.json(); // { id, arquivo, data, linhas, status: "processando" }
-       O SERVIDOR valida colunas, datas e colaboradores, e grava no banco.
-       Para arquivos grandes, consultar o status depois: GET /api/rh/importacoes/{id} */
-
-    // [PROTÓTIPO] Simula o processamento. REMOVER depois.
-    const linhasTexto = document
-      .getElementById("infoArquivoImport")
-      .textContent.match(/([\d.]+) linhas/);
-    const nova = {
-      id: Date.now(),
-      arquivo: arquivoAtual.name,
-      data: new Date().toLocaleString("pt-BR", {
-        dateStyle: "short",
-        timeStyle: "short",
-      }),
-      linhas: linhasTexto ? Number(linhasTexto[1].replace(/\./g, "")) : null,
-      status: "processando",
-    };
-    importacoes.unshift(nova);
-    renderizarTabela();
-    limpar();
-
-    const msg = document.getElementById("msgImport");
-    msg.textContent = "Arquivo enviado. Processando...";
-    setTimeout(() => {
-      nova.status = "concluido";
-      renderizarTabela();
-      msg.textContent = `Importação de ${nova.arquivo} concluída.`;
-      setTimeout(() => (msg.textContent = ""), 2500);
-    }, 1500);
-  });
-
-  /* ---------- Carregar ---------- */
-  async function carregar() {
-    /* [BACKEND] SUBSTITUIR PELA CHAMADA REAL:
-       importacoes = await fetch("/api/rh/importacoes?limite=10").then(r => r.json()); */
-
-    // [PROTÓTIPO] Dados fictícios. REMOVER depois.
-    importacoes = [
-      {
-        id: 3,
-        arquivo: "jornadas_agosto_2026.csv",
-        data: "01/09/2026 09:15",
-        linhas: 1250,
-        status: "concluido",
-      },
-      {
-        id: 2,
-        arquivo: "jornadas_julho_2026.xlsx",
-        data: "01/08/2026 10:02",
-        linhas: 1184,
-        status: "concluido",
-      },
-      {
-        id: 1,
-        arquivo: "historico_2025.csv",
-        data: "15/07/2026 14:30",
-        linhas: 4870,
-        status: "concluido",
-      },
-    ];
-    renderizarTabela();
-  }
-
-  carregar();
-})();
-/* =========================================================
-   13. TELA: IMPORTAR PLANILHAS (Figura 12)
+   13. TELA: IMPORTAR PLANILHAS 
    ========================================================= */
 (function telaImportar() {
   const card = document.getElementById("cardImportar");
@@ -1891,79 +1572,62 @@ function emailValido(valor) {
     const barra = document.getElementById("barraImportar");
     const texto = document.getElementById("textoProgresso");
     progresso.classList.remove("oculto");
+    
+    barra.style.width = "50%";
+    texto.textContent = "Processando arquivo...";
 
-    /* [BACKEND] SUBSTITUIR PELA CHAMADA REAL:
-       const dados = new FormData();
-       dados.append("arquivo", arquivo);
-       const resposta = await fetch("/api/rh/importacoes", { method: "POST", body: dados });
-       const resultado = await resposta.json();
-       // resultado.status: "concluido" | "processando" | "erro"
-       // Se vier "processando", consultar de tempos em tempos: GET /api/rh/importacoes/{id}
-       (Para mostrar o progresso real do envio, usar XMLHttpRequest com upload.onprogress) */
+    try {
+      const payload = new FormData();
+      payload.append("arquivo", arquivo);
 
-    // [PROTÓTIPO] Simula o envio com barra de progresso. REMOVER depois.
-    let pct = 0;
-    await new Promise((fim) => {
-      const timer = setInterval(() => {
-        pct = Math.min(pct + 20, 100);
-        barra.style.width = pct + "%";
-        texto.textContent = `Enviando... ${pct}%`;
-        if (pct === 100) {
-          clearInterval(timer);
-          fim();
-        }
-      }, 300);
-    });
-    const resultado = {
-      arquivo: arquivo.name,
-      data: new Date().toLocaleString("pt-BR", {
-        dateStyle: "short",
-        timeStyle: "short",
-      }),
-      linhas: null, // [BACKEND] o servidor informa a quantidade de linhas importadas
-      status: "concluido",
-    };
+      const resposta = await fetch("/api/Upload/csv", {
+        method: "POST",
+        body: payload 
+      });
 
-    importacoes.unshift(resultado);
-    renderizarTabela();
-    progresso.classList.add("oculto");
-    barra.style.width = "0%";
-    limpar();
+      const dados = await resposta.json();
+      
+      if (!resposta.ok) throw new Error(dados.Mensagem || "Erro ao processar arquivo");
 
-    const msg = document.getElementById("msgImportar");
-    msg.textContent = `Arquivo "${resultado.arquivo}" importado com sucesso.`;
-    setTimeout(() => (msg.textContent = ""), 3000);
+      barra.style.width = "100%";
+      texto.textContent = "Concluído!";
+
+      const resultado = {
+        arquivo: arquivo.name,
+        data: new Date().toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" }),
+        linhas: dados.Registros ? dados.Registros.length : null,
+        status: "concluido"
+      };
+
+      importacoes.unshift(resultado);
+      renderizarTabela();
+      
+      const msg = document.getElementById("msgImportar");
+      msg.textContent = dados.Mensagem;
+      setTimeout(() => msg.textContent = "", 3000);
+
+    } catch (erro) {
+      console.error(erro);
+      const resultadoErro = {
+        arquivo: arquivo.name,
+        data: new Date().toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" }),
+        linhas: null,
+        status: "erro",
+        erroResumo: erro.message
+      };
+      importacoes.unshift(resultadoErro);
+      renderizarTabela();
+    } finally {
+      setTimeout(() => {
+        progresso.classList.add("oculto");
+        barra.style.width = "0%";
+        limpar();
+      }, 1500);
+    }
   });
 
   /* ---------- Carregar ---------- */
   async function carregar() {
-    /* [BACKEND] SUBSTITUIR PELAS CHAMADAS REAIS:
-       const modulo = await fetch("/api/modulos/importacao").then(r => r.json()); // { ativo: true }
-       importacoes  = await fetch("/api/rh/importacoes?limite=10").then(r => r.json()); */
-
-    // [PROTÓTIPO] Dados fictícios. REMOVER depois.
-    const modulo = { ativo: true }; // troque para false para ver o módulo desativado
-    importacoes = [
-      {
-        arquivo: "registros_agosto_2026.csv",
-        data: "01/09/2026 09:12",
-        linhas: 1240,
-        status: "concluido",
-      },
-      {
-        arquivo: "registros_julho_2026.xlsx",
-        data: "01/08/2026 10:03",
-        linhas: 1187,
-        status: "concluido",
-      },
-      {
-        arquivo: "legado_2025.csv",
-        data: "15/07/2026 14:40",
-        linhas: 312,
-        status: "erro",
-        erroResumo: "12 linhas com colaborador não encontrado",
-      },
-    ];
 
     if (!modulo.ativo) {
       document
@@ -2074,103 +1738,58 @@ function emailValido(valor) {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!alvo.value) {
-      mostrarErro(
-        "campoAlvo",
-        "erroAlvo",
-        "Selecione um colaborador ou setor.",
-      );
+      alert("Selecione um colaborador.");
       return;
     }
-    mostrarErro("campoAlvo", "erroAlvo", "");
 
     btn.disabled = true;
-    btn.lastChild.textContent = " Gerando...";
+    btn.textContent = "Gerando...";
 
-    /* [BACKEND] SUBSTITUIR PELA CHAMADA REAL:
-       const resposta = await fetch("/api/rh/relatorios", {
-         method: "POST",
-         headers: { "Content-Type": "application/json" },
-         body: JSON.stringify({ alvo: alvo.value, mes: mes.value })
-       });
-       const novo = await resposta.json();   // { id, arquivo, geradoEm, geradoPor } */
-
-    // [PROTÓTIPO] Simula o relatório gerado. REMOVER depois.
-    await new Promise((r) => setTimeout(r, 900));
-    const novo = {
-      id: "rh-" + Date.now(),
-      arquivo: nomeArquivo(),
-      geradoEm: new Date().toLocaleString("pt-BR", {
-        dateStyle: "short",
-        timeStyle: "short",
-      }),
-      geradoPor: document
-        .getElementById("saudacaoPerfil")
-        .textContent.replace("Olá, ", ""),
-    };
-
-    exportacoes.unshift(novo);
-    renderizarTabela();
-    btn.disabled = false;
-    btn.lastChild.textContent = " Exportar para PDF";
-
-    const msg = document.getElementById("msgExportarRh");
-    msg.textContent = `Relatório "${novo.arquivo}" gerado com sucesso.`;
-    setTimeout(() => (msg.textContent = ""), 3000);
+    try {
+      if (alvo.value.startsWith("colaborador:")) {
+        // Declara corretamente a variável extraindo o ID do valor do select (ex: "colaborador:3" -> 3)
+        const colaboradorId = alvo.value.split(":")[1];
+        
+        const partesData = mes.value.split("-"); // Ex: "2026-10"
+        const ano = partesData[0];
+        const mesNum = partesData[1];
+        
+        // Abre o PDF usando a rota correta do RelatoriosController no plural
+        window.open(`/api/Relatorios/espelho/${colaboradorId}/${ano}/${parseInt(mesNum)}`, '_blank');
+        
+        const msg = document.getElementById("msgExportarRh");
+        if(msg) {
+          msg.textContent = `Relatório gerado com sucesso.`;
+          setTimeout(() => (msg.textContent = ""), 3000);
+        }
+      } else {
+        alert("Por favor, selecione um colaborador específico para exportar o PDF.");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Erro detalhado: " + error.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Exportar para PDF";
+    }
   });
 
   /* ---------- Carregar ---------- */
   async function carregar() {
-    /* [BACKEND] SUBSTITUIR PELAS CHAMADAS REAIS:
-       const [modulo, setores, colaboradores, lista] = await Promise.all([
-         fetch("/api/modulos/exportacao").then(r => r.json()),      // { ativo: true }
-         fetch("/api/setores").then(r => r.json()),
-         fetch("/api/rh/colaboradores").then(r => r.json()),
-         fetch("/api/rh/relatorios?limite=10").then(r => r.json())
-       ]); */
+    try {
+      // Adicionei o "s" em Relatorios para bater com o C#
+      const resposta = await fetch("/api/Relatorios/colaboradores");
+      const colaboradores = await resposta.json();
 
-    // [PROTÓTIPO] Dados fictícios. REMOVER depois.
-    const modulo = { ativo: true }; // troque para false para ver o módulo desativado
-    const setores = [
-      { id: "financeiro", nome: "Financeiro" },
-      { id: "ti", nome: "Tecnologia" },
-      { id: "comercial", nome: "Comercial" },
-    ];
-    const colaboradores = [
-      { id: 1, nome: "Emily Mirian" },
-      { id: 2, nome: "Lucas Andrade" },
-      { id: 3, nome: "Rafael Costa" },
-      { id: 4, nome: "Ana Beatriz" },
-    ];
-    exportacoes = [
-      {
-        id: "rh-03",
-        arquivo: "relatorio_financeiro_08-2026.pdf",
-        geradoEm: "01/09/2026 09:30",
-        geradoPor: "Gestor RH",
-      },
-      {
-        id: "rh-02",
-        arquivo: "relatorio_todos_os_colaboradores_08-2026.pdf",
-        geradoEm: "01/09/2026 09:05",
-        geradoPor: "Gestor RH",
-      },
-      {
-        id: "rh-01",
-        arquivo: "relatorio_emily_mirian_07-2026.pdf",
-        geradoEm: "02/08/2026 15:22",
-        geradoPor: "Administrador",
-      },
-    ];
+      const setores = []; 
+      exportacoes = []; 
 
-    preencherAlvos(setores, colaboradores);
-    preencherMeses();
-    renderizarTabela();
+      preencherAlvos(setores, colaboradores);
+      preencherMeses();
+      renderizarTabela();
 
-    if (!modulo.ativo) {
-      document
-        .getElementById("avisoExportarDesativado")
-        .classList.remove("oculto");
-      form.classList.add("oculto");
+    } catch (error) {
+      console.error("Erro ao carregar colaboradores do banco:", error);
     }
   }
 
@@ -2233,38 +1852,33 @@ function emailValido(valor) {
 
   /* ---------- Filtrar ---------- */
   async function aplicarFiltros() {
-    /* [BACKEND] SUBSTITUIR PELA CHAMADA REAL (o filtro é feito no SERVIDOR):
-       const params = new URLSearchParams({ periodo: periodo.value, ator: ator.value, tipo: evento.value });
-       const lista = await fetch(`/api/rh/auditoria?${params}`).then(r => r.json());
-       // datas chegam como texto ISO → converter com new Date(l.data)
-       renderizar(lista); */
+    try {
+      const dados = await chamarApi("/api/auditoria", "GET");
 
-    // [PROTÓTIPO] Filtra os dados fictícios no navegador. REMOVER depois.
-    const agora = new Date();
-    const inicio = new Date(agora);
-    if (periodo.value === "hoje") inicio.setHours(0, 0, 0, 0);
-    else inicio.setDate(agora.getDate() - Number(periodo.value));
+      // Converte a data string da API para objetos Date do JavaScript
+      logs = dados.map(l => ({
+        ...l,
+        data: new Date(l.data)
+      }));
 
-    renderizar(
-      logs.filter(
+      const agora = new Date();
+      const inicio = new Date(agora);
+      if (periodo.value === "hoje") inicio.setHours(0, 0, 0, 0);
+      else inicio.setDate(agora.getDate() - Number(periodo.value));
+
+      // Filtra os dados recebidos com base nos selects da tela
+      const filtrados = logs.filter(
         (l) =>
           l.data >= inicio &&
           (ator.value === "todos" || l.ator === ator.value) &&
-          (evento.value === "todos" || l.tipo === evento.value),
-      ),
-    );
-  }
+          (evento.value === "todos" || l.tipo === evento.value)
+      );
 
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    aplicarFiltros();
-  });
-  document.getElementById("btnLimparFiltros").addEventListener("click", () => {
-    periodo.value = "7";
-    ator.value = "todos";
-    evento.value = "todos";
-    aplicarFiltros();
-  });
+      renderizar(filtrados);
+    } catch (error) {
+      console.error("Erro ao carregar auditoria:", error);
+    }
+  }
 
   /* ---------- Carregar ---------- */
   function diasAtras(dias, hora) {
@@ -2274,63 +1888,14 @@ function emailValido(valor) {
     d.setHours(h, m, 0, 0);
     return d;
   }
-
-  // [PROTÓTIPO] Logs fictícios (datas relativas a hoje, para o filtro funcionar). REMOVER depois.
-  logs = [
-    {
-      data: diasAtras(0, "09:14"),
-      ator: "rh",
-      autor: "Gestor RH",
-      tipo: "edicao_ponto",
-      detalhe:
-        "Saída de <strong>Emily Mirian</strong> em 10/09: <strong>--:--</strong> → <strong>14:00</strong>. Justificativa: esquecimento de registro.",
-    },
-    {
-      data: diasAtras(1, "17:40"),
-      ator: "sistema",
-      autor: "Sistema",
-      tipo: "bloqueio",
-      detalhe:
-        "Batida de <strong>Rafael Costa</strong> recusada: limite de jornada do Jovem Aprendiz atingido.",
-    },
-    {
-      data: diasAtras(2, "10:05"),
-      ator: "rh",
-      autor: "Gestor RH",
-      tipo: "atestado",
-      detalhe:
-        "Atestado de <strong>Lucas Andrade</strong> (11/09 a 12/09) aprovado.",
-    },
-    {
-      data: diasAtras(4, "08:30"),
-      ator: "admin",
-      autor: "Administrador",
-      tipo: "cadastro",
-      detalhe:
-        "Novo colaborador <strong>Ana Beatriz</strong> cadastrado como CLT 8h.",
-    },
-    {
-      data: diasAtras(12, "09:12"),
-      ator: "rh",
-      autor: "Gestor RH",
-      tipo: "importacao",
-      detalhe:
-        "Arquivo <strong>registros_agosto_2026.csv</strong> importado (1.240 linhas).",
-    },
-    {
-      data: diasAtras(25, "16:22"),
-      ator: "rh",
-      autor: "Gestor RH",
-      tipo: "edicao_ponto",
-      detalhe:
-        "Entrada de <strong>Ana Beatriz</strong>: <strong>08:42</strong> → <strong>08:00</strong>. Justificativa: falha no relógio.",
-    },
-  ];
+  periodo.addEventListener("change", aplicarFiltros);
+  ator.addEventListener("change", aplicarFiltros);
+  evento.addEventListener("change", aplicarFiltros);
 
   aplicarFiltros();
 })();
 /* =========================================================
-   15. TELA: CONFIGURAÇÕES DO RH (Figura 15)
+   TELA: CONFIGURAÇÕES RH
    ========================================================= */
 (function telaConfiguracoesRh() {
   const card = document.getElementById("cardDadosGestor");
@@ -2338,58 +1903,72 @@ function emailValido(valor) {
 
   const NIVEIS = { rh: "Gestor RH", admin: "Administrador" };
 
-  /* ---------- Carregar dados e preferências ---------- */
-  async function carregar() {
-    /* [BACKEND] SUBSTITUIR PELAS CHAMADAS REAIS:
-       const [me, prefs] = await Promise.all([
-         fetch("/api/me").then(r => r.json()),
-         fetch("/api/me/preferencias").then(r => r.json())
-       ]); */
-
-    // [PROTÓTIPO] Dados fictícios. REMOVER depois.
-    const perfil = sessionStorage.getItem("perfil") || "rh";
-    const me = {
-      nome:
-        perfil === "admin"
-          ? "Administrador do Sistema"
-          : "Gestor de RH Exemplo",
-      email: perfil === "admin" ? "admin@empresa.com" : "rh@empresa.com",
-      perfil,
-    };
-    const prefs = {
-      alertaEstagiario: true,
-      alertaAtestado: true,
-      resumoPendencias: true,
-      formatoExportacao: "pdf",
-    };
-
-    document.getElementById("gestorNome").textContent = me.nome;
-    document.getElementById("gestorEmail").textContent = me.email;
-    document.getElementById("gestorNivel").textContent =
-      NIVEIS[me.perfil] || me.perfil;
-
-    document.querySelectorAll("[data-pref-rh]").forEach((el) => {
-      const chave = el.dataset.prefRh;
-      if (el.type === "checkbox") el.checked = !!prefs[chave];
-      else el.value = prefs[chave];
-    });
+  // Função auxiliar para exibir erros
+  function mostrarErro(campoId, erroId, mensagem) {
+    const campo = document.getElementById(campoId);
+    const erro = document.getElementById(erroId);
+    if (erro) erro.textContent = mensagem;
+    if (campo) {
+      if (mensagem) campo.classList.add("com-erro");
+      else campo.classList.remove("com-erro");
+    }
   }
 
-  /* ---------- Salvar preferências (toggle ou select) ---------- */
+  /* ---------- Carregar dados e preferências reais ---------- */
+  async function carregar() {
+    try {
+      // Pega o ID de quem está logado no navegador
+      const usuarioId = sessionStorage.getItem("usuarioId") || 1;
+
+      const [resMe, resPrefs] = await Promise.all([
+        fetch(`/api/me/${usuarioId}`),
+        fetch(`/api/me/preferencias/${usuarioId}`)
+      ]);
+
+      if (!resMe.ok || !resPrefs.ok) throw new Error("Erro ao comunicar com o servidor.");
+
+      const me = await resMe.json();
+      const prefs = await resPrefs.json();
+
+      document.getElementById("gestorNome").textContent = me.nome;
+      document.getElementById("gestorEmail").textContent = me.email;
+      document.getElementById("gestorNivel").textContent = NIVEIS[me.perfil] || me.perfil;
+
+      document.querySelectorAll("[data-pref-rh]").forEach((el) => {
+        const chave = el.dataset.prefRh;
+        if (el.type === "checkbox") el.checked = !!prefs[chave];
+        else el.value = prefs[chave];
+      });
+    } catch (erro) {
+      console.error(erro);
+    }
+  }
+
+  /* ---------- Guardar preferências automaticamente ---------- */
   document.querySelectorAll("[data-pref-rh]").forEach((el) => {
     el.addEventListener("change", async () => {
+      const usuarioId = sessionStorage.getItem("usuarioId") || 1;
       const valor = el.type === "checkbox" ? el.checked : el.value;
-      /* [BACKEND] SUBSTITUIR PELA CHAMADA REAL:
-         await fetch("/api/me/preferencias", {
-           method: "PUT",
-           headers: { "Content-Type": "application/json" },
-           body: JSON.stringify({ [el.dataset.prefRh]: valor })
-         });
-         Em caso de erro, desfazer a mudança no campo. */
+      const chave = el.dataset.prefRh;
 
-      const msg = document.getElementById("msgPrefRh");
-      msg.textContent = "Preferência salva.";
-      setTimeout(() => (msg.textContent = ""), 1800);
+      try {
+        const resposta = await fetch(`/api/me/preferencias/${usuarioId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ [chave]: valor })
+        });
+
+        if (!resposta.ok) throw new Error("Falha ao guardar preferência.");
+
+        const msg = document.getElementById("msgPrefRh");
+        if (msg) {
+          msg.textContent = "Preferência guardada.";
+          setTimeout(() => (msg.textContent = ""), 1800);
+        }
+      } catch (erro) {
+        console.error(erro);
+        if (el.type === "checkbox") el.checked = !el.checked; // Reverte se falhar
+      }
     });
   });
 
@@ -2408,15 +1987,16 @@ function emailValido(valor) {
   ];
 
   function abrir() {
+    if (!form) return;
     form.reset();
     CAMPOS.forEach(([c, e]) => mostrarErro(c, e, ""));
-    document.getElementById("erroSenhaRhGeral").textContent = "";
+    const erroGeral = document.getElementById("erroSenhaRhGeral");
+    if (erroGeral) erroGeral.textContent = "";
+    
     btnSalvar.disabled = false;
-    btnSalvar.textContent = "Salvar";
+    btnSalvar.textContent = "Guardar";
     modal.querySelectorAll("input").forEach((i) => (i.type = "password"));
-    modal
-      .querySelectorAll(".btn-olho")
-      .forEach((b) => b.classList.remove("visivel"));
+    modal.querySelectorAll(".btn-olho").forEach((b) => b.classList.remove("visivel"));
     modal.classList.remove("oculto");
     document.body.classList.add("com-modal");
     atual.focus();
@@ -2427,97 +2007,103 @@ function emailValido(valor) {
     document.body.classList.remove("com-modal");
   }
 
-  document.getElementById("btnAbrirSenhaRh").addEventListener("click", abrir);
-  document.getElementById("btnFecharSenhaRh").addEventListener("click", fechar);
-  document
-    .getElementById("btnCancelarSenhaRh")
-    .addEventListener("click", fechar);
-  modal.addEventListener("click", (e) => {
-    if (e.target === modal) fechar();
-  });
+  const btnAbrir = document.getElementById("btnAbrirSenhaRh");
+  if (btnAbrir) btnAbrir.addEventListener("click", abrir);
+  
+  const btnFechar = document.getElementById("btnFecharSenhaRh");
+  if (btnFechar) btnFechar.addEventListener("click", fechar);
+  
+  const btnCancelar = document.getElementById("btnCancelarSenhaRh");
+  if (btnCancelar) btnCancelar.addEventListener("click", fechar);
+  
+  if (modal) {
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) fechar();
+    });
+  }
+  
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && !modal.classList.contains("oculto")) fechar();
+    if (e.key === "Escape" && modal && !modal.classList.contains("oculto")) fechar();
   });
 
-  // Mostrar / esconder senha (olho)
-  modal.querySelectorAll(".btn-olho").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const input = document.getElementById(btn.dataset.alvo);
-      const mostrar = input.type === "password";
-      input.type = mostrar ? "text" : "password";
-      btn.classList.toggle("visivel", mostrar);
-      btn.setAttribute(
-        "aria-label",
-        mostrar ? "Esconder senha" : "Mostrar senha",
-      );
+  if (modal) {
+    modal.querySelectorAll(".btn-olho").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const input = document.getElementById(btn.dataset.alvo);
+        const mostrar = input.type === "password";
+        input.type = mostrar ? "text" : "password";
+        btn.classList.toggle("visivel", mostrar);
+        btn.setAttribute("aria-label", mostrar ? "Esconder senha" : "Mostrar senha");
+      });
     });
-  });
+  }
 
   function validar() {
     let ok = true;
     if (!atual.value) {
-      mostrarErro(
-        "campoSenhaAtualRh",
-        "erroSenhaAtualRh",
-        "Informe a senha atual.",
-      );
+      mostrarErro("campoSenhaAtualRh", "erroSenhaAtualRh", "Informe a senha atual.");
       ok = false;
     } else mostrarErro("campoSenhaAtualRh", "erroSenhaAtualRh", "");
 
-    // [BACKEND] A regra de senha forte também deve ser validada no servidor (Fig. 17)
     if (nova.value.length < 8) {
-      mostrarErro(
-        "campoNovaSenhaRh",
-        "erroNovaSenhaRh",
-        "A nova senha deve ter no mínimo 8 caracteres.",
-      );
+      mostrarErro("campoNovaSenhaRh", "erroNovaSenhaRh", "A nova senha deve ter no mínimo 8 caracteres.");
       ok = false;
     } else if (nova.value === atual.value) {
-      mostrarErro(
-        "campoNovaSenhaRh",
-        "erroNovaSenhaRh",
-        "A nova senha deve ser diferente da atual.",
-      );
+      mostrarErro("campoNovaSenhaRh", "erroNovaSenhaRh", "A nova senha deve ser diferente da atual.");
       ok = false;
     } else mostrarErro("campoNovaSenhaRh", "erroNovaSenhaRh", "");
 
     if (!confirmar.value || confirmar.value !== nova.value) {
-      mostrarErro(
-        "campoConfirmarSenhaRh",
-        "erroConfirmarSenhaRh",
-        "As senhas não conferem.",
-      );
+      mostrarErro("campoConfirmarSenhaRh", "erroConfirmarSenhaRh", "As senhas não conferem.");
       ok = false;
     } else mostrarErro("campoConfirmarSenhaRh", "erroConfirmarSenhaRh", "");
+    
     return ok;
   }
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    document.getElementById("erroSenhaRhGeral").textContent = "";
-    if (!validar()) return;
+  if (form) {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const erroGeral = document.getElementById("erroSenhaRhGeral");
+      if (erroGeral) erroGeral.textContent = "";
+      
+      if (!validar()) return;
 
-    btnSalvar.disabled = true;
-    btnSalvar.textContent = "Salvando...";
+      btnSalvar.disabled = true;
+      btnSalvar.textContent = "A guardar...";
 
-    /* [BACKEND] SUBSTITUIR PELA CHAMADA REAL:
-       const resposta = await fetch("/api/me/senha", {
-         method: "PUT",
-         headers: { "Content-Type": "application/json" },
-         body: JSON.stringify({ senhaAtual: atual.value, novaSenha: nova.value })
-       });
-       if (resposta.status === 401) {
-         mostrarErro("campoSenhaAtualRh", "erroSenhaAtualRh", "Senha atual incorreta.");
-         btnSalvar.disabled = false; btnSalvar.textContent = "Salvar";
-         return;
-       } */
+      try {
+        const usuarioId = sessionStorage.getItem("usuarioId") || 1;
+        const resposta = await fetch(`/api/me/senha/${usuarioId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ senhaAtual: atual.value, novaSenha: nova.value })
+        });
 
-    // [PROTÓTIPO] Simula sucesso. REMOVER depois.
-    fechar();
-    const msg = document.getElementById("msgSenhaRh");
-    msg.textContent = "Senha alterada com sucesso.";
-    setTimeout(() => (msg.textContent = ""), 2500);
-  });
+        const dados = await resposta.json().catch(() => ({}));
+
+        if (!resposta.ok) {
+          if (resposta.status === 401) {
+            mostrarErro("campoSenhaAtualRh", "erroSenhaAtualRh", dados.erro || "Senha atual incorreta.");
+          } else {
+            if (erroGeral) erroGeral.textContent = dados.erro || "Falha ao alterar senha.";
+          }
+          throw new Error("Erro de validação no servidor");
+        }
+
+        fechar();
+        const msg = document.getElementById("msgSenhaRh");
+        if (msg) {
+          msg.textContent = "Senha alterada com sucesso.";
+          setTimeout(() => (msg.textContent = ""), 2500);
+        }
+      } catch (erro) {
+        console.error(erro);
+        btnSalvar.disabled = false;
+        btnSalvar.textContent = "Guardar";
+      }
+    });
+  }
 
   carregar();
 })();
@@ -2608,44 +2194,18 @@ function emailValido(valor) {
 
   /* ---------- Carregar ---------- */
   async function carregar() {
-    /* [BACKEND] SUBSTITUIR PELAS CHAMADAS REAIS:
-       const [modulos, auditoria] = await Promise.all([
-         fetch("/api/modulos").then(r => r.json()),
-         fetch("/api/auditoria?limite=5").then(r => r.json())
-       ]); */
+    try {
+      // Busca as últimas movimentações reais do banco de dados
+      const auditoriaRecente = await chamarApi("/VisaoGlobal/auditoria-recente", "GET");
 
-    // [PROTÓTIPO] Dados fictícios. REMOVER depois.
-    const modulos = { importacao: true, exportacao: true, edicaoPonto: true };
-    const auditoria = [
-      {
-        usuario: "Gestor RH",
-        acao: "Edição manual de ponto (Emily Mirian)",
-        dataHora: "13/09/2026 10:42",
-      },
-      {
-        usuario: "Sistema",
-        acao: "Débito de falta injustificada",
-        dataHora: "13/09/2026 00:05",
-      },
-      {
-        usuario: "Gestor RH",
-        acao: "Aprovação de atestado médico",
-        dataHora: "12/09/2026 16:18",
-      },
-      {
-        usuario: "Administrador",
-        acao: "Alteração de regra (Regime de Estágio)",
-        dataHora: "12/09/2026 09:30",
-      },
-      {
-        usuario: "Sistema",
-        acao: "Bloqueio de acesso após 5 tentativas",
-        dataHora: "11/09/2026 22:14",
-      },
-    ];
+      // Módulos podem manter o padrão ativado por enquanto ou vir de uma API futura
+      const modulos = { importacao: true, exportacao: true, edicaoPonto: true };
 
-    aplicarModulos(modulos);
-    renderizarAuditoria(auditoria);
+      aplicarModulos(modulos);
+      renderizarAuditoria(auditoriaRecente);
+    } catch (erro) {
+      console.error("Erro ao carregar visão global:", erro);
+    }
   }
 
   carregar();
@@ -2666,32 +2226,6 @@ function emailValido(valor) {
     el.textContent = texto;
     setTimeout(() => (el.textContent = ""), 2500);
   }
-
-  /* ---------- Políticas de Segurança ---------- */
-  formSeguranca.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const minutos = Number(expiracao.value);
-
-    if (!Number.isInteger(minutos) || minutos < 5 || minutos > 480) {
-      mostrarErro(
-        "campoExpiracao",
-        "erroExpiracao",
-        "Informe um valor entre 5 e 480 minutos.",
-      );
-      return;
-    }
-    mostrarErro("campoExpiracao", "erroExpiracao", "");
-
-    /* [BACKEND] SUBSTITUIR PELA CHAMADA REAL:
-       await fetch("/api/config/seguranca", {
-         method: "PUT",
-         headers: { "Content-Type": "application/json" },
-         body: JSON.stringify({ expiracaoSessao: minutos, senhaForte: senhaForte.checked })
-       });
-       Registrar a alteração na Auditoria de Logs (Fig. 22). */
-
-    avisar("msgSeguranca", "Políticas de segurança salvas.");
-  });
 
   /* ---------- Ativação de Módulos (salva a cada clique) ---------- */
   document.querySelectorAll("[data-config-modulo]").forEach((chk) => {
@@ -2718,45 +2252,48 @@ function emailValido(valor) {
     });
   });
 
-  /* ---------- Backup ---------- */
-  frequencia.addEventListener("change", async () => {
-    /* [BACKEND] PUT /api/config/backup { frequencia: frequencia.value } */
-    avisar(
-      "msgBackup",
-      `Frequência de backup alterada: ${frequencia.options[frequencia.selectedIndex].text}.`,
-    );
+  /* ---------- Políticas de Segurança ---------- */
+  formSeguranca.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const minutos = Number(expiracao.value);
+
+    if (!Number.isInteger(minutos) || minutos < 5 || minutos > 480) {
+      mostrarErro("campoExpiracao", "erroExpiracao", "Informe um valor entre 5 e 480 minutos.");
+      return;
+    }
+    mostrarErro("campoExpiracao", "erroExpiracao", "");
+
+    await fetch("/api/config/seguranca", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ expiracaoSessao: minutos, senhaForte: senhaForte.checked })
+    });
+
+    avisar("msgSeguranca", "Políticas de segurança salvas.");
   });
 
-  document.getElementById("btnExportarLog").addEventListener("click", () => {
-    /* [BACKEND] window.location.href = "/api/config/backup/log"; */
-    // [PROTÓTIPO] REMOVER depois
-    alert("[Protótipo] O download do log será feito pelo back-end.");
+  /* ---------- Backup ---------- */
+  frequencia.addEventListener("change", async () => {
+    await fetch("/api/config/backup", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ frequencia: frequencia.value })
+    });
+    avisar("msgBackup", `Frequência de backup alterada: ${frequencia.options[frequencia.selectedIndex].text}.`);
   });
 
   /* ---------- Carregar ---------- */
   async function carregar() {
-    /* [BACKEND] SUBSTITUIR PELAS CHAMADAS REAIS:
-       const [seguranca, modulos, backup] = await Promise.all([
-         fetch("/api/config/seguranca").then(r => r.json()),
-         fetch("/api/modulos").then(r => r.json()),
-         fetch("/api/config/backup").then(r => r.json())
-       ]); */
+    const [segurancaRes, backupRes] = await Promise.all([
+      fetch("/api/config/seguranca").then(r => r.json()),
+      fetch("/api/config/backup").then(r => r.json())
+    ]);
 
-    // [PROTÓTIPO] Dados fictícios. REMOVER depois.
-    const seguranca = { expiracaoSessao: 30, senhaForte: true };
-    const modulos = { importacao: true, alertasJornada: true };
-    const backup = { frequencia: "6h", ultimoBackup: "13/09/2026 06:00" };
+    expiracao.value = segurancaRes.expiracaoSessao;
+    senhaForte.checked = segurancaRes.senhaForte;
 
-    expiracao.value = seguranca.expiracaoSessao;
-    senhaForte.checked = seguranca.senhaForte;
-
-    document.querySelectorAll("[data-config-modulo]").forEach((chk) => {
-      chk.checked = !!modulos[chk.dataset.configModulo];
-      chk.closest(".toggle-linha").classList.toggle("desligado", !chk.checked);
-    });
-
-    frequencia.value = backup.frequencia;
-    document.getElementById("ultimoBackup").textContent = backup.ultimoBackup;
+    frequencia.value = backupRes.frequencia;
+    document.getElementById("ultimoBackup").textContent = backupRes.ultimoBackup;
   }
 
   carregar();
@@ -2876,130 +2413,77 @@ function emailValido(valor) {
 
   /* ---------- Salvar ---------- */
   btnSalvar.addEventListener("click", async () => {
-    const lista = alteracoes();
-    if (!lista.length) return;
+  const lista = alteracoes();
+  if (!lista.length) return;
 
-    // Retirar acesso do RH pede confirmação
-    const retiradas = lista.filter((a) => !a.ativo);
-    if (retiradas.length) {
-      const nomes = retiradas
-        .map(
-          (a) =>
-            `• ${funcoes.find((f) => f.id === a.funcao).nome} (${NOME_PERFIL[a.perfil]})`,
-        )
-        .join("\n");
-      if (
-        !confirm(`Você vai RETIRAR o acesso a:\n${nomes}\n\nDeseja continuar?`)
+  const retiradas = lista.filter((a) => !a.ativo);
+  if (retiradas.length) {
+    const nomes = retiradas
+      .map(
+        (a) =>
+          `• ${funcoes.find((f) => f.id === a.funcao).nome} (${NOME_PERFIL[a.perfil]})`,
       )
-        return;
-    }
+      .join("\n");
+    if (
+      !confirm(`Você vai RETIRAR o acesso a:\n${nomes}\n\nDeseja continuar?`)
+    )
+      return;
+  }
 
-    btnSalvar.disabled = true;
-    btnDescartar.disabled = true;
-    document.getElementById("erroPermissoes").textContent = "";
+  btnSalvar.disabled = true;
+  btnDescartar.disabled = true;
+  document.getElementById("erroPermissoes").textContent = "";
 
-    /* [BACKEND] SUBSTITUIR PELA CHAMADA REAL:
-       const resposta = await fetch("/api/permissoes", {
-         method: "PUT",
-         headers: { "Content-Type": "application/json" },
-         body: JSON.stringify(lista)
-       });
-       if (!resposta.ok) {
-         document.getElementById("erroPermissoes").textContent = "Não foi possível salvar as permissões.";
-         atualizarEstado();
-         return;
-       } */
-
-    // [PROTÓTIPO] Simula sucesso. REMOVER depois.
-    original = { ...atual };
-    atualizarEstado();
-    const msg = document.getElementById("msgPermissoes");
-    msg.textContent = `${lista.length} ${lista.length === 1 ? "permissão atualizada" : "permissões atualizadas"} com sucesso.`;
-    setTimeout(() => (msg.textContent = ""), 3000);
+  const resposta = await fetch("/api/permissoes", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(lista)
   });
+
+  if (!resposta.ok) {
+    document.getElementById("erroPermissoes").textContent = "Não foi possível salvar as permissões.";
+    atualizarEstado();
+    return;
+  }
+
+  original = { ...atual };
+  atualizarEstado();
+  const msg = document.getElementById("msgPermissoes");
+  msg.textContent = `${lista.length} ${lista.length === 1 ? "permissão atualizada" : "permissões atualizadas"} com sucesso.`;
+  setTimeout(() => (msg.textContent = ""), 3000);
+});
 
   /* ---------- Carregar ---------- */
   async function carregar() {
-    /* [BACKEND] SUBSTITUIR PELA CHAMADA REAL:
-       funcoes = await fetch("/api/permissoes").then(r => r.json()); */
+  try {
+    // 1. Busca do banco de dados através da API que criamos no C#
+    const resposta = await fetch("/api/permissoes");
+    if (!resposta.ok) throw new Error("Erro ao carregar permissões do servidor.");
+    
+    funcoes = await resposta.json();
 
-    // [PROTÓTIPO] Dados fictícios. REMOVER depois.
-    funcoes = [
-      {
-        id: "registrar_ponto",
-        nome: "Registrar Ponto Diário",
-        descricao: "Bater o próprio ponto",
-        perfis: {
-          funcionario: { tipo: "fixo" },
-          rh: { tipo: "fixo" },
-          admin: { tipo: "fixo" },
-        },
-      },
-      {
-        id: "aprovar_atestados",
-        nome: "Aprovação de Atestados Médicos",
-        descricao: "Aprovar ou recusar atestados enviados",
-        perfis: {
-          funcionario: { tipo: "na" },
-          rh: { tipo: "editavel", ativo: true },
-          admin: { tipo: "fixo" },
-        },
-      },
-      {
-        id: "editar_ponto",
-        nome: "Edição de Ponto",
-        descricao: "Ajustar batidas pela tela de Pendências",
-        perfis: {
-          funcionario: { tipo: "bloqueado" },
-          rh: { tipo: "editavel", ativo: true },
-          admin: { tipo: "fixo" },
-        },
-      },
-      {
-        id: "importacao",
-        nome: "Importação de Planilhas (CSV)",
-        descricao: "Importar registros antigos de jornada",
-        perfis: {
-          funcionario: { tipo: "bloqueado" },
-          rh: { tipo: "editavel", ativo: true },
-          admin: { tipo: "fixo" },
-        },
-      },
-      {
-        id: "exportacao",
-        nome: "Exportação de Relatórios (PDF)",
-        descricao: "Gerar relatórios analíticos consolidados",
-        perfis: {
-          funcionario: { tipo: "bloqueado" },
-          rh: { tipo: "editavel", ativo: true },
-          admin: { tipo: "fixo" },
-        },
-      },
-      {
-        id: "config_globais",
-        nome: "Configurações Globais",
-        descricao: "Segurança, módulos e backups do sistema",
-        perfis: {
-          funcionario: { tipo: "bloqueado" },
-          rh: { tipo: "bloqueado" },
-          admin: { tipo: "fixo" },
-        },
-      },
-    ];
-
-    // Guarda o estado inicial só das células configuráveis
+    // 2. Mapeia o estado real que veio do banco para o objeto 'original'
     original = {};
-    funcoes.forEach((f) =>
+    funcoes.forEach((f) => {
       PERFIS.forEach((p) => {
-        if (f.perfis[p].tipo === "editavel")
+        if (f.perfis[p] && f.perfis[p].tipo === "editavel") {
+          // Lê exatamente a propriedade 'ativo' que veio do banco de dados
           original[`${f.id}|${p}`] = !!f.perfis[p].ativo;
-      }),
-    );
+        }
+      });
+    });
+
     atual = { ...original };
 
+    // 3. Desenha a tabela na tela com base nos dados reais do banco
     renderizar();
     atualizarEstado();
+  } catch (erro) {
+    console.error("Falha ao carregar as permissões:", erro);
+    const msgErro = document.getElementById("erroPermissoes");
+    if (msgErro) msgErro.textContent = "Não foi possível carregar as permissões do servidor.";
   }
+}
 
   carregar();
 })();
@@ -3041,7 +2525,6 @@ function emailValido(valor) {
   let usuarios = [];
   let editandoId = null;
 
-  // Evita que nomes vindos do banco quebrem o HTML da tabela
   function esc(t) {
     return String(t).replace(
       /[&<>"']/g,
@@ -3093,7 +2576,7 @@ function emailValido(valor) {
         <tr>
           <td class="colaborador"><strong>${esc(u.nome)}</strong><span>${esc(u.departamento)}</span></td>
           <td>${esc(u.email)}</td>
-          <td><span class="badge ${PERFIS[u.perfil].badge}">${PERFIS[u.perfil].texto}</span></td>
+          <td><span class="badge ${PERFIS[u.perfil]?.badge || 'usr-perfil-func'}">${PERFIS[u.perfil]?.texto || u.perfil}</span></td>
           <td>${VINCULOS[u.vinculo] || esc(u.vinculo)}</td>
           <td class="acoes"><button type="button" class="btn-acao" data-editar="${u.id}">Editar</button></td>
         </tr>`,
@@ -3171,56 +2654,25 @@ function emailValido(valor) {
     if (e.key === "Escape" && !modal.classList.contains("oculto")) fechar();
   });
 
-  /* ---------- Validação ---------- */
   function validar() {
     let ok = true;
     const nome = campos.nome.value.trim();
     const email = campos.email.value.trim().toLowerCase();
 
     if (nome.length < 3) {
-      mostrarErro(
-        "campoUsuarioNome",
-        "erroUsuarioNome",
-        "Informe o nome completo.",
-      );
+      mostrarErro("campoUsuarioNome", "erroUsuarioNome", "Informe o nome completo.");
       ok = false;
     } else mostrarErro("campoUsuarioNome", "erroUsuarioNome", "");
 
-    // [BACKEND] A duplicidade de e-mail também deve ser validada no servidor (409)
-    const duplicado = usuarios.some(
-      (u) => u.email.toLowerCase() === email && u.id !== editandoId,
-    );
     if (!emailValido(email)) {
       mostrarErro("campoUsuarioEmail", "erroUsuarioEmail", "E-mail inválido.");
-      ok = false;
-    } else if (duplicado) {
-      mostrarErro(
-        "campoUsuarioEmail",
-        "erroUsuarioEmail",
-        "Este e-mail já está cadastrado.",
-      );
       ok = false;
     } else mostrarErro("campoUsuarioEmail", "erroUsuarioEmail", "");
 
     [
-      [
-        "departamento",
-        "campoUsuarioDepto",
-        "erroUsuarioDepto",
-        "Selecione o departamento.",
-      ],
-      [
-        "perfil",
-        "campoUsuarioPerfil",
-        "erroUsuarioPerfil",
-        "Selecione o perfil de acesso.",
-      ],
-      [
-        "vinculo",
-        "campoUsuarioVinculo",
-        "erroUsuarioVinculo",
-        "Selecione o vínculo contratual.",
-      ],
+      ["departamento", "campoUsuarioDepto", "erroUsuarioDepto", "Selecione o departamento."],
+      ["perfil", "campoUsuarioPerfil", "erroUsuarioPerfil", "Selecione o perfil de acesso."],
+      ["vinculo", "campoUsuarioVinculo", "erroUsuarioVinculo", "Selecione o vínculo contratual."],
     ].forEach(([chave, c, e, texto]) => {
       if (!campos[chave].value) {
         mostrarErro(c, e, texto);
@@ -3231,7 +2683,7 @@ function emailValido(valor) {
     return ok;
   }
 
-  /* ---------- Salvar ---------- */
+  /* ---------- Salvar (Real via API) ---------- */
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     document.getElementById("erroUsuarioGeral").textContent = "";
@@ -3248,128 +2700,83 @@ function emailValido(valor) {
       vinculo: campos.vinculo.value,
     };
 
-    /* [BACKEND] SUBSTITUIR PELA CHAMADA REAL:
-       const resposta = await fetch(
-         editandoId ? `/api/admin/usuarios/${editandoId}` : "/api/admin/usuarios",
-         { method: editandoId ? "PUT" : "POST",
-           headers: { "Content-Type": "application/json" },
-           body: JSON.stringify(dados) });
-       if (!resposta.ok) {
-         document.getElementById("erroUsuarioGeral").textContent =
-           resposta.status === 409 ? "Este e-mail já está cadastrado." : "Não foi possível salvar.";
-         btnSalvar.disabled = false; btnSalvar.textContent = "Salvar";
-         return;
-       }
-       const salvo = await resposta.json();   // usuário com o id gerado pelo banco */
-
-    // [PROTÓTIPO] Atualiza a lista local. REMOVER depois.
-    const eraEdicao = !!editandoId;
-    if (eraEdicao) {
-      usuarios = usuarios.map((u) =>
-        u.id === editandoId ? { ...u, ...dados } : u,
+    try {
+      const resposta = await fetch(
+        editandoId ? `/api/admin/usuarios/${editandoId}` : "/api/admin/usuarios",
+        {
+          method: editandoId ? "PUT" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(dados)
+        }
       );
-    } else {
-      usuarios.unshift({ id: Date.now(), ...dados });
-    }
 
-    renderizar();
-    fechar();
-    avisar(
-      eraEdicao
-        ? `Dados de ${dados.nome} atualizados.`
-        : `${dados.nome} adicionado(a). Convite enviado por e-mail.`,
-    );
+      if (!resposta.ok) {
+        const erroJson = await resposta.json().catch(() => ({}));
+        document.getElementById("erroUsuarioGeral").textContent =
+          resposta.status === 409 ? (erroJson.erro || "Este e-mail já está cadastrado.") : "Não foi possível salvar.";
+        btnSalvar.disabled = false;
+        btnSalvar.textContent = "Salvar";
+        return;
+      }
+
+      document.getElementById("erroUsuarioGeral").textContent = "";
+
+      await carregar();
+      fechar();
+      avisar(
+        editandoId
+          ? `Dados de ${dados.nome} atualizados.`
+          : `${dados.nome} adicionado(a) com sucesso!`,
+      );
+    } catch (erro) {
+      console.error(erro);
+      btnSalvar.disabled = false;
+      btnSalvar.textContent = "Salvar";
+    }
   });
 
-  /* ---------- Remover ---------- */
+  /* ---------- Remover (Real via API) ---------- */
   btnRemover.addEventListener("click", async () => {
     const u = usuarios.find((x) => x.id === editandoId);
-    if (
-      !u ||
-      !confirm(`Remover ${u.nome} do sistema? O acesso será bloqueado.`)
-    )
-      return;
+    if (!u || !confirm(`Remover ${u.nome} do sistema? O acesso será bloqueado.`)) return;
 
-    /* [BACKEND] SUBSTITUIR PELA CHAMADA REAL:
-       await fetch(`/api/admin/usuarios/${u.id}`, { method: "DELETE" });
-       Recomendação: DESATIVAR o usuário em vez de apagar, para manter o histórico
-       de ponto e a auditoria. */
+    try {
+      const resposta = await fetch(`/api/admin/usuarios/${u.id}`, { method: "DELETE" });
+      if (!resposta.ok) throw new Error("Erro ao remover usuário.");
 
-    // [PROTÓTIPO] REMOVER depois
-    usuarios = usuarios.filter((x) => x.id !== u.id);
-    renderizar();
-    fechar();
-    avisar(`${u.nome} removido(a).`);
+      await carregar();
+      fechar();
+      avisar(`${u.nome} removido(a).`);
+    } catch (erro) {
+      console.error(erro);
+      alert("Não foi possível remover o usuário.");
+    }
   });
 
-  /* ---------- Carregar ---------- */
+  /* ---------- Carregar (Real via API) ---------- */
   async function carregar() {
-    /* [BACKEND] SUBSTITUIR PELAS CHAMADAS REAIS:
-       const [setores, lista] = await Promise.all([
-         fetch("/api/setores").then(r => r.json()),
-         fetch("/api/admin/usuarios").then(r => r.json())
-       ]); */
+    try {
+      const resposta = await fetch("/api/admin/usuarios");
+      if (!resposta.ok) throw new Error("Erro ao carregar usuários.");
+      
+      usuarios = await resposta.json();
 
-    // [PROTÓTIPO] Dados fictícios. REMOVER depois.
-    const setores = [
-      "Financeiro",
-      "Tecnologia",
-      "Comercial",
-      "Recursos Humanos",
-    ];
-    usuarios = [
-      {
-        id: 1,
-        nome: "Emily Mirian",
-        email: "emily.mirian@empresa.com",
-        departamento: "Financeiro",
-        perfil: "funcionario",
-        vinculo: "estagio_6h",
-      },
-      {
-        id: 2,
-        nome: "Lucas Andrade",
-        email: "lucas.andrade@empresa.com",
-        departamento: "Tecnologia",
-        perfil: "funcionario",
-        vinculo: "clt_8h",
-      },
-      {
-        id: 3,
-        nome: "Rafael Costa",
-        email: "rafael.costa@empresa.com",
-        departamento: "Comercial",
-        perfil: "funcionario",
-        vinculo: "jovem_aprendiz",
-      },
-      {
-        id: 4,
-        nome: "Carla Mendes",
-        email: "carla.mendes@empresa.com",
-        departamento: "Recursos Humanos",
-        perfil: "rh",
-        vinculo: "clt_8h",
-      },
-      {
-        id: 5,
-        nome: "Administrador",
-        email: "admin@empresa.com",
-        departamento: "Tecnologia",
-        perfil: "admin",
-        vinculo: "clt_8h",
-      },
-    ];
+      const setores = [
+        "Financeiro",
+        "Tecnologia",
+        "Comercial",
+        "Recursos Humanos",
+      ];
 
-    campos.departamento.insertAdjacentHTML(
-      "beforeend",
-      setores
-        .map((s) => `<option value="${esc(s)}">${esc(s)}</option>`)
-        .join(""),
-    );
-    renderizar();
+      campos.departamento.innerHTML = '<option value="">Selecione</option>' + 
+        setores.map((s) => `<option value="${esc(s)}">${esc(s)}</option>`).join("");
+      
+      renderizar();
 
-    // Atalho "Novo Colaborador" da Visão Global (usuarios.html#novo)
-    if (location.hash === "#novo") abrir(null);
+      if (location.hash === "#novo") abrir(null);
+    } catch (erro) {
+      console.error("Erro ao carregar gestão de usuários:", erro);
+    }
   }
 
   carregar();
@@ -3476,27 +2883,41 @@ function emailValido(valor) {
     const r = regras.find((x) => x.id === chk.dataset.banco);
     chk.disabled = true;
 
-    /* [BACKEND] SUBSTITUIR PELA CHAMADA REAL:
-       const resposta = await fetch(`/api/regras/${r.id}`, {
-         method: "PUT",
-         headers: { "Content-Type": "application/json" },
-         body: JSON.stringify({ bancoHoras: chk.checked })
-       });
-       if (!resposta.ok) { chk.checked = !chk.checked; chk.disabled = false; avisar("Não foi possível salvar."); return; } */
+    try {
+      const resposta = await fetch(`/api/regras/${r.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nome: r.nome,
+          cargasDiarias: r.cargasDiarias,
+          limiteSemanal: r.limiteSemanal,
+          toleranciaMin: r.toleranciaMin,
+          bancoHoras: chk.checked,
+          bloqueioHoraExtra: r.bloqueioHoraExtra
+        })
+      });
 
-    r.bancoHoras = chk.checked;
-    chk.disabled = false;
-    avisar(
-      `Banco de horas ${chk.checked ? "permitido" : "desativado"} em "${r.nome}".`,
-    );
+      if (!resposta.ok) throw new Error("Falha ao salvar");
+
+      r.bancoHoras = chk.checked;
+      avisar(`Banco de horas ${chk.checked ? "permitido" : "desativado"} em "${r.nome}".`);
+    } catch (erro) {
+      chk.checked = !chk.checked;
+      avisar("Não foi possível salvar.");
+    } finally {
+      chk.disabled = false;
+    }
   });
 
   /* ---------- Botão Editar Regra ---------- */
   grade.addEventListener("click", (e) => {
     const btn = e.target.closest("[data-editar]");
-    if (btn) abrir(regras.find((x) => x.id === btn.dataset.editar));
+    if (btn) {
+      const regraId = btn.dataset.editar;
+      const regraEncontrada = regras.find((x) => String(x.id) === String(regraId));
+      abrir(regraEncontrada);
+    }
   });
-
   document
     .getElementById("btnNovaRegra")
     .addEventListener("click", () => abrir(null));
@@ -3520,14 +2941,14 @@ function emailValido(valor) {
   }
 
   function abrir(r) {
-    editandoId = r ? r.id : null;
+    editandoId = r ? (r.id || r.ContratoId) : null; 
     form.reset();
     limparErros();
     titulo.textContent = r ? "Editar Regra" : "Nova Regra";
 
     if (r) {
       campos.nome.value = r.nome;
-      campos.cargas.value = r.cargasDiarias.join(", ");
+      campos.cargas.value = (r.cargasDiarias || [8]).join(", ");
       campos.semanal.value = r.limiteSemanal;
       campos.tolerancia.value = r.toleranciaMin;
       campos.bloqueio.checked = r.bloqueioHoraExtra;
@@ -3633,7 +3054,7 @@ function emailValido(valor) {
     return ok;
   }
 
-  /* ---------- Salvar ---------- */
+  /* ---------- Salvar (Modal de Edição) ---------- */
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     document.getElementById("erroRegraGeral").textContent = "";
@@ -3650,74 +3071,38 @@ function emailValido(valor) {
       bloqueioHoraExtra: campos.bloqueio.checked,
       bancoHoras: campos.banco.checked,
     };
-    const eraEdicao = !!editandoId;
 
-    /* [BACKEND] SUBSTITUIR PELA CHAMADA REAL:
-       const resposta = await fetch(eraEdicao ? `/api/regras/${editandoId}` : "/api/regras", {
-         method: eraEdicao ? "PUT" : "POST",
-         headers: { "Content-Type": "application/json" },
-         body: JSON.stringify(dados)
-       });
-       if (!resposta.ok) {
-         document.getElementById("erroRegraGeral").textContent = "Não foi possível salvar a regra.";
-         btnSalvar.disabled = false; btnSalvar.textContent = "Salvar Regra";
-         return;
-       }
-       const salva = await resposta.json();   // regra com o id definido pelo servidor */
+    try {
+      const resposta = await fetch(`/api/regras/${editandoId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(dados)
+      });
 
-    // [PROTÓTIPO] Atualiza só na tela. REMOVER depois.
-    if (eraEdicao)
-      Object.assign(
-        regras.find((r) => r.id === editandoId),
-        dados,
-      );
-    else regras.push({ id: "regra-" + Date.now(), ...dados });
+      if (!resposta.ok) throw new Error("Erro ao salvar regra.");
 
-    renderizar();
-    fechar();
-    avisar(
-      eraEdicao
-        ? `Regra "${dados.nome}" atualizada.`
-        : `Regra "${dados.nome}" criada.`,
-    );
+      await carregar();
+      fechar();
+      avisar(`Regra "${dados.nome}" atualizada com sucesso!`);
+    } catch (erro) {
+      console.error(erro);
+      document.getElementById("erroRegraGeral").textContent = "Não foi possível salvar a regra.";
+    } finally {
+      btnSalvar.disabled = false;
+      btnSalvar.textContent = "Salvar Regra";
+    }
   });
 
   /* ---------- Carregar ---------- */
   async function carregar() {
-    /* [BACKEND] SUBSTITUIR PELA CHAMADA REAL:
-       regras = await fetch("/api/regras").then(r => r.json()); */
-
-    // [PROTÓTIPO] Dados fictícios baseados na Fig. 20. REMOVER depois.
-    regras = [
-      {
-        id: "clt",
-        nome: "Regime CLT (Efetivos)",
-        cargasDiarias: [8],
-        limiteSemanal: 44,
-        toleranciaMin: 10,
-        bancoHoras: true,
-        bloqueioHoraExtra: false,
-      },
-      {
-        id: "estagio",
-        nome: "Regime de Estágio",
-        cargasDiarias: [6, 4],
-        limiteSemanal: 30,
-        toleranciaMin: 5,
-        bancoHoras: false,
-        bloqueioHoraExtra: true,
-      },
-      {
-        id: "jovem",
-        nome: "Jovem Aprendiz",
-        cargasDiarias: [6],
-        limiteSemanal: 30,
-        toleranciaMin: 5,
-        bancoHoras: false,
-        bloqueioHoraExtra: true,
-      },
-    ];
-    renderizar();
+    try {
+      const resposta = await fetch("/api/regras");
+      if (!resposta.ok) throw new Error("Erro ao carregar regras.");
+      regras = await resposta.json();
+      renderizar();
+    } catch (erro) {
+      console.error("Erro ao carregar regras do banco:", erro);
+    }
   }
 
   carregar();
@@ -3974,106 +3359,64 @@ function emailValido(valor) {
     };
     const eraEdicao = !!editandoId;
 
-    /* [BACKEND] SUBSTITUIR PELA CHAMADA REAL:
-       const url = eraEdicao ? `/api/feriados/${editandoId}` : "/api/feriados";
-       const resposta = await fetch(url, {
-         method: eraEdicao ? "PUT" : "POST",
-         headers: { "Content-Type": "application/json" },
-         body: JSON.stringify(dados)
-       });
-       if (!resposta.ok) {
-         document.getElementById("erroFeriadoGeral").textContent =
-           resposta.status === 409 ? "Já existe um feriado nesta data." : "Não foi possível salvar.";
-         btnSalvar.disabled = false; btnSalvar.textContent = "Salvar";
-         return;
-       }
-       const salvo = await resposta.json();   // { id, data, descricao, tipo } */
+    try {
+      const url = eraEdicao ? `/api/feriados/${editandoId}` : "/api/feriados";
+      const resposta = await fetch(url, {
+        method: eraEdicao ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(dados)
+      });
 
-    // [PROTÓTIPO] Atualiza só na tela. REMOVER depois.
-    if (eraEdicao)
-      Object.assign(
-        feriados.find((x) => x.id === editandoId),
-        dados,
-      );
-    else feriados.push({ id: Date.now(), ...dados });
+      if (!resposta.ok) {
+        const erroJson = await resposta.json().catch(() => ({}));
+        document.getElementById("erroFeriadoGeral").textContent =
+          resposta.status === 409 ? "Já existe um feriado nesta data." : (erroJson.erro || "Não foi possível salvar.");
+        btnSalvar.disabled = false; 
+        btnSalvar.textContent = "Salvar";
+        return;
+      }
 
-    // Mostra o mês do feriado salvo
-    const d = deISO(dados.data);
-    mesAtual = new Date(d.getFullYear(), d.getMonth(), 1);
-
-    fecharModal();
-    renderizar();
-    avisar(
-      `Feriado "${dados.descricao}" ${eraEdicao ? "atualizado" : "cadastrado"}.`,
-    );
+      await carregar();
+      fecharModal();
+      avisar(`Feriado "${dados.descricao}" ${eraEdicao ? "atualizado" : "cadastrado"}.`);
+    } catch (erro) {
+      console.error(erro);
+      btnSalvar.disabled = false;
+      btnSalvar.textContent = "Salvar";
+    }
   });
-
   /* ---------- Excluir ---------- */
   btnExcluir.addEventListener("click", async () => {
     const f = feriados.find((x) => x.id === editandoId);
-    if (
-      !f ||
-      !confirm(
-        `Excluir o feriado "${f.descricao}"? O dia volta a contar como dia útil.`,
-      )
-    )
-      return;
+    if (!f || !confirm(`Excluir o feriado "${f.descricao}"? O dia volta a contar como dia útil.`)) return;
 
-    /* [BACKEND] SUBSTITUIR PELA CHAMADA REAL:
-       await fetch(`/api/feriados/${f.id}`, { method: "DELETE" }); */
+    try {
+      const resposta = await fetch(`/api/feriados/${f.id}`, { method: "DELETE" });
+      if (!resposta.ok) throw new Error("Erro ao excluir.");
 
-    feriados = feriados.filter((x) => x.id !== f.id);
-    fecharModal();
-    renderizar();
-    avisar(`Feriado "${f.descricao}" excluído.`);
+      await carregar();
+      fecharModal();
+      avisar(`Feriado "${f.descricao}" excluído.`);
+    } catch (erro) {
+      console.error(erro);
+      alert("Não foi possível excluir o feriado.");
+    }
   });
 
   /* ---------- Carregar ---------- */
   async function carregar() {
-    /* [BACKEND] SUBSTITUIR PELA CHAMADA REAL:
-       feriados = await fetch(`/api/feriados?ano=${mesAtual.getFullYear()}`).then(r => r.json());
-       Ao trocar de ano na navegação, buscar novamente os feriados daquele ano. */
+    try {
+      const ano = mesAtual.getFullYear();
+      const resposta = await fetch(`/api/feriados?ano=${ano}`);
+      if (!resposta.ok) throw new Error("Erro ao carregar feriados.");
+      
+      feriados = await resposta.json();
+      renderizar();
 
-    // [PROTÓTIPO] Dados de exemplo. REMOVER depois.
-    feriados = [
-      {
-        id: 1,
-        data: "2026-09-07",
-        descricao: "Dia da Independência",
-        tipo: "nacional",
-      },
-      {
-        id: 2,
-        data: "2026-10-12",
-        descricao: "Nossa Sra. Aparecida",
-        tipo: "nacional",
-      },
-      { id: 3, data: "2026-11-02", descricao: "Finados", tipo: "nacional" },
-      {
-        id: 4,
-        data: "2026-11-15",
-        descricao: "Proclamação da República",
-        tipo: "nacional",
-      },
-      {
-        id: 5,
-        data: "2026-11-20",
-        descricao: "Dia da Consciência Negra",
-        tipo: "nacional",
-      },
-      {
-        id: 6,
-        data: "2026-12-24",
-        descricao: "Véspera de Natal (recesso)",
-        tipo: "dispensa",
-      },
-      { id: 7, data: "2026-12-25", descricao: "Natal", tipo: "nacional" },
-    ];
-
-    renderizar();
-
-    // Atalho "Cadastrar Feriado" da Visão Global (calendario.html#novo)
-    if (location.hash === "#novo") abrirModal(null);
+      if (location.hash === "#novo") abrirModal(null);
+    } catch (erro) {
+      console.error("Erro ao carregar calendário:", erro);
+    }
   }
 
   carregar();
@@ -4187,105 +3530,31 @@ function emailValido(valor) {
 
   /* ---------- Exportar ---------- */
   document.getElementById("btnExportarLogs").addEventListener("click", () => {
-    /* [BACKEND] SUBSTITUIR PELA CHAMADA REAL (o servidor exporta TODOS os registros do filtro):
-       const params = new URLSearchParams({
-         data: filtroData.value, usuario: filtroUsuario.value, nivel: filtroNivel.value
-       });
-       window.location.href = `/api/auditoria/exportar?${params}`;
-       A exportação também deve ser registrada na própria auditoria. */
-
-    // [PROTÓTIPO] Gera um CSV com os registros visíveis. REMOVER depois.
-    const linhas = [
-      ["Data/Hora", "Usuário", "Criticidade", "Ação", "Módulo", "Detalhes"],
-    ];
-    filtrados().forEach((l) =>
-      linhas.push([
-        formatarData(l.dataHora),
-        USUARIOS[l.usuario].texto,
-        NIVEIS[l.nivel].texto,
-        l.acao,
-        l.modulo,
-        l.detalhes,
-      ]),
-    );
-    const csv = linhas
-      .map((c) => c.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(";"))
-      .join("\r\n");
-    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `logs_auditoria_${new Date().toISOString().slice(0, 10)}.csv`;
-    link.click();
-    URL.revokeObjectURL(link.href);
+    const params = new URLSearchParams({
+      data: filtroData.value, 
+      usuario: filtroUsuario.value, 
+      nivel: filtroNivel.value
+    });
+    window.location.href = `/api/logs-sistema/exportar?${params}`;
   });
 
   /* ---------- Carregar ---------- */
   async function carregar() {
-    /* [BACKEND] SUBSTITUIR PELA CHAMADA REAL:
-       logs = await fetch("/api/auditoria?pagina=1").then(r => r.json());
-       // [{ dataHora: "2026-09-13T10:42", usuario: "rh", nivel: "media",
-       //    acao: "...", modulo: "...", detalhes: "..." }] */
+    try {
+      const params = new URLSearchParams({
+        data: filtroData.value,
+        usuario: filtroUsuario.value,
+        nivel: filtroNivel.value
+      });
 
-    // [PROTÓTIPO] Dados fictícios. REMOVER depois.
-    logs = [
-      {
-        dataHora: "2026-09-13T10:42",
-        usuario: "rh",
-        nivel: "media",
-        acao: "Edição Manual de Ponto",
-        modulo: "Pendências",
-        detalhes: "colaborador_id=1 | tipo=saida | null → 14:00",
-      },
-      {
-        dataHora: "2026-09-13T00:05",
-        usuario: "sistema",
-        nivel: "alta",
-        acao: "Débito de Falta Injustificada",
-        modulo: "Jornada",
-        detalhes: "colaborador_id=3 | data=2026-09-12 | debito=6h",
-      },
-      {
-        dataHora: "2026-09-12T16:18",
-        usuario: "rh",
-        nivel: "baixa",
-        acao: "Aprovação de Atestado Médico",
-        modulo: "Pendências",
-        detalhes: "atestado_id=27 | dias=2",
-      },
-      {
-        dataHora: "2026-09-12T09:30",
-        usuario: "admin",
-        nivel: "alta",
-        acao: "Alteração de Regra",
-        modulo: "Regras e Contratos",
-        detalhes: "regra=estagio | bloqueio_hora_extra=true",
-      },
-      {
-        dataHora: "2026-09-11T22:14",
-        usuario: "sistema",
-        nivel: "alta",
-        acao: "Bloqueio de Acesso",
-        modulo: "Autenticação",
-        detalhes: "usuario_id=8 | tentativas=5",
-      },
-      {
-        dataHora: "2026-09-11T14:02",
-        usuario: "admin",
-        nivel: "media",
-        acao: "Módulo Desativado",
-        modulo: "Controle de Módulos",
-        detalhes: "modulo=importacao | ativo=false",
-      },
-      {
-        dataHora: "2026-09-10T09:12",
-        usuario: "rh",
-        nivel: "baixa",
-        acao: "Importação de Planilha",
-        modulo: "Importar Planilhas",
-        detalhes: "arquivo=registros_agosto_2026.csv | linhas=1240",
-      },
-    ];
-    renderizar();
+      const resposta = await fetch(`/api/logs-sistema?${params}`);
+      if (!resposta.ok) throw new Error("Erro ao carregar logs.");
+      
+      logs = await resposta.json();
+      renderizar();
+    } catch (erro) {
+      console.error("Erro ao carregar logs do sistema:", erro);
+    }
   }
 
   carregar();

@@ -7,6 +7,8 @@ using PontoOnline.mvc.DTOs;
 
 namespace PontoOnline.mvc.Controllers;
 
+[Route("api/[controller]")]
+
 public class PontoController : Controller
 {
     private readonly AppDbContext _context;
@@ -18,13 +20,11 @@ public class PontoController : Controller
         _calculoService = calculoService;
     }
 
-    [HttpPost]
-    public async Task<IActionResult> Registrar([FromBody] RegistrarPontoDto dto)
+    [HttpPost("Registrar/{usuarioId}")]
+    public async Task<IActionResult> Registrar(int usuarioId, [FromBody] RegistrarPontoDto dto)
     {
         try
         {
-            int usuarioId = 1; 
-
             var usuario = await _context.Usuarios
                 .Include(u => u.TipoContrato)
                 .FirstOrDefaultAsync(u => u.UsuarioId == usuarioId);
@@ -68,12 +68,20 @@ public class PontoController : Controller
                     return BadRequest("Tipo de marcação inválido. Use: Entrada1, SaidaAlmoco, RetornoAlmoco ou Saida2.");
             }
 
-            int saldoCalculado = _calculoService.CalcularSaldoDiario(registroPonto, usuario.TipoContrato);
-            registroPonto.SaldoDiarioMinutos = saldoCalculado;
+            int saldoAtualizado = 0;
+            try 
+            {
+                saldoAtualizado = _calculoService.CalcularSaldoDiario(registroPonto, usuario.TipoContrato);
+                registroPonto.SaldoDiarioMinutos = saldoAtualizado;
+            }
+            catch (Exception)
+            {
+                saldoAtualizado = registroPonto.SaldoDiarioMinutos ?? 0;
+            }
 
             await _context.SaveChangesAsync();
 
-            return Ok(new { mensagem = "Ponto registrado com sucesso!", saldoAtual = saldoCalculado });
+            return Ok(new { mensagem = "Ponto registrado com sucesso!", saldoAtual = saldoAtualizado });
         }
         catch (Exception ex)
         {
@@ -195,15 +203,16 @@ public class PontoController : Controller
             int minutosRestantes = metaDiariaMinutos - minutosTrabalhados;
             if (minutosRestantes < 0) minutosRestantes = 0;
 
+            double percentual = (double)minutosTrabalhados / metaDiariaMinutos;
             string statusCor = "verde";
 
-            if (minutosRestantes > 0 && minutosRestantes <= 15)
+            if (percentual >= 0.97)
+            {
+                statusCor = "vermelho";
+            }
+            else if (percentual >= 0.85)
             {
                 statusCor = "amarelo";
-            }
-            else if (minutosTrabalhados > metaDiariaMinutos)
-            {
-                statusCor = "vermelho"; 
             }
 
             return Ok(new

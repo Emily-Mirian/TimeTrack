@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Painel do Administrador - Time track</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="menu-lateral">
+        <div class="logo">⏱ Time track</div>
+        <nav>
+          <a href="#parametros">Parâmetros</a>
+          <a href="#colaboradores">Colaboradores</a>
+          <a href="#feriados">Feriados</a>
+          <a href="#auditoria">Auditoria</a>
+        </nav>
+      </aside>
+
+      <main class="conteudo">
+        <header class="topo">
+          <div>
+            <h1>Parâmetros do Sistema</h1>
+            <small>Administrador: <span id="nome-usuario"></span></small>
+          </div>
+          <details class="perfil">
+            <summary>👤 Meu perfil</summary>
+            <button class="btn" id="btn-sair">Sair</button>
+          </details>
+        </header>
+
+        <section class="card" id="parametros">
+          <div class="grade-3">
+            <button class="btn" data-abrir="dialog-colaborador">
+              Novo colaborador
+            </button>
+            <button class="btn" data-abrir="dialog-vinculo">
+              Definir vínculo (CLT/Estágio)
+            </button>
+            <button class="btn" data-abrir="dialog-feriado">
+              Cadastrar feriado
+            </button>
+          </div>
+        </section>
+        <section class="card" id="colaboradores">
+          <h2>Colaboradores</h2>
+          <div class="tabela-rolagem">
+            <table id="tabela-colaboradores">
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>E-mail</th>
+                  <th>Setor</th>
+                  <th>Vínculo</th>
+                  <th>Carga/dia</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+        <section class="card" id="feriados">
+          <h2>Feriados</h2>
+          <div class="tabela-rolagem">
+            <table id="tabela-feriados">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Nome</th>
+                  <th>Tipo</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+        <section class="card" id="auditoria">
+          <h2>Auditoria recente</h2>
+          <div class="tabela-rolagem">
+            <table id="tabela-auditoria">
+              <thead>
+                <tr>
+                  <th>Usuário</th>
+                  <th>Ação</th>
+                  <th>Data/hora</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <dialog id="dialog-colaborador">
+      <form id="form-colaborador">
+        <h2>Novo colaborador</h2>
+
+        <label for="c-nome">Nome completo</label>
+        <input class="campo" id="c-nome" name="nome" required />
+
+        <label for="c-email">E-mail</label>
+        <input class="campo" id="c-email" name="email" type="email" required />
+
+        <label for="c-setor">Setor</label>
+        <input class="campo" id="c-setor" name="setor" required />
+
+        <label for="c-vinculo">Vínculo</label>
+        <select class="campo" id="c-vinculo" name="vinculo">
+          <option>CLT</option>
+          <option>Estágio</option>
+        </select>
+
+        <label for="c-carga">Carga diária (horas)</label>
+        <input
+          class="campo"
+          id="c-carga"
+          name="carga"
+          type="number"
+          min="1"
+          max="12"
+          value="8"
+          required
+        />
+
+        <label for="c-admissao">Data de admissão</label>
+        <input
+          class="campo"
+          id="c-admissao"
+          name="admissao"
+          type="date"
+          required
+        />
+
+        <div class="acoes-dialog">
+          <button class="btn btn-outline" type="button" data-fechar>
+            Cancelar
+          </button>
+          <button class="btn" type="submit">Salvar</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="dialog-vinculo">
+      <form id="form-vinculo">
+        <h2>Definir vínculo</h2>
+
+        <label for="v-colaborador">Colaborador</label>
+        <select
+          class="campo"
+          id="v-colaborador"
+          name="colaborador"
+          required
+        ></select>
+
+        <label for="v-vinculo">Vínculo</label>
+        <select class="campo" id="v-vinculo" name="vinculo">
+          <option>CLT</option>
+          <option>Estágio</option>
+        </select>
+
+        <label for="v-carga">Carga diária (horas)</label>
+        <input
+          class="campo"
+          id="v-carga"
+          name="carga"
+          type="number"
+          min="1"
+          max="12"
+          value="8"
+          required
+        />
+
+        <div class="acoes-dialog">
+          <button class="btn btn-outline" type="button" data-fechar>
+            Cancelar
+          </button>
+          <button class="btn" type="submit">Salvar</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="dialog-feriado">
+      <form id="form-feriado">
+        <h2>Cadastrar feriado</h2>
+
+        <label for="f-data">Data</label>
+        <input class="campo" id="f-data" name="data" type="date" required />
+
+        <label for="f-nome">Nome do feriado</label>
+        <input class="campo" id="f-nome" name="nome" required />
+
+        <label for="f-tipo">Tipo</label>
+        <select class="campo" id="f-tipo" name="tipo">
+          <option>Nacional</option>
+          <option>Estadual</option>
+          <option>Municipal</option>
+        </select>
+
+        <div class="acoes-dialog">
+          <button class="btn btn-outline" type="button" data-fechar>
+            Cancelar
+          </button>
+          <button class="btn" type="submit">Salvar</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script src="js/api.js"></script>
+    <script src="js/admin.js"></script>
+  </body>
+</html>

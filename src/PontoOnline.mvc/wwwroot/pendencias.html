@@ -31,7 +31,7 @@
       <nav class="menu-itens">
         <p class="menu-secao">Portal do RH</p>
 
-        <button class="menu-item ativo" data-ir="../rh/pendencias.html">
+        <button class="menu-item ativo" data-ir="pendencias.html">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -46,7 +46,7 @@
           </svg>
           Pendências
         </button>
-        <button class="menu-item" data-ir="../rh/importar.html">
+        <button class="menu-item" data-ir="importar.html">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -58,7 +58,7 @@
           </svg>
           Importar Planilhas (CSV)
         </button>
-        <button class="menu-item" data-ir="../rh/exportar.html">
+        <button class="menu-item" data-ir="exportar.html">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -70,7 +70,7 @@
           </svg>
           Exportar Relatórios (PDF)
         </button>
-        <button class="menu-item" data-ir="../rh/auditoria.html">
+        <button class="menu-item" data-ir="auditoria.html">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -82,7 +82,7 @@
           </svg>
           Auditoria de Ponto
         </button>
-        <button class="menu-item" data-ir="../rh/configuracoes.html">
+        <button class="menu-item" data-ir="configuracoes.html">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -103,7 +103,7 @@
         <button
           class="menu-item"
           data-perfil="admin"
-          data-ir="../admin/visao-global.html"
+          data-ir="visao-global.html"
         >
           <svg
             viewBox="0 0 24 24"
@@ -121,7 +121,7 @@
         <button
           class="menu-item"
           data-perfil="admin"
-          data-ir="../admin/usuarios.html"
+          data-ir="usuarios.html"
         >
           <svg
             viewBox="0 0 24 24"
@@ -139,7 +139,7 @@
         <button
           class="menu-item"
           data-perfil="admin"
-          data-ir="../admin/regras.html"
+          data-ir="regras.html"
         >
           <svg
             viewBox="0 0 24 24"
@@ -155,7 +155,7 @@
         <button
           class="menu-item"
           data-perfil="admin"
-          data-ir="../admin/calendario.html"
+          data-ir="calendario.html"
         >
           <svg
             viewBox="0 0 24 24"
@@ -171,7 +171,7 @@
         <button
           class="menu-item"
           data-perfil="admin"
-          data-ir="../admin/permissoes.html"
+          data-ir="permissoes.html"
         >
           <svg
             viewBox="0 0 24 24"
@@ -187,7 +187,7 @@
         <button
           class="menu-item"
           data-perfil="admin"
-          data-ir="../admin/configuracoes-globais.html"
+          data-ir="configuracoes-globais.html"
         >
           <svg
             viewBox="0 0 24 24"
@@ -204,7 +204,7 @@
         <button
           class="menu-item"
           data-perfil="admin"
-          data-ir="../admin/logs.html"
+          data-ir="logs.html"
         >
           <svg
             viewBox="0 0 24 24"
@@ -248,14 +248,14 @@
             <span class="seta-baixo">⌄</span>
           </button>
           <div class="perfil-menu oculto" id="menuPerfil">
-            <button data-ir="../rh/configuracoes.html">Configurações</button>
+            <button data-ir="configuracoes.html">Configurações</button>
             <button
               data-perfil="admin"
-              data-ir="../admin/configuracoes-globais.html"
+              data-ir="configuracoes-globais.html"
             >
               Configurações Globais
             </button>
-            <button data-perfil="admin" data-ir="../admin/permissoes.html">
+            <button data-perfil="admin" data-ir="permissoes.html">
               Permissões de Acesso
             </button>
             <!-- [BACKEND] Sair: POST /api/auth/logout -->
@@ -446,7 +446,7 @@
       </div>
     </div>
 
-    <!-- Arquivo JS único (um nível acima, por isso o ../) -->
-    <script src="../js/main.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/main.js"></script>
   </body>
 </html>

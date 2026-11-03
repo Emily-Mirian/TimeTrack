@@ -8,6 +8,8 @@ public class Usuario
     public string SenhaHash { get; set; } = string.Empty;
     public string NivelAcesso { get; set; } = string.Empty;
     public int IdTipoContrato { get; set; }
+    public DateTime DataAdmissao { get; set; }
+    public string? Departamento { get; set; }
 
     public TipoContrato? TipoContrato { get; set; }
     public ICollection<RegistroPonto> RegistrosPonto { get; set; } = new List<RegistroPonto>();
