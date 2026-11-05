@@ -189,40 +189,136 @@ public class PontoController : Controller
             if (usuario == null || usuario.TipoContrato == null)
                 return NotFound(new { erro = "Usuário ou contrato não encontrado." });
 
-            var registroPonto = await _context.RegistrosPonto
-                .FirstOrDefaultAsync(r => r.IdUsuario == usuarioId && r.DataRegistro.Date == hoje);
+            // 1. Definir o início do mês atual (dia 1º) e o início da semana (segunda-feira)
+            var inicioMes = new DateTime(hoje.Year, hoje.Month, 1);
+            int diff = (7 + (hoje.DayOfWeek - DayOfWeek.Monday)) % 7;
+            var inicioSemana = hoje.AddDays(-diff);
 
+            // Busca todos os registros do usuário do dia 1º para cá
+            var registrosMes = await _context.RegistrosPonto
+                .Where(r => r.IdUsuario == usuarioId && r.DataRegistro.Date >= inicioMes)
+                .ToListAsync();
+
+            // 2. Calcular o dia de hoje (parcial)
+            var registroPontoHoje = registrosMes.FirstOrDefault(r => r.DataRegistro.Date == hoje);
             int metaDiariaMinutos = usuario.TipoContrato.CargaHorariaDiariaMinutos;
-            int minutosTrabalhados = 0;
+            int minutosTrabalhadosHoje = 0;
 
-            if (registroPonto != null)
+            if (registroPontoHoje != null)
             {
-                minutosTrabalhados = _calculoService.CalcularMinutosParciais(registroPonto, DateTime.Now);
+                minutosTrabalhadosHoje = _calculoService.CalcularMinutosParciais(registroPontoHoje, DateTime.Now);
             }
 
-            int minutosRestantes = metaDiariaMinutos - minutosTrabalhados;
+            // 3. Somar acumulados reais do Mês e da Semana iterando pelos dias salvos no banco
+            int minutosSemana = 0;
+            int minutosMes = 0;
+
+            foreach (var reg in registrosMes)
+            {
+                int minDia = 0;
+
+                // Se o dia for anterior a hoje e tiver saldo ou horas validadas
+                if (reg.DataRegistro.Date < hoje)
+                {
+                    // Se o saldo diário foi calculado, somamos a meta + o saldo (ou os períodos preenchidos)
+                    minMinutoDia(reg, metaDiariaMinutos, out minDia);
+                }
+                // Se for o dia de hoje, pega os minutos em tempo real
+                else if (reg.DataRegistro.Date == hoje)
+                {
+                    minDia = minutosTrabalhadosHoje;
+                }
+
+                minutosMes += minDia;
+
+                if (reg.DataRegistro.Date >= inicioSemana)
+                {
+                    minutosSemana += minDia;
+                }
+            }
+
+            int minutosRestantes = metaDiariaMinutos - minutosTrabalhadosHoje;
             if (minutosRestantes < 0) minutosRestantes = 0;
 
-            double percentual = (double)minutosTrabalhados / metaDiariaMinutos;
+            double percentual = metaDiariaMinutos > 0 ? (double)minutosTrabalhadosHoje / metaDiariaMinutos : 0;
             string statusCor = "verde";
 
-            if (percentual >= 0.97)
+            if (percentual >= 0.97) statusCor = "vermelho";
+            else if (percentual >= 0.85) statusCor = "amarelo";
+
+            return Ok(new
             {
-                statusCor = "vermelho";
-            }
-            else if (percentual >= 0.85)
+                minutosTrabalhados = minutosTrabalhadosHoje,
+                minutosRestantes = minutosRestantes,
+                metaDiariaMinutos = metaDiariaMinutos,
+                statusCor = statusCor,
+                horasTrabalhadasFormatadas = $"{minutosTrabalhadosHoje / 60}h {minutosTrabalhadosHoje % 60}min",
+                horasRestantesFormatadas = $"{minutosRestantes / 60}h {minutosRestantes % 60}min",
+                
+                // Valores formatados e numéricos para os cards de Semana e Mês
+                semanaFormatada = $"{minutosSemana / 60}h {minutosSemana % 60}min",
+                mesFormatada = $"{minutosMes / 60}h {minutosMes % 60}min",
+                minutosSemanaNumerico = minutosSemana,
+                minutosMesNumerico = minutosMes
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { erro = ex.Message });
+        }
+    }
+
+    // Auxiliar para somar os minutos dos dias passados com segurança
+    private void minMinutoDia(RegistroPonto reg, int metaPadrao, out int totalMin)
+    {
+        totalMin = metaPadrao;
+        if (reg.SaldoDiarioMinutos.HasValue)
+        {
+            totalMin = metaPadrao + reg.SaldoDiarioMinutos.Value;
+        }
+        else if (reg.Entrada1.HasValue && reg.Saida2.HasValue)
+        {
+            // Caso alternativo caso o saldo não esteja preenchido mas tenha as batidas
+            var manha = (reg.SaidaAlmoco ?? reg.Entrada1.Value) - reg.Entrada1.Value;
+            var tarde = reg.Saida2.Value - (reg.RetornoAlmoco ?? reg.Saida2.Value);
+            totalMin = (int)(manha.TotalMinutes + tarde.TotalMinutes);
+        }
+    }
+
+    [HttpGet("resumo-dashboard/{usuarioId}")]
+    public async Task<IActionResult> ObterResumoDashboard(int usuarioId)
+    {
+        try
+        {
+            var hoje = DateTime.Today;
+            var inicioMes = new DateTime(hoje.Year, hoje.Month, 1);
+            
+            int diff = (7 + (hoje.DayOfWeek - DayOfWeek.Monday)) % 7;
+            var inicioSemana = hoje.AddDays(-diff);
+
+            var registrosMes = await _context.RegistrosPonto
+                .Where(r => r.IdUsuario == usuarioId && r.DataRegistro.Date >= inicioMes)
+                .OrderBy(r => r.DataRegistro)
+                .ToListAsync();
+
+            int minutosMes = registrosMes.Sum(r => r.SaldoDiarioMinutos ?? 0);
+
+            int minutosSemana = registrosMes
+                .Where(r => r.DataRegistro.Date >= inicioSemana)
+                .Sum(r => r.SaldoDiarioMinutos ?? 0);
+
+            var registroHoje = registrosMes.FirstOrDefault(r => r.DataRegistro.Date == hoje);
+            int minutosHoje = 0;
+            if (registroHoje != null)
             {
-                statusCor = "amarelo";
+                minutosHoje = _calculoService.CalcularMinutosParciais(registroHoje, DateTime.Now);
             }
 
             return Ok(new
             {
-                minutosTrabalhados = minutosTrabalhados,
-                minutosRestantes = minutosRestantes,
-                metaDiariaMinutos = metaDiariaMinutos,
-                statusCor = statusCor,
-                horasTrabalhadasFormatadas = $"{minutosTrabalhados / 60}h {minutosTrabalhados % 60}min",
-                horasRestantesFormatadas = $"{minutosRestantes / 60}h {minutosRestantes % 60}min"
+                hojeStr = $"{minutosHoje / 60}h {minutosHoje % 60}min",
+                semanaStr = $"{minutosSemana / 60}h {Math.Abs(minutosSemana % 60)}min",
+                mesStr = $"{minutosMes / 60}h {Math.Abs(minutosMes % 60)}min"
             });
         }
         catch (Exception ex)

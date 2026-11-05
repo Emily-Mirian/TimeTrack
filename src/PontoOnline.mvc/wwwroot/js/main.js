@@ -277,9 +277,7 @@ function emailValido(valor) {
   }
 
   async function carregar() {
-    
     try {
-
       const usuarioId = sessionStorage.getItem("usuarioId") || 1;
       const nomeUsuario = sessionStorage.getItem("nome") || "Colaborador";
 
@@ -309,6 +307,7 @@ function emailValido(valor) {
       let percentual = Math.round((statusAtual.minutosTrabalhados / statusAtual.metaDiariaMinutos) * 100);
       if (percentual > 100) percentual = 100;
 
+      // 1. Renderiza o card de Hoje
       const dadosJornada = {
         percentual: percentual,
         trabalhadas: statusAtual.horasTrabalhadasFormatadas,
@@ -323,7 +322,6 @@ function emailValido(valor) {
 
       renderizarJornada(dadosJornada, dadosContrato);
       
-      const periodoInfo = { horas: dadosJornada.trabalhadas, meta: dadosContrato.limiteDiario, percentual: percentual, estado: estadoFront };
       renderizarPeriodo("periodoHoje", {
         horas: dadosJornada.trabalhadas,
         meta: dadosContrato.limiteDiario,
@@ -331,47 +329,28 @@ function emailValido(valor) {
         estado: dadosJornada.estado
       });
 
-      let minSemana = statusAtual.minutosTrabalhados; 
-      let minMes = statusAtual.minutosTrabalhados;
-      
-      const hoje = new Date();
-      const inicioSemana = new Date(hoje);
-      inicioSemana.setDate(hoje.getDate() - hoje.getDay()); 
-      inicioSemana.setHours(0,0,0,0);
+      const minTotaisSemana = (statusAtual.minutosSemanaReais || 0); // ou cálculo próprio
+      const pctSemana = Math.min(Math.round((statusAtual.minutosSemanaNumerico / 2400) * 100), 100) || percentual;
 
-      if (extrato && extrato.historico) {
-        extrato.historico.forEach(reg => {
-          if (!reg.dataRegistro || reg.saldoDiarioMinutos === null) return;
-          
-          const dataReg = new Date(reg.dataRegistro);
-        
-          const minTrabalhadosDia = statusAtual.metaDiariaMinutos + reg.saldoDiarioMinutos;
+      // 2. Renderiza o card da Semana (usando o valor calculado direto pelo C#)
+      renderizarPeriodo("periodoSemana", {
+        horas: statusAtual.semanaFormatada || "0h 0min",
+        meta: "40h",
+        percentual: pctSemana,
+        estado: pctSemana >= 97 ? "critico" : pctSemana >= 85 ? "atencao" : "normal"
+      });
 
-          if (dataReg.toDateString() === hoje.toDateString()) return;
+      const pctMes = Math.min(Math.round((statusAtual.minutosMesNumerico / 9600) * 100), 100) || percentual;
 
-          if (dataReg.getMonth() === hoje.getMonth() && dataReg.getFullYear() === hoje.getFullYear()) {
-            minMes += minTrabalhadosDia;
-          }
+      // 3. Renderiza o card do Mês (usando o acumulado real blindado contra a virada de dia)
+      renderizarPeriodo("periodoMes", {
+        horas: statusAtual.mesFormatada || "0h 0min",
+        meta: "160h",
+        percentual: pctMes,
+        estado: pctMes >= 97 ? "critico" : pctMes >= 85 ? "atencao" : "normal"
+      });   
 
-          if (dataReg >= inicioSemana) {
-            minSemana += minTrabalhadosDia;
-          }
-        });
-      }
-      const formatarCard = (minTrabalhados, diasMeta) => {
-        const metaMin = statusAtual.metaDiariaMinutos * diasMeta;
-        const pct = Math.min(Math.round((minTrabalhados / Math.max(metaMin, 1)) * 100), 100) || 0;
-        return {
-          horas: `${Math.floor(minTrabalhados / 60)}h ${minTrabalhados % 60}min`,
-          meta: `${metaMin / 60}h`,
-          percentual: pct,
-          estado: pct >= 97 ? "critico" : pct >= 85 ? "atencao" : "normal"
-        };
-      };
-
-      renderizarPeriodo("periodoSemana", formatarCard(minSemana, 5));
-      renderizarPeriodo("periodoMes", formatarCard(minMes, 20));    
-
+      // 4. Renderiza o Histórico de Registros
       if (extrato && extrato.historico) {
         const historicoFormatado = extrato.historico.map(reg => {
           const formatarData = (dataStr) => {
@@ -412,6 +391,34 @@ function emailValido(valor) {
       console.log("Filtro do histórico pendente de ligação com a API:", e.target.value);
     });
   }
+})();
+(function iniciarResumoDashboard() {
+    const elHoje = document.getElementById("horasTrabalhadas");
+
+    async function buscarResumoDoServidor() {
+        const usuarioId = sessionStorage.getItem("usuarioId") || localStorage.getItem("usuarioId") || 1;
+
+        try {
+            const resposta = await fetch(`/api/ponto/resumo-dashboard/${usuarioId}`);
+            
+            if (resposta.ok) {
+                const dados = await resposta.json();
+
+                const elHoje = document.getElementById("horasTrabalhadas");
+                if (elHoje) elHoje.textContent = dados.hojeStr;
+
+                const elSemana = document.querySelector("#periodoSemana .periodo-horas");
+                if (elSemana) elSemana.textContent = dados.semanaStr;
+
+                const elMes = document.querySelector("#periodoMes .periodo-horas");
+                if (elMes) elMes.textContent = dados.mesStr;
+            }
+        } catch (erro) {
+            console.error("Erro ao buscar o resumo do dashboard:", erro);
+        }
+    }
+
+    buscarResumoDoServidor();
 })();
 /* =========================================================
    6. TELA: PONTO DO FUNCIONÁRIO (Figura 4)
@@ -597,7 +604,7 @@ function emailValido(valor) {
           <td><strong>${m.texto}</strong></td>
           <td>Disponível</td>
           <td class="acoes">
-            <a href="/api/Relatorios/espelho/${usuarioId}/${m.valor}" target="_blank" class="btn-baixar" style="text-decoration:none; display:inline-flex; align-items:center;">
+            <a href="/api/Relatorios/espelho/${usuarioId}/${String(m.valor).replace('-', '/')}" target="_blank" ...>
               ${ICONE_DOWNLOAD} Baixar PDF
             </a>
           </td>
@@ -619,6 +626,8 @@ function emailValido(valor) {
 
   carregar();
 })();
+
+
 /* =========================================================
    8. MODAL: ENVIAR ATESTADO (Figura 6)
    ========================================================= */
@@ -1271,7 +1280,12 @@ function emailValido(valor) {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          novaSaida: dataHoraCompleta.toISOString(),
+          pontoId: pontoId,
+          entrada1: dataHoraCompleta.toISOString(),
+          saidaAlmoco: null,
+          retornoAlmoco: null,
+          saida2: dataHoraCompleta.toISOString(),
+          justificativa: justificativa.value,
           usuarioResponsavelId: idAutor
         })
       });

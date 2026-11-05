@@ -74,9 +74,22 @@ namespace PontoOnline.API.Controllers
             return Ok(meses);
         }
 
-        [HttpGet("espelho/{usuarioId}/{ano}/{mes}")]
-        public async Task<IActionResult> GerarRelatorioMensal(int usuarioId, int ano, int mes)
+        [HttpGet("espelho/{usuarioId}/{anoMes}")] 
+        public async Task<IActionResult> GerarRelatorioMensal(int usuarioId, string anoMes)
         {
+            int ano = DateTime.Now.Year;
+            int mes = 11;
+
+            if (anoMes.Contains("/"))
+            {
+                var partes = anoMes.Split('/');
+                int.TryParse(partes[0], out ano);
+                int.TryParse(partes[1], out mes);
+            }
+            else
+            {
+                int.TryParse(anoMes, out mes);
+            }
             var permissao = await _context.PermissoesPerfil
                 .FirstOrDefaultAsync(p => p.Funcao == "exportacao" && p.Perfil == "rh");
 
