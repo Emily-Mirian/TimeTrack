@@ -2946,3 +2946,233 @@ body.com-modal {
     grid-template-columns: 1fr;
   }
 }
+/* =========================================================
+   MODAL: REGRAS DO CONTRATO ("Saiba mais" — Início do Funcionário)
+   Reaproveita a estrutura de modal do Atestado
+   ========================================================= */
+.icone-info-grande {
+  background: var(--azul-primario);
+  color: var(--branco);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.regras-lista {
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 16px;
+}
+.regras-lista li {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f5f8fc;
+  border: 1px solid #edf1f7;
+}
+.regras-lista span {
+  display: block;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+.regras-lista strong {
+  font-size: 14px;
+  color: var(--azul-escuro);
+}
+.regras-lista .regra-bloqueada strong {
+  color: var(--estado-critico);
+}
+
+.regras-subtitulo {
+  margin: 20px 0 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--azul-escuro);
+}
+
+.regras-alertas {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.regras-alertas li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.regras-alertas strong {
+  display: block;
+  font-size: 13px;
+  color: var(--azul-escuro);
+}
+.regras-alertas span {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.bolinha-estado {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+.estado-verde {
+  background: var(--estado-normal);
+}
+.estado-amarelo {
+  background: var(--estado-atencao);
+}
+.estado-vermelho {
+  background: var(--estado-critico);
+}
+
+.regras-nota {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #fdecec;
+  border: 1px solid #f7c4c4;
+  font-size: 13px;
+  color: #991b1b;
+}
+.regras-nota .aviso-icone {
+  width: 22px;
+  height: 22px;
+  font-size: 13px;
+  background: var(--estado-critico);
+}
+
+@media (max-width: 520px) {
+  .regras-lista {
+    grid-template-columns: 1fr;
+  }
+}
+/* =========================================================
+   MODAL: CENTRAL DE AJUDA (botão "Ajuda" do menu do Funcionário)
+   Reaproveita a estrutura de modal do Atestado
+   ========================================================= */
+.modal-ajuda {
+  max-width: 600px;
+}
+
+.ajuda-busca {
+  position: relative;
+  margin-top: 16px;
+}
+.ajuda-busca svg {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  color: var(--texto-suave);
+  pointer-events: none;
+}
+.ajuda-busca input {
+  width: 100%;
+  height: 42px;
+  padding: 0 14px 0 42px;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+}
+.ajuda-busca input:focus {
+  border-color: var(--azul-primario);
+  box-shadow: 0 0 0 4px rgba(30, 123, 242, 0.12);
+}
+
+/* Perguntas frequentes (abre/fecha) */
+.ajuda-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+}
+.ajuda-item {
+  border: 1px solid #edf1f7;
+  border-radius: 10px;
+  background: #f8fafd;
+}
+.ajuda-item[open] {
+  background: var(--branco);
+  border-color: #cfe0fa;
+}
+.ajuda-item summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  list-style: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--azul-escuro);
+}
+.ajuda-item summary::-webkit-details-marker {
+  display: none;
+}
+.ajuda-item summary::after {
+  content: "›";
+  font-size: 18px;
+  color: var(--texto-suave);
+  transition: transform 0.2s;
+}
+.ajuda-item[open] summary::after {
+  transform: rotate(90deg);
+}
+.ajuda-resposta {
+  padding: 0 14px 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--texto);
+}
+.ajuda-resposta .link-acao {
+  margin-top: 8px;
+  display: inline-block;
+}
+.ajuda-vazio {
+  text-align: center;
+  font-size: 13px;
+  color: var(--texto-suave);
+  padding: 16px;
+}
+
+/* Falar com o RH */
+.ajuda-contato {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 14px;
+  border-radius: 12px;
+  background: var(--azul-claro);
+}
+.ajuda-contato div {
+  flex: 1;
+}
+.ajuda-contato strong {
+  display: block;
+  font-size: 14px;
+  color: var(--azul-escuro);
+}
+.ajuda-contato span {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+@media (max-width: 520px) {
+  .ajuda-contato {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+}

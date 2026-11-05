@@ -1,6 +1,4 @@
-/* =========================================================
-   1. FUNÇÕES COMPARTILHADAS
-   ========================================================= */
+
 function mostrarErro(campoId, erroId, mensagem) {
   document.getElementById(campoId).classList.toggle("erro", !!mensagem);
   document.getElementById(erroId).textContent = mensagem || "";
@@ -9,18 +7,14 @@ function mostrarErro(campoId, erroId, mensagem) {
 function emailValido(valor) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(valor.trim());
 }
-/* =========================================================
-   2. TELA: LOGIN (Figura 1)
-   ========================================================= */
+
 (function telaLogin() {
   const form = document.getElementById("formLogin");
-  if (!form) return; // não está na tela de login
+  if (!form) return; 
 
   const ROTAS_POR_PERFIL = {
     funcionario: "funcionario/inicio.html",
     rh: "rh/pendencias.html",
-    // [PROTÓTIPO] O Admin abre Pendências até a Visão Global (Fig. 16) existir.
-    // Quando ela estiver pronta, trocar para: "admin/visao-global.html"
     admin: "rh/pendencias.html",
   };
 
@@ -55,25 +49,6 @@ function emailValido(valor) {
     btn.disabled = true;
     btn.textContent = "Entrando...";
 
-    /* -------------------------------------------------------
-       [BACKEND] SUBSTITUIR PELA CHAMADA REAL:
-
-       const resposta = await fetch("/api/auth/login", {
-         method: "POST",
-         headers: { "Content-Type": "application/json" },
-         body: JSON.stringify({ email: email.value.trim(), senha: senha.value })
-       });
-       if (!resposta.ok) {
-         document.getElementById("erroGeral").textContent = "E-mail ou senha inválidos.";
-         btn.disabled = false; btn.textContent = "Login";
-         return;
-       }
-       const dados = await resposta.json();   // { token, perfil, nome }
-       const perfil = dados.perfil;
-       ------------------------------------------------------- */
-
-    // [PROTÓTIPO] O perfil é definido pelo que vem ANTES do @. REMOVER com a API pronta.
-    //   admin@empresa.com → Admin | rh@empresa.com → RH | qualquer outro → Funcionário
     const usuario = email.value.trim().toLowerCase().split("@")[0];
     const perfil = usuario.includes("admin")
       ? "admin"
@@ -81,11 +56,8 @@ function emailValido(valor) {
         ? "rh"
         : "funcionario";
 
-    // [PROTÓTIPO] Guarda o perfil para o menu saber o que mostrar. REMOVER com a API pronta.
     localStorage.setItem("perfil", perfil);
 
-    // [BACKEND] Esconder telas no front NÃO é segurança.
-    // Cada página do RH e do Admin precisa validar o perfil no servidor.
     window.location.href = ROTAS_POR_PERFIL[perfil];
   });
 })();
@@ -94,7 +66,7 @@ function emailValido(valor) {
    ========================================================= */
 (function telaCadastro() {
   const form = document.getElementById("formCadastro");
-  if (!form) return; // não está na tela de cadastro
+  if (!form) return;
 
   const nome = document.getElementById("nome");
   const email = document.getElementById("email");
@@ -103,7 +75,6 @@ function emailValido(valor) {
   const tipoContrato = document.getElementById("tipoContrato");
   const btn = document.getElementById("btnCadastrar");
 
-  // Deixa o texto do select escuro quando uma opção é escolhida
   tipoContrato.addEventListener("change", () => {
     tipoContrato.classList.toggle("preenchido", !!tipoContrato.value);
   });
@@ -121,7 +92,6 @@ function emailValido(valor) {
       ok = false;
     } else mostrarErro("campoEmail", "erroEmail", "");
 
-    // [BACKEND] A regra de senha também deve ser validada no servidor
     if (senha.value.length < 8) {
       mostrarErro(
         "campoSenha",
@@ -156,28 +126,6 @@ function emailValido(valor) {
     btn.disabled = true;
     btn.textContent = "Cadastrando...";
 
-    /* -------------------------------------------------------
-       [BACKEND] SUBSTITUIR PELA CHAMADA REAL:
-
-       const resposta = await fetch("/api/usuarios", {
-         method: "POST",
-         headers: { "Content-Type": "application/json" },
-         body: JSON.stringify({
-           nome: nome.value.trim(),
-           email: email.value.trim(),
-           senha: senha.value,
-           tipoContrato: tipoContrato.value
-         })
-       });
-       if (!resposta.ok) {
-         document.getElementById("erroGeral").textContent =
-           resposta.status === 409 ? "Este e-mail já está cadastrado." : "Não foi possível concluir o cadastro.";
-         btn.disabled = false; btn.textContent = "Cadastrar";
-         return;
-       }
-       ------------------------------------------------------- */
-
-    // [PROTÓTIPO] Simula sucesso e volta para o login. REMOVER com a API pronta.
     document.getElementById("sucessoGeral").textContent =
       "Conta criada com sucesso! Redirecionando...";
     setTimeout(() => (window.location.href = "login.html"), 1500);
@@ -190,14 +138,12 @@ function emailValido(valor) {
 (function areaLogada() {
   if (!document.querySelector(".pagina-app")) return;
 
-  // Navegação: qualquer botão com data-ir leva para a página indicada
   document.querySelectorAll("[data-ir]").forEach((botao) => {
     botao.addEventListener("click", () => {
       window.location.href = botao.dataset.ir;
     });
   });
 
-  // Abre/fecha o menu "Meu Perfil"
   const btnPerfil = document.getElementById("btnPerfil");
   const menuPerfil = document.getElementById("menuPerfil");
   if (btnPerfil) {
@@ -210,18 +156,14 @@ function emailValido(valor) {
     );
   }
 
-  // Sair
   const btnSair = document.getElementById("btnSair");
   if (btnSair) {
     btnSair.addEventListener("click", async () => {
-      // [BACKEND] Encerrar a sessão: await fetch("/api/auth/logout", { method: "POST" });
-      localStorage.removeItem("perfil"); // [PROTÓTIPO] REMOVER depois
+      localStorage.removeItem("perfil"); 
       window.location.href = "../login.html";
     });
   }
 
-  // [BACKEND] Em TODAS as telas logadas, o servidor deve verificar se existe
-  // sessão válida e se o perfil tem permissão. Sem sessão → redirecionar ao login.
 })();
 
 /* =========================================================
@@ -249,7 +191,6 @@ function emailValido(valor) {
       alerta: "Limite próximo",
     },
   };
-  /* ---------- Relógio (hora do navegador, só exibição) ---------- */
   function atualizarRelogio() {
     const agora = new Date();
     document.getElementById("relogioHora").textContent =
@@ -267,7 +208,6 @@ function emailValido(valor) {
   atualizarRelogio();
   setInterval(atualizarRelogio, 1000);
 
-  /* ---------- Aplica o estado (cor) em um elemento ---------- */
   function aplicarEstado(elemento, estado) {
     elemento.classList.remove(...ESTADOS);
     elemento.classList.add("jornada-" + estado);
@@ -277,7 +217,6 @@ function emailValido(valor) {
     return String(valor).replace(".", ",") + "%";
   }
 
-  /* ---------- Jornada do dia ---------- */
   function renderizarJornada(j, usuario) {
     aplicarEstado(painel, j.estado);
     const t = TEXTOS_STATUS[j.estado];
@@ -301,7 +240,7 @@ function emailValido(valor) {
       `Restam ${j.restantes}.`;
   }
 
-  /* ---------- Cards Hoje / Semana / Mês ---------- */
+
   function renderizarPeriodo(id, p) {
     const card = document.getElementById(id);
     if (p.estado === "normal")
@@ -315,7 +254,6 @@ function emailValido(valor) {
       Math.min(p.percentual, 100) + "%";
   }
 
-  /* ---------- Histórico ---------- */
   const STATUS_HISTORICO = {
     normal: '<span class="badge badge-normal">Normal</span>',
     pendente:
@@ -461,7 +399,6 @@ function emailValido(valor) {
     carregar();
   }, 60000);
 
-  /* ---------- Botão Registrar Ponto (Atalho) ---------- */
   const btnRegistrar = document.getElementById("btnRegistrar");
   if (btnRegistrar) {
     btnRegistrar.addEventListener("click", () => {
@@ -469,7 +406,6 @@ function emailValido(valor) {
     });
   }
 
-  /* ---------- Filtro do histórico ---------- */
   const filtroHistorico = document.getElementById("filtroHistorico");
   if (filtroHistorico) {
     filtroHistorico.addEventListener("change", (e) => {
@@ -482,9 +418,8 @@ function emailValido(valor) {
    ========================================================= */
 (function telaPonto() {
   const card = document.getElementById("cardPonto");
-  if (!card) return; // não está na tela de ponto
+  if (!card) return; 
 
-  // Ordem das batidas do dia
   const ETAPAS = [
     { chave: "entrada", nome: "Entrada" },
     { chave: "saidaAlmoco", nome: "Saída para Almoço" },
@@ -495,7 +430,6 @@ function emailValido(valor) {
   const btn = document.getElementById("btnBaterPonto");
   const textoBtn = document.getElementById("textoBtnPonto");
 
-  /* ---------- Relógio (hora do navegador, só exibição) ---------- */
   function atualizarRelogio() {
     const agora = new Date();
     document.getElementById("relogioHora").textContent =
@@ -513,7 +447,6 @@ function emailValido(valor) {
   atualizarRelogio();
   setInterval(atualizarRelogio, 1000);
 
-  /* ---------- Aviso (verde ou vermelho) ---------- */
   function mostrarAviso(tipo, texto) {
     const aviso = document.getElementById("avisoPonto");
     aviso.classList.remove("oculto", "aviso-sucesso", "aviso-erro");
@@ -523,7 +456,6 @@ function emailValido(valor) {
     document.getElementById("avisoTexto").textContent = texto;
   }
 
-  /* ---------- Desenha a linha do tempo ---------- */
   let batidas = {};
 
   function renderizar() {
@@ -542,7 +474,6 @@ function emailValido(valor) {
       }
     });
 
-    // Todas as batidas feitas → desativa o botão
     const finalizado = ETAPAS.every(({ chave }) => batidas[chave]);
     btn.disabled = finalizado;
     textoBtn.textContent = finalizado
@@ -550,15 +481,12 @@ function emailValido(valor) {
       : "Registrar Ponto";
   }
 
-  /* ---------- Carregar batidas do dia (Real do Banco) ---------- */
   async function carregar() {
     try {
       const usuarioId = sessionStorage.getItem("usuarioId") || 1;
       
-      // 1. URL corrigida sem o "/api" extra
       const extrato = await chamarApi(`/Ponto/extrato/${usuarioId}`, "GET");
 
-      // 2. Formata a data protegendo contra a mudança de fuso horário à noite
       const hoje = new Date();
       const formatoDataBd = hoje.getFullYear() + "-" + 
                             String(hoje.getMonth() + 1).padStart(2, '0') + "-" + 
@@ -588,7 +516,6 @@ function emailValido(valor) {
     renderizar();
   }
 
-  /* ---------- Botão Registrar Ponto ---------- */
   btn.addEventListener("click", async () => {
     const proxima = ETAPAS.find(({ chave }) => !batidas[chave]);
     if (!proxima) return;
@@ -597,11 +524,9 @@ function emailValido(valor) {
 
     try {
       const tipos = { entrada: "entrada1", saidaAlmoco: "saidaalmoco", retornoAlmoco: "retornoalmoco", saida: "saida2" };
-      
-      // Pega o ID de quem está logado
+
       const usuarioLogado = sessionStorage.getItem("usuarioId") || 1; 
-      
-      // Coloca o ID direto na URL: /Ponto/Registrar/3
+
       await chamarApi(`/Ponto/Registrar/${usuarioLogado}`, "POST", { TipoMarcacao: tipos[proxima.chave] });
       
       await carregar();
@@ -611,7 +536,6 @@ function emailValido(valor) {
     }
   });
 
-  // [BACKEND] Usar quando a API recusar a batida (limite, fora do horário etc.)
   function mostrarErroPonto(mensagem) {
     mostrarAviso("erro", mensagem || "Não foi possível registrar o ponto.");
     btn.disabled = false;
@@ -651,11 +575,9 @@ function emailValido(valor) {
     try {
       const usuarioId = sessionStorage.getItem("usuarioId") || 1;
 
-      // 1. Carrega o Saldo Real
       const saldo = await chamarApi(`/Relatorios/saldo/${usuarioId}`, "GET");
       renderizarSaldo(saldo);
 
-      // 2. Carrega os meses trabalhados para o Select e para a Tabela
       const meses = await chamarApi(`/Relatorios/meses/${usuarioId}`, "GET");
       
       selectMes.innerHTML = "";
@@ -670,7 +592,6 @@ function emailValido(valor) {
         selectMes.insertAdjacentHTML("beforeend", `<option value="${m.valor}">${m.texto}</option>`);
       });
 
-      // 3. Monta a tabela de downloads substituindo o botão falso por uma âncora real para a API de PDF
       tabela.innerHTML = meses.map(m => `
         <tr>
           <td><strong>${m.texto}</strong></td>
@@ -689,7 +610,6 @@ function emailValido(valor) {
     }
   }
 
-  // O botão superior exporta o mês escolhido no select
   btnGerar.addEventListener("click", () => {
     const mesValor = selectMes.value;
     if (!mesValor) return;
@@ -704,7 +624,7 @@ function emailValido(valor) {
    ========================================================= */
 (function modalAtestado() {
   const modal = document.getElementById("modalAtestado");
-  if (!modal) return; // modal só existe no inicio.html
+  if (!modal) return; 
 
   const form = document.getElementById("formAtestado");
   const inicio = document.getElementById("atestadoInicio");
@@ -720,9 +640,8 @@ function emailValido(valor) {
   );
 
   const TIPOS_ACEITOS = ["application/pdf", "image/jpeg", "image/png"];
-  const TAMANHO_MAX = 5 * 1024 * 1024; // 5 MB  [BACKEND] confirmar o limite com o back-end
+  const TAMANHO_MAX = 5 * 1024 * 1024; 
 
-  /* ---------- Abrir / fechar ---------- */
   function abrir() {
     modal.classList.remove("oculto");
     document.body.classList.add("com-modal");
@@ -737,7 +656,6 @@ function emailValido(valor) {
     if (botaoMenu) botaoMenu.classList.remove("ativo");
     if (botaoInicio) botaoInicio.classList.add("ativo");
     limpar();
-    // Remove o "#atestado" do endereço sem recarregar a página
     history.replaceState(null, "", location.pathname + location.search);
   }
 
@@ -756,7 +674,6 @@ function emailValido(valor) {
     ].forEach(([c, e]) => mostrarErro(c, e, ""));
   }
 
-  // Abre ao entrar com #atestado no endereço ou ao clicar no menu
   if (location.hash === "#atestado") abrir();
   window.addEventListener("hashchange", () => {
     if (location.hash === "#atestado") abrir();
@@ -770,13 +687,13 @@ function emailValido(valor) {
     .addEventListener("click", fechar);
   modal.addEventListener("click", (e) => {
     if (e.target === modal) fechar();
-  }); // clique fora
+  }); 
   document.addEventListener("keydown", (e) => {
-    // tecla Esc
+
     if (e.key === "Escape" && !modal.classList.contains("oculto")) fechar();
   });
 
-  /* ---------- Arquivo: clique ou arrastar ---------- */
+
   function mostrarNomeArquivo() {
     nomeArquivo.textContent = arquivo.files[0]
       ? "📎 " + arquivo.files[0].name
@@ -803,7 +720,6 @@ function emailValido(valor) {
     }
   });
 
-  /* ---------- Validação ---------- */
   function validar() {
     let ok = true;
 
@@ -868,7 +784,6 @@ function emailValido(valor) {
     return ok;
   }
 
-  /* ---------- Envio ---------- */
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     document.getElementById("erroAtestadoGeral").textContent = "";
@@ -910,178 +825,113 @@ function emailValido(valor) {
     }
   });
 })();
-/* =========================================================
-   9. TELA: CONFIGURAÇÕES DO FUNCIONÁRIO (Figura 7)
-   ========================================================= */
-(function telaConfiguracoesFuncionario() {
-  const formSenha = document.getElementById("formSenha");
-  if (!formSenha) return; // não está na tela de configurações
 
-  /* ---------- Mostrar / esconder senha (olho) ---------- */
+/* ==========================================================================
+   TELA DE CONFIGURAÇÕES DO FUNCIONÁRIO (JS SEPARADO)
+   ========================================================================== */
+(function telaConfiguracoesFuncionarioExclusiva() {
+  const formSenha = document.getElementById("formSenhaFuncionario");
+  if (!formSenha) return; // Se não estiver na página do funcionário, encerra aqui
+
+  const usuarioId = sessionStorage.getItem("usuarioId") || localStorage.getItem("usuarioId") || 1;
+
+  const inputNome = document.getElementById("funcNome");
+  const inputEmail = document.getElementById("funcEmail");
+  const inputContrato = document.getElementById("funcContrato");
+
+  const senhaAtual = document.getElementById("funcSenhaAtual");
+  const novaSenha = document.getElementById("funcNovaSenha");
+  const erroAtual = document.getElementById("erroFuncSenhaAtual");
+  const erroNova = document.getElementById("erroFuncNovaSenha");
+  const msgSucesso = document.getElementById("sucessoFuncSenha");
+  const btnSalvar = document.getElementById("btnSalvarSenhaFunc");
+
+  // Botão Sair
+  const btnSair = document.getElementById("btnSairFunc");
+  if (btnSair) {
+    btnSair.addEventListener("click", () => {
+      localStorage.removeItem("perfil");
+      sessionStorage.removeItem("usuarioId");
+      window.location.href = "login.html";
+    });
+  }
+
+  // Olhinho de mostrar/esconder senha
   document.querySelectorAll(".btn-olho").forEach((btn) => {
     btn.addEventListener("click", () => {
       const input = document.getElementById(btn.dataset.alvo);
-      const mostrar = input.type === "password";
-      input.type = mostrar ? "text" : "password";
-      btn.classList.toggle("visivel", mostrar);
-      btn.setAttribute(
-        "aria-label",
-        mostrar ? "Esconder senha" : "Mostrar senha",
-      );
-    });
-  });
-
-  /* ---------- Carregar dados ---------- */
-  async function carregar() {
-    try {
-      const usuarioId = sessionStorage.getItem("usuarioId") || 1;
-      
-      const me = await chamarApi(`/me/${usuarioId}`, "GET");
-      const prefs = await chamarApi(`/me/preferencias/${usuarioId}`, "GET");
-
-      document.getElementById("dadoNome").textContent = me.nome;
-      document.getElementById("dadoEmail").textContent = me.email;
-      document.getElementById("dadoContrato").textContent = me.contrato;
-
-      document.querySelectorAll("[data-preferencia]").forEach((chk) => {
-        chk.checked = !!prefs[chk.dataset.preferencia];
-      });
-    } catch (e) {
-      console.error("Erro ao carregar configurações:", e);
-    }
-  }
-
-  // (Mantenha sua função validarSenha() intacta aqui)
-
-  formSenha.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    document.getElementById("erroSenhaGeral").textContent = "";
-    document.getElementById("sucessoSenha").textContent = "";
-    if (!validarSenha()) return;
-
-    btnAlterar.disabled = true;
-    btnAlterar.textContent = "Salvando...";
-
-    try {
-      const usuarioId = sessionStorage.getItem("usuarioId") || 1;
-      await chamarApi(`/me/senha/${usuarioId}`, "PUT", { 
-        senhaAtual: senhaAtual.value, 
-        novaSenha: novaSenha.value 
-      });
-
-      formSenha.reset();
-      document.getElementById("sucessoSenha").textContent = "Senha alterada com sucesso.";
-    } catch (e) {
-      mostrarErro("campoSenhaAtual", "erroSenhaAtual", "Senha atual incorreta ou erro no servidor.");
-    } finally {
-      btnAlterar.disabled = false;
-      btnAlterar.textContent = "Alterar Senha";
-    }
-  });
-
-  /* ---------- Notificações (salva a cada clique) ---------- */
-  document.querySelectorAll("[data-preferencia]").forEach((chk) => {
-    chk.addEventListener("change", async () => {
-      const usuarioId = sessionStorage.getItem("usuarioId") || 1;
-      try {
-        await chamarApi(`/me/preferencias/${usuarioId}`, "PUT", { 
-          [chk.dataset.preferencia]: chk.checked 
-        });
-        
-        const msg = document.getElementById("msgPreferencias");
-        if(msg) {
-          msg.textContent = "Preferência salva.";
-          setTimeout(() => (msg.textContent = ""), 1800);
-        }
-      } catch (e) {
-        chk.checked = !chk.checked; // Reverte se der erro
-        console.error("Erro ao salvar preferência:", e);
+      if (input) {
+        input.type = input.type === "password" ? "text" : "password";
+        btn.classList.toggle("visivel");
       }
     });
   });
 
-  /* ---------- Alterar senha ---------- */
-  const senhaAtual = document.getElementById("senhaAtual");
-  const novaSenha = document.getElementById("novaSenha");
-  const btnAlterar = document.getElementById("btnAlterarSenha");
-
-  function validarSenha() {
-    let ok = true;
-    if (!senhaAtual.value) {
-      mostrarErro(
-        "campoSenhaAtual",
-        "erroSenhaAtual",
-        "Informe a senha atual.",
-      );
-      ok = false;
-    } else mostrarErro("campoSenhaAtual", "erroSenhaAtual", "");
-
-    // [BACKEND] A regra de senha forte também deve ser validada no servidor (Fig. 17)
-    if (novaSenha.value.length < 8) {
-      mostrarErro(
-        "campoNovaSenha",
-        "erroNovaSenha",
-        "A nova senha deve ter no mínimo 8 caracteres.",
-      );
-      ok = false;
-    } else if (novaSenha.value === senhaAtual.value) {
-      mostrarErro(
-        "campoNovaSenha",
-        "erroNovaSenha",
-        "A nova senha deve ser diferente da atual.",
-      );
-      ok = false;
-    } else mostrarErro("campoNovaSenha", "erroNovaSenha", "");
-    return ok;
+  // Carregar dados reais do usuário logado via API
+  async function carregarDados() {
+    try {
+      const resp = await fetch(`/api/me/${usuarioId}`);
+      if (resp.ok) {
+        const dados = await resp.json();
+        if (inputNome) inputNome.textContent = dados.nome || "Colaborador";
+        if (inputEmail) inputEmail.textContent = dados.email || "colaborador@empresa.com";
+        if (inputContrato) inputContrato.textContent = dados.contrato || "CLT - Efetivo";
+      }
+    } catch (e) {
+      console.error("Erro ao carregar dados do colaborador:", e);
+    }
   }
 
+  // Envio do formulário de alteração de senha
   formSenha.addEventListener("submit", async (e) => {
     e.preventDefault();
-    document.getElementById("erroSenhaGeral").textContent = "";
-    document.getElementById("sucessoSenha").textContent = "";
-    if (!validarSenha()) return;
+    if (erroAtual) erroAtual.textContent = "";
+    if (erroNova) erroNova.textContent = "";
+    if (msgSucesso) msgSucesso.textContent = "";
 
-    btnAlterar.disabled = true;
-    btnAlterar.textContent = "Salvando...";
+    const valSenhaAtual = senhaAtual.value;
+    const valNovaSenha = novaSenha.value;
 
-    /* [BACKEND] SUBSTITUIR PELA CHAMADA REAL:
-       const resposta = await fetch("/api/me/senha", {
-         method: "PUT",
-         headers: { "Content-Type": "application/json" },
-         body: JSON.stringify({ senhaAtual: senhaAtual.value, novaSenha: novaSenha.value })
-       });
-       if (resposta.status === 401) {
-         mostrarErro("campoSenhaAtual", "erroSenhaAtual", "Senha atual incorreta.");
-         btnAlterar.disabled = false; btnAlterar.textContent = "Alterar Senha";
-         return;
-       } */
+    if (!valSenhaAtual) {
+      if (erroAtual) erroAtual.textContent = "Informe a senha atual.";
+      return;
+    }
+    if (valNovaSenha.length < 8) {
+      if (erroNova) erroNova.textContent = "A nova senha deve ter no mínimo 8 caracteres.";
+      return;
+    }
 
-    // [PROTÓTIPO] Simula sucesso. REMOVER depois.
-    formSenha.reset();
-    document.getElementById("sucessoSenha").textContent =
-      "Senha alterada com sucesso.";
-    btnAlterar.disabled = false;
-    btnAlterar.textContent = "Alterar Senha";
+    if (btnSalvar) {
+      btnSalvar.disabled = true;
+      btnSalvar.textContent = "Salvando...";
+    }
+
+    try {
+      const resposta = await fetch(`/api/me/senha/${usuarioId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ senhaAtual: valSenhaAtual, novaSenha: valNovaSenha })
+      });
+
+      if (!resposta.ok) {
+        const erroJson = await resposta.json().catch(() => ({}));
+        if (erroAtual) erroAtual.textContent = erroJson.erro || "Senha atual incorreta.";
+        return;
+      }
+
+      formSenha.reset();
+      if (msgSucesso) msgSucesso.textContent = "Senha alterada com sucesso!";
+    } catch (err) {
+      if (erroAtual) erroAtual.textContent = "Erro de conexão com o servidor.";
+    } finally {
+      if (btnSalvar) {
+        btnSalvar.disabled = false;
+        btnSalvar.textContent = "Alterar Senha";
+      }
+    }
   });
 
-  /* ---------- Notificações (salva a cada clique) ---------- */
-  document.querySelectorAll("[data-preferencia]").forEach((chk) => {
-    chk.addEventListener("change", async () => {
-      /* [BACKEND] SUBSTITUIR PELA CHAMADA REAL:
-         await fetch("/api/me/notificacoes", {
-           method: "PUT",
-           headers: { "Content-Type": "application/json" },
-           body: JSON.stringify({ [chk.dataset.preferencia]: chk.checked })
-         });
-         Em caso de erro, voltar o toggle: chk.checked = !chk.checked; */
-
-      const msg = document.getElementById("msgPreferencias");
-      msg.textContent = "Preferência salva.";
-      setTimeout(() => (msg.textContent = ""), 1800);
-    });
-  });
-
-  carregar();
+  carregarDados();
 })();
 /* =========================================================
    10. CONTROLE DE PERFIL NO MENU (RH e Admin)
@@ -1089,10 +939,7 @@ function emailValido(valor) {
 (function controlePerfil() {
   if (!document.querySelector(".pagina-app")) return;
 
-  /* [BACKEND] O perfil deve vir do servidor: GET /api/me → { perfil: "rh" | "admin" }
-     O servidor também deve BLOQUEAR as páginas e APIs para quem não tem permissão.
-     Esconder botões no front NÃO é segurança. */
-  // [PROTÓTIPO] Usa o perfil salvo no login. REMOVER depois.
+
   const perfil = localStorage.getItem("perfil") || "funcionario";
 
   // Bloqueia a página se o perfil não tiver acesso (data-acesso no <body>)
@@ -3558,4 +3405,267 @@ function emailValido(valor) {
   }
 
   carregar();
+})();
+
+(function modalRegrasContrato() {
+  const modal = document.getElementById("modalRegras");
+  const btnAbrir = document.getElementById("btnSaibaMaisRegras");
+  if (!modal || !btnAbrir) return; // só existe no inicio.html
+
+  function horas(lista) {
+    return lista.map((h) => h + "h").join(" ou ");
+  }
+
+  function renderizar(r) {
+    document.getElementById("regrasNomeContrato").textContent = r.nome;
+
+    const itens = [
+      { rotulo: "Sua carga diária", valor: r.cargaDoUsuario + "h" },
+      { rotulo: "Limite semanal", valor: r.limiteSemanal + "h" },
+      { rotulo: "Tolerância de ponto", valor: r.toleranciaMin + " min" },
+      {
+        rotulo: "Cargas permitidas no contrato",
+        valor: horas(r.cargasDiarias),
+      },
+      {
+        rotulo: "Hora extra",
+        valor: r.bloqueioHoraExtra ? "Não permitida" : "Permitida",
+        bloqueada: r.bloqueioHoraExtra,
+      },
+      {
+        rotulo: "Banco de horas",
+        valor: r.bancoHoras ? "Disponível" : "Não se aplica",
+      },
+    ];
+
+    document.getElementById("listaRegras").innerHTML = itens
+      .map(
+        (i) => `
+        <li class="${i.bloqueada ? "regra-bloqueada" : ""}">
+          <span>${i.rotulo}</span><strong>${i.valor}</strong>
+        </li>`,
+      )
+      .join("");
+
+    // A nota de bloqueio só aparece se o contrato bloqueia hora extra
+    document
+      .getElementById("regrasNotaBloqueio")
+      .classList.toggle("oculto", !r.bloqueioHoraExtra);
+  }
+
+  async function abrir() {
+    /* [BACKEND] SUBSTITUIR PELA CHAMADA REAL:
+       const regras = await fetch("/api/regras/meu-contrato").then(r => r.json()); */
+
+    // [PROTÓTIPO] Regime de Estágio (Fig. 20). REMOVER depois.
+    const regras = {
+      nome: "Regime de Estágio",
+      cargasDiarias: [6, 4],
+      cargaDoUsuario: 6,
+      limiteSemanal: 30,
+      toleranciaMin: 5,
+      bloqueioHoraExtra: true,
+      bancoHoras: false,
+    };
+
+    renderizar(regras);
+    modal.classList.remove("oculto");
+    document.body.classList.add("com-modal");
+    document.getElementById("btnEntendiRegras").focus();
+  }
+
+  function fechar() {
+    modal.classList.add("oculto");
+    document.body.classList.remove("com-modal");
+  }
+
+  btnAbrir.addEventListener("click", abrir);
+  document.getElementById("btnFecharRegras").addEventListener("click", fechar);
+  document.getElementById("btnEntendiRegras").addEventListener("click", fechar);
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) fechar();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !modal.classList.contains("oculto")) fechar();
+  });
+
+  // Deixa disponível para outros botões da tela (ver passo opcional)
+  window.abrirRegrasContrato = abrir;
+})();
+/* =========================================================
+   MODAL: CENTRAL DE AJUDA (botão "Ajuda" do menu do Funcionário)
+   A janela é criada aqui, então não precisa de HTML nas páginas.
+   ========================================================= */
+(function centralAjuda() {
+  const botao = document.querySelector(".menu-ajuda");
+  if (!botao) return; // só existe nas telas do funcionário
+
+  /* [BACKEND] As perguntas podem vir do banco: GET /api/ajuda/faq
+     → [{ "pergunta": "...", "resposta": "...", "link": "ponto.html", "textoLink": "..." }] */
+  // [PROTÓTIPO] Perguntas fixas. Podem continuar no front se não mudarem com frequência.
+  const PERGUNTAS = [
+    {
+      pergunta: "Como registro meu ponto?",
+      resposta:
+        "Clique em <strong>Registrar Ponto</strong> no Início ou na tela Ponto. O sistema identifica sozinho se é entrada, saída para almoço, retorno ou saída.",
+      link: "ponto.html",
+      textoLink: "Ir para a tela de Ponto ›",
+    },
+    {
+      pergunta: "Esqueci de bater o ponto. O que faço?",
+      resposta:
+        "Você não consegue corrigir sozinho. O dia fica como <strong>pendente</strong> e o RH faz o ajuste. Avise o RH informando o dia e o horário correto.",
+    },
+    {
+      pergunta: "O que significam as cores da jornada?",
+      resposta:
+        "<strong>Verde:</strong> dentro do limite. <strong>Amarelo:</strong> limite próximo, planeje sua saída. <strong>Vermelho:</strong> limite crítico, registre sua saída o quanto antes.",
+    },
+    {
+      pergunta: "Por que não consigo registrar o ponto?",
+      resposta:
+        "Se você atingiu o limite diário do seu contrato (ex.: 6h no estágio), o sistema bloqueia novas batidas. A mensagem com o motivo aparece na tela de Ponto.",
+    },
+    {
+      pergunta: "Como envio um atestado médico?",
+      resposta:
+        "Clique em <strong>Atestados</strong> no menu, informe as datas e o motivo e anexe o arquivo em PDF, JPG ou PNG de até 5 MB. O RH analisa e você é avisado.",
+      link: "inicio.html#atestado",
+      textoLink: "Enviar atestado ›",
+    },
+    {
+      pergunta: "Como gero meu espelho de ponto?",
+      resposta:
+        "Na tela <strong>Relatórios</strong>, escolha o mês e clique em <strong>Gerar Relatório PDF</strong>. Os espelhos gerados ficam disponíveis para baixar depois.",
+      link: "relatorios.html",
+      textoLink: "Ir para Relatórios ›",
+    },
+    {
+      pergunta: "Como altero minha senha?",
+      resposta:
+        "Em <strong>Configurações</strong>, no painel Segurança e Acesso, informe a senha atual e a nova senha.",
+      link: "configuracoes.html",
+      textoLink: "Ir para Configurações ›",
+    },
+    {
+      pergunta: "Meus dados estão errados. Como corrijo?",
+      resposta:
+        "Nome, e-mail e tipo de contrato são cadastrados pelo RH. Para corrigir, procure o RH.",
+    },
+  ];
+
+  // [BACKEND] Contato do RH pode vir de GET /api/config/contato-rh
+  const CONTATO_RH = "rh@empresa.com"; // [PROTÓTIPO] trocar pelo e-mail real
+
+  /* ---------- Cria a janela ---------- */
+  document.body.insertAdjacentHTML(
+    "beforeend",
+    `
+    <div class="modal-fundo oculto" id="modalAjuda" role="dialog" aria-modal="true" aria-labelledby="tituloAjuda">
+      <div class="modal modal-ajuda">
+        <div class="modal-topo">
+          <span class="modal-icone">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 .5c0 1.5-2.5 2-2.5 3.5M12 17h.01"/></svg>
+          </span>
+          <h2 id="tituloAjuda">Central de Ajuda</h2>
+          <button type="button" class="modal-fechar" id="btnFecharAjuda" aria-label="Fechar">✕</button>
+        </div>
+        <p class="texto-suave pequeno">Tire suas dúvidas sobre o registro de presença.</p>
+
+        <div class="ajuda-busca">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input type="search" id="buscaAjuda" placeholder="Buscar dúvida..." aria-label="Buscar dúvida" />
+        </div>
+
+        <div class="ajuda-lista" id="listaAjuda"></div>
+
+        <div class="ajuda-contato">
+          <div>
+            <strong>Não encontrou o que procurava?</strong>
+            <span>Fale com o RH: ${CONTATO_RH}</span>
+          </div>
+          <a class="btn btn-primario" id="btnContatoRh" href="mailto:${CONTATO_RH}?subject=Dúvida%20-%20Registro%20de%20Presença">Falar com o RH</a>
+        </div>
+      </div>
+    </div>`,
+  );
+
+  const modal = document.getElementById("modalAjuda");
+  const lista = document.getElementById("listaAjuda");
+  const busca = document.getElementById("buscaAjuda");
+
+  function normalizar(t) {
+    return t
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/<[^>]+>/g, "")
+      .toLowerCase();
+  }
+
+  /* ---------- Lista de perguntas ---------- */
+  function renderizar() {
+    const termo = normalizar(busca.value.trim());
+    const itens = PERGUNTAS.filter(
+      (p) =>
+        !termo || normalizar(p.pergunta + " " + p.resposta).includes(termo),
+    );
+
+    lista.innerHTML = itens.length
+      ? itens
+          .map(
+            (p) => `
+          <details class="ajuda-item">
+            <summary>${p.pergunta}</summary>
+            <div class="ajuda-resposta">
+              ${p.resposta}
+              ${p.link ? `<br><button type="button" class="link-acao" data-ajuda-ir="${p.link}">${p.textoLink}</button>` : ""}
+            </div>
+          </details>`,
+          )
+          .join("")
+      : '<p class="ajuda-vazio">Nenhuma dúvida encontrada. Fale com o RH abaixo.</p>';
+  }
+
+  busca.addEventListener("input", renderizar);
+
+  // Links das respostas
+  lista.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-ajuda-ir]");
+    if (!b) return;
+    fechar();
+    const destino = b.dataset.ajudaIr;
+    // Se já estiver no Início, só abre o atestado sem recarregar
+    if (
+      destino.startsWith("inicio.html#") &&
+      location.pathname.endsWith("inicio.html")
+    ) {
+      location.hash = destino.split("#")[1];
+    } else {
+      window.location.href = destino;
+    }
+  });
+
+  /* ---------- Abrir / fechar ---------- */
+  function abrir() {
+    busca.value = "";
+    renderizar();
+    modal.classList.remove("oculto");
+    document.body.classList.add("com-modal");
+    busca.focus();
+  }
+
+  function fechar() {
+    modal.classList.add("oculto");
+    document.body.classList.remove("com-modal");
+  }
+
+  botao.setAttribute("type", "button");
+  botao.addEventListener("click", abrir);
+  document.getElementById("btnFecharAjuda").addEventListener("click", fechar);
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) fechar();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !modal.classList.contains("oculto")) fechar();
+  });
 })();

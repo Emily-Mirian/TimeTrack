@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Configurações | Registro de Presença</title>
+  <style>
+    @import url("../css/style.css");
+  </style>
+</head>
+<body class="pagina-app">
+
+  <!-- MENU LATERAL DO FUNCIONÁRIO (Idêntico ao das outras telas) -->
+  <aside class="menu-lateral">
+    <div class="menu-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 7v5l3 2" />
+      </svg>
+    </div>
+    <nav class="menu-itens">
+      <button class="menu-item" data-ir="dashboard.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M3 12l9-9 9 9v9a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1v-9z" />
+        </svg>
+        Início
+      </button>
+      <button class="menu-item" data-ir="ponto.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
+        </svg>
+        Ponto
+      </button>
+      <button class="menu-item" data-ir="relatorios.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M8 16v-3M12 16V9M16 16v-5" />
+        </svg>
+        Relatórios
+      </button>
+      <button class="menu-item" data-ir="atestados.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="5" y="4" width="14" height="17" rx="2" />
+          <path d="M9 4V3h6v1M12 10v6M9 13h6" />
+        </svg>
+        Atestados
+      </button>
+      <button class="menu-item ativo" data-ir="configuracoes-funcionario.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="12" cy="12" r="3" />
+          <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
+        </svg>
+        Configurações
+      </button>
+    </nav>
+  </aside>
+
+  <!-- CONTEÚDO PRINCIPAL -->
+  <main class="conteudo">
+    <header class="topo">
+      <div>
+        <h1>Configurações da Conta</h1>
+        <p class="texto-suave">Gerencie seus dados de acesso e preferências do sistema.</p>
+      </div>
+      <div class="perfil">
+        <button class="perfil-botao" id="btnPerfil">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="8" r="4" />
+            <path d="M4 21c0-4 4-6 8-6s8 2 8 6" />
+          </svg>
+          Meu Perfil
+          <span class="seta-baixo"></span>
+        </button>
+        <div class="perfil-menu oculto" id="menuPerfil">
+          <button data-ir="configuracoes-funcionario.html">Configurações</button>
+          <button id="btnSair">Sair</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- LINHA DE CONFIGURAÇÕES (Seguindo o padrão do CSS original) -->
+    <section class="linha-config">
+      
+      <!-- CARD 1: DADOS DA CONTA -->
+      <div class="card">
+        <div class="card-cabecalho">
+          <h2 class="card-titulo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+            Dados da Conta
+          </h2>
+          <span class="badge badge-bloqueado">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            Dados do RH
+          </span>
+        </div>
+
+        <div class="dados-lista" style="margin-top: 16px;">
+          <div class="dado">
+            <span>Nome Completo</span>
+            <strong id="funcNome">Carregando...</strong>
+          </div>
+          <div class="dado">
+            <span>E-mail Corporativo</span>
+            <strong id="funcEmail">Carregando...</strong>
+          </div>
+          <div class="dado">
+            <span>Vínculo Contratual</span>
+            <strong id="funcContrato">Carregando...</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD 2: SEGURANÇA E ACESSO (Alterar Senha) -->
+      <div class="card">
+        <h2 class="card-titulo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0110 0v4" />
+          </svg>
+          Segurança e Acesso
+        </h2>
+
+        <form id="formSenhaFuncionario" class="form-modal" novalidate style="margin-top: 16px;">
+          <div class="campo-modal">
+            <label for="funcSenhaAtual">Senha atual</label>
+            <div class="campo-senha">
+              <input type="password" id="funcSenhaAtual" required />
+              <button type="button" class="btn-olho" data-alvo="funcSenhaAtual" aria-label="Mostrar senha">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <p class="mensagem-erro" id="erroFuncSenhaAtual"></p>
+          </div>
+
+          <div class="campo-modal">
+            <label for="funcNovaSenha">Nova senha</label>
+            <div class="campo-senha">
+              <input type="password" id="funcNovaSenha" required />
+              <button type="button" class="btn-olho" data-alvo="funcNovaSenha" aria-label="Mostrar senha">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <p class="mensagem-erro" id="erroFuncNovaSenha"></p>
+          </div>
+
+          <button type="submit" class="btn btn-primario" id="btnSalvarSenhaFunc">
+            Alterar Senha
+          </button>
+          <p class="mensagem-sucesso" id="sucessoFuncSenha" style="text-align: left; margin-top: 8px;"></p>
+        </form>
+      </div>
+
+    </section>
+
+    <!-- NOTIFICAÇÕES -->
+    <section class="card">
+      <h2 class="card-titulo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" />
+        </svg>
+        Notificações de Jornada
+      </h2>
+      <ul class="lista-toggles">
+        <li class="toggle-linha">
+          <div>
+            <strong>Receber alerta de limite de jornada por e-mail</strong>
+            <p class="texto-suave pequeno">Aviso quando você atingir 85% da carga diária.</p>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" data-pref-func="alertaLimiteEmail" checked />
+            <span class="toggle-trilho"></span>
+          </label>
+        </li>
+        <li class="toggle-linha">
+          <div>
+            <strong>Notificar-me sobre atestados validados</strong>
+            <p class="texto-suave pequeno">Informa assim que o RH aprovar ou recusar seu documento.</p>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" data-pref-func="notificarAtestados" checked />
+            <span class="toggle-trilho"></span>
+          </label>
+        </li>
+      </ul>
+    </section>
+
+  </main>
+
+  <!-- SCRIPTS USANDO AS MESMAS RETRILHAS DO PROJETO -->
+  <script src="js/api.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

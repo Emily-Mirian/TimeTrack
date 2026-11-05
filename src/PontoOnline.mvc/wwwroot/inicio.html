@@ -75,7 +75,7 @@
           </svg>
           Atestados
         </button>
-        <button class="menu-item" data-ir="configuracoes.html">
+        <button class="menu-item" data-ir="configuracoes-funcionario.html">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -135,7 +135,7 @@
             <span class="seta-baixo">⌄</span>
           </button>
           <div class="perfil-menu oculto" id="menuPerfil">
-            <button data-ir="configuracoes.html">Configurações</button>
+            <button data-ir="configuracoes-funcionario.html">Configurações</button>
             <!-- [BACKEND] Sair: encerrar a sessão (POST /api/auth/logout) antes de voltar ao login -->
             <button id="btnSair">Sair</button>
           </div>
@@ -314,7 +314,9 @@
             Estagiários têm limite diário de 6h e não podem realizar horas
             extras.
           </p>
-          <button class="link-acao">Saiba mais ›</button>
+          <button type="button" class="link-acao" id="btnSaibaMaisRegras">
+            Saiba mais ›
+          </button>
         </div>
       </section>
 
@@ -421,6 +423,84 @@
         </div>
       </section>
     </main>
+    <!-- ======================================================
+       MODAL: REGRAS DO CONTRATO ("Saiba mais" do card de regras)
+       [BACKEND] GET /api/regras/meu-contrato →
+         { "nome": "Regime de Estágio", "cargasDiarias": [6, 4], "cargaDoUsuario": 6,
+           "limiteSemanal": 30, "toleranciaMin": 5,
+           "bloqueioHoraExtra": true, "bancoHoras": false }
+       Mesmas regras cadastradas pelo Admin em Regras e Contratos (Fig. 20).
+       ====================================================== -->
+    <div
+      class="modal-fundo oculto"
+      id="modalRegras"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="tituloModalRegras"
+    >
+      <div class="modal">
+        <div class="modal-topo">
+          <span class="modal-icone icone-info-grande">i</span>
+          <h2 id="tituloModalRegras">Regras do seu contrato</h2>
+          <button
+            type="button"
+            class="modal-fechar"
+            id="btnFecharRegras"
+            aria-label="Fechar"
+          >
+            ✕
+          </button>
+        </div>
+        <p class="texto-suave pequeno" id="regrasNomeContrato">--</p>
+
+        <!-- Regras (preenchidas pelo main.js) -->
+        <ul class="regras-lista" id="listaRegras"></ul>
+
+        <!-- Como funciona o alerta de jornada -->
+        <h3 class="regras-subtitulo">Como funciona o alerta de jornada</h3>
+        <ul class="regras-alertas">
+          <li>
+            <span class="bolinha-estado estado-verde"></span>
+            <div>
+              <strong>Verde — Jornada normal</strong
+              ><span>Você está dentro do limite do dia.</span>
+            </div>
+          </li>
+          <li>
+            <span class="bolinha-estado estado-amarelo"></span>
+            <div>
+              <strong>Amarelo — Limite próximo</strong
+              ><span>Planeje sua saída: falta pouco para o limite.</span>
+            </div>
+          </li>
+          <li>
+            <span class="bolinha-estado estado-vermelho"></span>
+            <div>
+              <strong>Vermelho — Limite crítico</strong
+              ><span>Registre sua saída o quanto antes.</span>
+            </div>
+          </li>
+        </ul>
+
+        <p class="regras-nota" id="regrasNotaBloqueio">
+          <span class="aviso-icone">!</span>
+          <span
+            >Ao atingir o limite diário, o sistema
+            <strong>bloqueia novas batidas</strong> de ponto.</span
+          >
+        </p>
+
+        <p class="texto-suave pequeno">
+          Dúvidas sobre o seu contrato? Procure o RH.
+        </p>
+
+        <div class="modal-acoes">
+          <button type="button" class="btn btn-primario" id="btnEntendiRegras">
+            Entendi
+          </button>
+        </div>
+      </div>
+    </div>
     <!-- ======================================================
        MODAL: ENVIAR ATESTADO MÉDICO (Figura 6)
        Abre pelo botão "Atestados" do menu (inicio.html#atestado)
