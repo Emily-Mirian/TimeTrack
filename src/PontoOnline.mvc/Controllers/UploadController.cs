@@ -29,7 +29,6 @@ namespace PontoOnline.mvc.Controllers
         {
             try
             {
-                // VERIFICA SE A PERMISSÃO DE IMPORTAÇÃO ESTÁ ATIVA PARA O PERFIL (ex: RH)
                 var permissao = await _context.PermissoesPerfil
                     .FirstOrDefaultAsync(p => p.Funcao == "importacao" && p.Perfil == "rh");
 
@@ -92,7 +91,6 @@ namespace PontoOnline.mvc.Controllers
                     await _context.RegistrosPonto.AddRangeAsync(novosRegistros);
                     await _context.SaveChangesAsync();
 
-                    // REGISTRA O LOG DE IMPORTAÇÃO EM LOTE
                     await _logService.RegistrarAsync(
                         acao: "Importação de Planilha CSV",
                         modulo: "Upload e Processamento",
