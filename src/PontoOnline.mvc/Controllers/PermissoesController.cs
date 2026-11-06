@@ -25,10 +25,8 @@ namespace PontoOnline.mvc.Controllers
         [HttpGet]
         public async Task<IActionResult> ListarPermissoes()
         {
-            // Busca o que está salvo no banco
             var salvas = await _context.PermissoesPerfil.ToListAsync();
 
-            // Estrutura padrão base
             var funcoes = new List<object>
             {
                 new {
@@ -126,7 +124,6 @@ namespace PontoOnline.mvc.Controllers
 
                 await _context.SaveChangesAsync();
 
-                // Registra o log da alteração de permissão no sistema
                 await _logService.RegistrarAsync(
                     acao: "Atualização de Permissões",
                     modulo: "Segurança e Acessos",
