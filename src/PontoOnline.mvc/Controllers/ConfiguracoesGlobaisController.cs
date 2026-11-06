@@ -20,7 +20,6 @@ namespace PontoOnline.mvc.Controllers
             _logService = logService;
         }
 
-        // GET: /api/config/seguranca (Retorna os dados salvos no banco)
         [HttpGet("seguranca")]
         public async Task<IActionResult> ObterSeguranca()
         {
@@ -32,7 +31,6 @@ namespace PontoOnline.mvc.Controllers
             return Ok(new { expiracaoSessao = config.ExpiracaoSessao, senhaForte = config.SenhaForte });
         }
 
-        // GET: /api/config/backup
         [HttpGet("backup")]
         public async Task<IActionResult> ObterBackup()
         {
