@@ -17,7 +17,6 @@ namespace PontoOnline.mvc.Controllers
             _context = context;
         }
 
-        // Retorna as últimas 5 movimentações para o card de Auditoria Recente
         [HttpGet("auditoria-recente")]
         public async Task<IActionResult> ObterAuditoriaRecente()
         {
