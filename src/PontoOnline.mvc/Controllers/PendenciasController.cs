@@ -115,7 +115,6 @@ namespace PontoOnline.mvc.Controllers
                 _context.AuditoriaLogs.Add(logAuditoria);
                 await _context.SaveChangesAsync();
 
-                // REGISTRA NO LOG GERAL DO SISTEMA
                 await _logService.RegistrarAsync(
                     acao: "Resolução de Batida Ímpar",
                     modulo: "Pendências",
