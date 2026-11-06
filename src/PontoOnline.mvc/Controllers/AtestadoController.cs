@@ -56,7 +56,6 @@ public class AtestadoController : Controller
             _context.AusenciasJustificadas.Add(ausencia);
             await _context.SaveChangesAsync();
 
-            // REGISTRA O LOG DE ENVIO DE ATESTADO
             await _logService.RegistrarAsync(
                 acao: "Envio de Atestado Médico",
                 modulo: "Atestados",
