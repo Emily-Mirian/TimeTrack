@@ -46,22 +46,20 @@ namespace PontoOnline.mvc.Controllers
                     else if (acaoDb.Contains("cadastro")) acaoNormalizada = "cadastro";
                     else if (acaoDb.Contains("importacao") || acaoDb.Contains("importação")) acaoNormalizada = "importacao";
 
-                    // Valores padrão caso não localize o usuário
                     string nomeAutor = "Administrador";
                     string classeAtor = "admin";
 
                     if (usuarios.TryGetValue(l.UsuarioResponsavelId, out var usuario))
                     {
                         nomeAutor = usuario.NomeCompleto;
-                        // Lê o NivelAcesso do banco: "admin" ou "rh"
                         classeAtor = (usuario.NivelAcesso ?? "").ToLower() == "rh" ? "rh" : "admin";
                     }
 
                     return new {
                         data = l.DataHora.ToString("yyyy-MM-ddTHH:mm:ss"),
-                        ator = classeAtor,       // "admin" ou "rh" (controla a cor da tag no front)
-                        autor = nomeAutor,       // Exibe o Nome Completo real do responsável
-                        tipo = acaoNormalizada,  // "edicao_ponto" ou "atestado"
+                        ator = classeAtor,       
+                        autor = nomeAutor,       
+                        tipo = acaoNormalizada, 
                         detalhe = l.Detalhes
                     };
                 });
