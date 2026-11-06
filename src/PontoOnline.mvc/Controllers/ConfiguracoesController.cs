@@ -103,7 +103,6 @@ namespace PontoOnline.mvc.Controllers
             
             if (verificacao == PasswordVerificationResult.Failed)
             {
-                // Registra tentativa falha de alteração de senha (Segurança Alta)
                 await _logService.RegistrarAsync(
                     acao: "Falha na Alteração de Senha",
                     modulo: "Configurações / Segurança",
@@ -123,7 +122,6 @@ namespace PontoOnline.mvc.Controllers
             usuario.SenhaHash = passHasher.HashPassword(usuario, dto.NovaSenha);
             await _context.SaveChangesAsync();
 
-            // REGISTRA O LOG DE SUCESSO NA TROCA DE SENHA
             await _logService.RegistrarAsync(
                 acao: "Alteração de Senha Bem-Sucedida",
                 modulo: "Configurações / Segurança",
