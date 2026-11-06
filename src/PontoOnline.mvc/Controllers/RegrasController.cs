@@ -66,7 +66,6 @@ namespace PontoOnline.mvc.Controllers
 
                 await _context.SaveChangesAsync();
 
-                // REGISTRA O LOG AUTOMATICAMENTE
                 await _logService.RegistrarAsync(
                     acao: "Atualização de Regra / Contrato",
                     modulo: "Regras e Contratos",
