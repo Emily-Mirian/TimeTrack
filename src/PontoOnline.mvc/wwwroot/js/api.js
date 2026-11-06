@@ -1,6 +1,5 @@
 const API_URL = 'http://localhost:5242';
 
-// Todo fetch('/api/...') passa a ir para a API e leva o id de quem está logado
 const _fetchOriginal = window.fetch.bind(window);
 window.fetch = (url, opcoes = {}) => {
   if (typeof url === 'string' && url.startsWith('/api/')) url = API_URL + url;
