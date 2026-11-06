@@ -22,7 +22,6 @@ namespace PontoOnline.mvc.Controllers
             _logService = logService;
         }
 
-        // 1. Listar feriados
         [HttpGet]
         public async Task<IActionResult> ListarFeriados([FromQuery] int? ano)
         {
@@ -45,7 +44,6 @@ namespace PontoOnline.mvc.Controllers
             return Ok(resultado);
         }
 
-        // 2. Cadastrar novo feriado (POST)
         [HttpPost]
         public async Task<IActionResult> CriarFeriado([FromBody] FeriadoDto dto)
         {
@@ -70,7 +68,6 @@ namespace PontoOnline.mvc.Controllers
             _context.Feriados.Add(novoFeriado);
             await _context.SaveChangesAsync();
 
-            // REGISTRA O LOG DE CADASTRO
             await _logService.RegistrarAsync(
                 acao: "Cadastro de Feriado",
                 modulo: "Calendário",
@@ -87,7 +84,6 @@ namespace PontoOnline.mvc.Controllers
             });
         }
 
-        // 3. Atualizar feriado existente (PUT)
         [HttpPut("{id}")]
         public async Task<IActionResult> AtualizarFeriado(int id, [FromBody] FeriadoDto dto)
         {
@@ -111,7 +107,6 @@ namespace PontoOnline.mvc.Controllers
 
             await _context.SaveChangesAsync();
 
-            // REGISTRA O LOG DE ATUALIZAÇÃO
             await _logService.RegistrarAsync(
                 acao: "Atualização de Feriado",
                 modulo: "Calendário",
@@ -128,7 +123,6 @@ namespace PontoOnline.mvc.Controllers
             });
         }
 
-        // 4. Excluir feriado (DELETE)
         [HttpDelete("{id}")]
         public async Task<IActionResult> RemoverFeriado(int id)
         {
@@ -140,7 +134,6 @@ namespace PontoOnline.mvc.Controllers
             _context.Feriados.Remove(feriado);
             await _context.SaveChangesAsync();
 
-            // REGISTRA O LOG DE EXCLUSÃO
             await _logService.RegistrarAsync(
                 acao: "Exclusão de Feriado",
                 modulo: "Calendário",
