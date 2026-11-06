@@ -61,9 +61,7 @@ function emailValido(valor) {
     window.location.href = ROTAS_POR_PERFIL[perfil];
   });
 })();
-/* =========================================================
-   3. TELA: CADASTRO (Figura 2)
-   ========================================================= */
+
 (function telaCadastro() {
   const form = document.getElementById("formCadastro");
   if (!form) return;
@@ -131,10 +129,7 @@ function emailValido(valor) {
     setTimeout(() => (window.location.href = "login.html"), 1500);
   });
 })();
-/* =========================================================
-   4. FUNÇÕES DAS ÁREAS LOGADAS (menu, perfil, sair)
-      Valem para todas as telas com menu lateral.
-   ========================================================= */
+
 (function areaLogada() {
   if (!document.querySelector(".pagina-app")) return;
 
@@ -166,9 +161,6 @@ function emailValido(valor) {
 
 })();
 
-/* =========================================================
-   5. TELA: INÍCIO DO FUNCIONÁRIO (Figuras 3, 8 e 9)
-   ========================================================= */
 (function telaInicioFuncionario() {
   const painel = document.getElementById("painelJornada");
   if (!painel) return;
@@ -307,7 +299,6 @@ function emailValido(valor) {
       let percentual = Math.round((statusAtual.minutosTrabalhados / statusAtual.metaDiariaMinutos) * 100);
       if (percentual > 100) percentual = 100;
 
-      // 1. Renderiza o card de Hoje
       const dadosJornada = {
         percentual: percentual,
         trabalhadas: statusAtual.horasTrabalhadasFormatadas,
@@ -329,10 +320,9 @@ function emailValido(valor) {
         estado: dadosJornada.estado
       });
 
-      const minTotaisSemana = (statusAtual.minutosSemanaReais || 0); // ou cálculo próprio
+      const minTotaisSemana = (statusAtual.minutosSemanaReais || 0); 
       const pctSemana = Math.min(Math.round((statusAtual.minutosSemanaNumerico / 2400) * 100), 100) || percentual;
 
-      // 2. Renderiza o card da Semana (usando o valor calculado direto pelo C#)
       renderizarPeriodo("periodoSemana", {
         horas: statusAtual.semanaFormatada || "0h 0min",
         meta: "40h",
@@ -342,7 +332,6 @@ function emailValido(valor) {
 
       const pctMes = Math.min(Math.round((statusAtual.minutosMesNumerico / 9600) * 100), 100) || percentual;
 
-      // 3. Renderiza o card do Mês (usando o acumulado real blindado contra a virada de dia)
       renderizarPeriodo("periodoMes", {
         horas: statusAtual.mesFormatada || "0h 0min",
         meta: "160h",
@@ -350,7 +339,6 @@ function emailValido(valor) {
         estado: pctMes >= 97 ? "critico" : pctMes >= 85 ? "atencao" : "normal"
       });   
 
-      // 4. Renderiza o Histórico de Registros
       if (extrato && extrato.historico) {
         const historicoFormatado = extrato.historico.map(reg => {
           const formatarData = (dataStr) => {
@@ -420,9 +408,7 @@ function emailValido(valor) {
 
     buscarResumoDoServidor();
 })();
-/* =========================================================
-   6. TELA: PONTO DO FUNCIONÁRIO (Figura 4)
-   ========================================================= */
+
 (function telaPonto() {
   const card = document.getElementById("cardPonto");
   if (!card) return; 
@@ -550,9 +536,7 @@ function emailValido(valor) {
 
   carregar();
 })();
-/* =========================================================
-   7. TELA: RELATÓRIOS DO FUNCIONÁRIO (Figura 5)
-   ========================================================= */
+
 (function telaRelatorios() {
   const cardExportar = document.getElementById("cardExportar");
   if (!cardExportar) return;
@@ -627,10 +611,6 @@ function emailValido(valor) {
   carregar();
 })();
 
-
-/* =========================================================
-   8. MODAL: ENVIAR ATESTADO (Figura 6)
-   ========================================================= */
 (function modalAtestado() {
   const modal = document.getElementById("modalAtestado");
   if (!modal) return; 
@@ -835,12 +815,9 @@ function emailValido(valor) {
   });
 })();
 
-/* ==========================================================================
-   TELA DE CONFIGURAÇÕES DO FUNCIONÁRIO (JS SEPARADO)
-   ========================================================================== */
 (function telaConfiguracoesFuncionarioExclusiva() {
   const formSenha = document.getElementById("formSenhaFuncionario");
-  if (!formSenha) return; // Se não estiver na página do funcionário, encerra aqui
+  if (!formSenha) return; 
 
   const usuarioId = sessionStorage.getItem("usuarioId") || localStorage.getItem("usuarioId") || 1;
 
@@ -855,7 +832,6 @@ function emailValido(valor) {
   const msgSucesso = document.getElementById("sucessoFuncSenha");
   const btnSalvar = document.getElementById("btnSalvarSenhaFunc");
 
-  // Botão Sair
   const btnSair = document.getElementById("btnSairFunc");
   if (btnSair) {
     btnSair.addEventListener("click", () => {
@@ -865,7 +841,6 @@ function emailValido(valor) {
     });
   }
 
-  // Olhinho de mostrar/esconder senha
   document.querySelectorAll(".btn-olho").forEach((btn) => {
     btn.addEventListener("click", () => {
       const input = document.getElementById(btn.dataset.alvo);
@@ -876,7 +851,6 @@ function emailValido(valor) {
     });
   });
 
-  // Carregar dados reais do usuário logado via API
   async function carregarDados() {
     try {
       const resp = await fetch(`/api/me/${usuarioId}`);
@@ -891,7 +865,6 @@ function emailValido(valor) {
     }
   }
 
-  // Envio do formulário de alteração de senha
   formSenha.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (erroAtual) erroAtual.textContent = "";
@@ -942,16 +915,13 @@ function emailValido(valor) {
 
   carregarDados();
 })();
-/* =========================================================
-   10. CONTROLE DE PERFIL NO MENU (RH e Admin)
-   ========================================================= */
+
 (function controlePerfil() {
   if (!document.querySelector(".pagina-app")) return;
 
 
   const perfil = localStorage.getItem("perfil") || "funcionario";
 
-  // Bloqueia a página se o perfil não tiver acesso (data-acesso no <body>)
   const acesso = document.body.dataset.acesso;
   if (acesso && !acesso.split(" ").includes(perfil)) {
     alert(
@@ -961,7 +931,6 @@ function emailValido(valor) {
     return;
   }
 
-  // Mostra/esconde itens com data-perfil
   document.querySelectorAll("[data-perfil]").forEach((el) => {
     el.classList.toggle(
       "oculto",
@@ -969,20 +938,16 @@ function emailValido(valor) {
     );
   });
 
-  // Saudação no botão de perfil
   const saudacao = document.getElementById("saudacaoPerfil");
   if (saudacao)
     saudacao.textContent =
       perfil === "admin" ? "Olá, Administrador" : "Olá, Gestor RH";
 
-  // Ao sair, apaga o perfil salvo
   const btnSair = document.getElementById("btnSair");
   if (btnSair)
     btnSair.addEventListener("click", () => localStorage.removeItem("perfil"));
 })();
-/* =========================================================
-   11. TELA: PENDÊNCIAS DO RH (Figura 10)
-   ========================================================= */
+
 (function telaPendencias() {
   const card = document.getElementById("cardPendencias");
   if (!card) return;
@@ -990,14 +955,12 @@ function emailValido(valor) {
   const tabela = document.getElementById("tabelaPendencias");
   const filtro = document.getElementById("filtroTipo");
 
-  // Visual de cada tipo de ocorrência
   const TIPOS = {
     batida_impar: { texto: "Batida Ímpar", badge: "badge-atencao" },
     atestado: { texto: "Atestado Médico Enviado", badge: "badge-info" },
     falta: { texto: "Falta Injustificada", badge: "badge-critico" },
   };
 
-  // Botões de ação de cada tipo
   function botoes(p) {
     if (p.tipo === "batida_impar")
       return `<button class="btn-acao primario" data-acao="editar" data-id="${p.id}">Editar Ponto</button>`;
@@ -1048,7 +1011,6 @@ function emailValido(valor) {
     setTimeout(() => (msg.textContent = ""), 2500);
   }
 
-  /* ---------- Cliques nos botões da tabela ---------- */
   tabela.addEventListener("click", async (e) => {
     const btn = e.target.closest("[data-acao]");
     if (!btn) return;
@@ -1056,7 +1018,6 @@ function emailValido(valor) {
 
     switch (btn.dataset.acao) {
       case "editar":
-        // Abre o modal da Fig. 11; ao salvar, a pendência some da tabela
         window.abrirEditarPonto(p, () =>
           resolver(p.id, `Ponto de ${p.colaborador} corrigido.`),
         );
@@ -1075,10 +1036,8 @@ function emailValido(valor) {
         try {
           const idNumerico = p.id.split("_")[1];
           
-          // Pega exatamente o ID real de quem está logado no navegador (seja Admin ou RH)
           const usuarioLogadoId = sessionStorage.getItem("usuarioId") || localStorage.getItem("usuarioId") || 1;
 
-          // Envia o ID correto para a API
           await chamarApi(`/Pendencias/atestado/${idNumerico}/aprovar`, "PUT", {
             UsuarioResponsavelId: parseInt(usuarioLogadoId)
           });
@@ -1104,10 +1063,8 @@ function emailValido(valor) {
 
   filtro.addEventListener("change", renderizar);
 
-  /* ---------- Carregar ---------- */
   async function carregar() {
     try {
-      // Chama o nosso novo PendenciasController
       pendencias = await chamarApi("/Pendencias", "GET");
       renderizar();
     } catch (erro) {
@@ -1118,12 +1075,9 @@ function emailValido(valor) {
 
   carregar();
 })();
-/* =========================================================
-   12. MODAL: EDITAR PONTO (Figura 11)
-   ========================================================= */
 (function modalEditarPonto() {
   const modal = document.getElementById("modalEditarPonto");
-  if (!modal) return; // modal só existe no rh/pendencias.html
+  if (!modal) return; 
 
   const form = document.getElementById("formEditarPonto");
   const data = document.getElementById("editarData");
@@ -1142,10 +1096,8 @@ function emailValido(valor) {
     return `${a}-${m}-${d}`;
   }
 
-  /* ---------- Busca o horário original ---------- */
   async function carregarOriginal() {}
 
-  /* ---------- Abrir / fechar ---------- */
   function abrir(pendencia, callback) {
     pendenciaAtual = pendencia;
     aoSalvar = callback;
@@ -1161,7 +1113,6 @@ function emailValido(valor) {
       .toUpperCase();
 
     data.value = paraISO(pendencia.data);
-    // [BACKEND] A pendência pode informar qual batida falta (campo "tipoPonto")
     tipo.value = pendencia.tipoPonto || "entrada";
     carregarOriginal();
 
@@ -1190,7 +1141,6 @@ function emailValido(valor) {
     ].forEach(([c, e]) => mostrarErro(c, e, ""));
   }
 
-  // Deixa a função disponível para a tabela de Pendências
   window.abrirEditarPonto = abrir;
 
   document.getElementById("btnFecharEditar").addEventListener("click", fechar);
@@ -1204,18 +1154,15 @@ function emailValido(valor) {
     if (e.key === "Escape" && !modal.classList.contains("oculto")) fechar();
   });
 
-  // Ao trocar data ou tipo, busca de novo o horário original
   data.addEventListener("change", carregarOriginal);
   tipo.addEventListener("change", carregarOriginal);
 
-  /* ---------- Contador de caracteres ---------- */
   justificativa.addEventListener("input", () => {
     const total = justificativa.value.length;
     contador.textContent = `${total}/500`;
     contador.classList.toggle("limite", total >= 500);
   });
 
-  /* ---------- Validação ---------- */
   function validar() {
     let ok = true;
 
@@ -1240,7 +1187,6 @@ function emailValido(valor) {
       ok = false;
     } else mostrarErro("campoEditarNovo", "erroEditarNovo", "");
 
-    // [BACKEND] Validar também no servidor (justificativa obrigatória para auditoria)
     if (justificativa.value.trim().length < 10) {
       mostrarErro(
         "campoEditarJustificativa",
@@ -1253,7 +1199,6 @@ function emailValido(valor) {
 
     return ok;
   }
-  /* ---------- Salvar ---------- */
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     document.getElementById("erroEditarGeral").textContent = "";
@@ -1263,17 +1208,13 @@ function emailValido(valor) {
     btnSalvar.textContent = "Salvando...";
 
     try {
-      // Extrai apenas o ID numérico (ex.: "ponto_15" -> 15)
       const pontoId = parseInt(pendenciaAtual.id.split("_")[1]);
       
-      // Monta o horário completo com a data e o novo horário indicado
       const [ano, mes, dia] = data.value.split("-");
       const [hora, minuto] = novo.value.split(":");
       const dataHoraCompleta = new Date(ano, mes - 1, dia, hora, minuto, 0);
 
-      // Obtém o utilizador atualmente autenticado a partir do armazenamento local
       const usuarioConectado = JSON.parse(localStorage.getItem("usuario") || sessionStorage.getItem("usuario") || "{}");
-      // Se não encontrar o id no objeto, coloque o ID da sua conta de Administrador no banco
       const idAutor = usuarioConectado.id || usuarioConectado.usuarioId || 2;
 
       const resposta = await fetch(`/api/pendencias/ponto/${pontoId}/resolver`, {
@@ -1307,9 +1248,6 @@ function emailValido(valor) {
   });
 })();
 
-/* =========================================================
-   13. TELA: IMPORTAR PLANILHAS 
-   ========================================================= */
 (function telaImportar() {
   const card = document.getElementById("cardImportar");
   if (!card) return;
@@ -1332,7 +1270,6 @@ function emailValido(valor) {
   let arquivo = null;
   let importacoes = [];
 
-  /* ---------- Tabela ---------- */
   function renderizarTabela() {
     if (!importacoes.length) {
       tabela.innerHTML =
@@ -1352,14 +1289,13 @@ function emailValido(valor) {
       .join("");
   }
 
-  /* ---------- Seleção do arquivo ---------- */
   function contarLinhasCsv(file) {
     return new Promise((resolve) => {
       const leitor = new FileReader();
       leitor.onload = () =>
         resolve(
           leitor.result.split(/\r?\n/).filter((l) => l.trim()).length - 1,
-        ); // -1 = cabeçalho
+        ); 
       leitor.onerror = () => resolve(null);
       leitor.readAsText(file);
     });
@@ -1378,8 +1314,6 @@ function emailValido(valor) {
       return;
     }
 
-    // Pré-verificação do limite só para CSV (Excel precisa ser lido pelo servidor)
-    // [BACKEND] O limite de 5.000 linhas deve ser validado no servidor para TODOS os formatos
     if (ext === ".csv") {
       const linhas = await contarLinhasCsv(file);
       if (linhas > LIMITE_LINHAS) {
@@ -1423,7 +1357,6 @@ function emailValido(valor) {
   );
   area.addEventListener("drop", (e) => selecionar(e.dataTransfer.files[0]));
 
-  /* ---------- Importar ---------- */
   btnImportar.addEventListener("click", async () => {
     if (!arquivo) return;
     btnImportar.disabled = true;
@@ -1487,7 +1420,6 @@ function emailValido(valor) {
     }
   });
 
-  /* ---------- Carregar ---------- */
   async function carregar() {
 
     if (!modulo.ativo) {
@@ -1502,9 +1434,7 @@ function emailValido(valor) {
 
   carregar();
 })();
-/* =========================================================
-   14. TELA: EXPORTAR RELATÓRIOS DO RH (Figura 13)
-   ========================================================= */
+
 (function telaExportarRh() {
   const form = document.getElementById("formExportarRh");
   if (!form) return;
@@ -1519,7 +1449,6 @@ function emailValido(valor) {
 
   let exportacoes = [];
 
-  /* ---------- Opções dos selects ---------- */
   function preencherAlvos(setores, colaboradores) {
     let html = '<option value="todos">Todos os colaboradores</option>';
     html +=
@@ -1553,7 +1482,6 @@ function emailValido(valor) {
     }
   }
 
-  /* ---------- Tabela ---------- */
   function renderizarTabela() {
     if (!exportacoes.length) {
       tabela.innerHTML =
@@ -1576,14 +1504,11 @@ function emailValido(valor) {
   tabela.addEventListener("click", (e) => {
     const b = e.target.closest(".btn-baixar");
     if (!b) return;
-    /* [BACKEND] window.location.href = `/api/rh/relatorios/${b.dataset.id}/download`; */
-    // [PROTÓTIPO] REMOVER depois
     alert(
       `[Protótipo] O download do relatório ${b.dataset.id} será feito pelo back-end.`,
     );
   });
 
-  /* ---------- Gerar ---------- */
   function nomeArquivo() {
     const textoAlvo = alvo.options[alvo.selectedIndex].text;
     const [ano, m] = mes.value.split("-");
@@ -1608,14 +1533,12 @@ function emailValido(valor) {
 
     try {
       if (alvo.value.startsWith("colaborador:")) {
-        // Declara corretamente a variável extraindo o ID do valor do select (ex: "colaborador:3" -> 3)
         const colaboradorId = alvo.value.split(":")[1];
         
-        const partesData = mes.value.split("-"); // Ex: "2026-10"
+        const partesData = mes.value.split("-"); 
         const ano = partesData[0];
         const mesNum = partesData[1];
         
-        // Abre o PDF usando a rota correta do RelatoriosController no plural
         window.open(`/api/Relatorios/espelho/${colaboradorId}/${ano}/${parseInt(mesNum)}`, '_blank');
         
         const msg = document.getElementById("msgExportarRh");
@@ -1635,10 +1558,8 @@ function emailValido(valor) {
     }
   });
 
-  /* ---------- Carregar ---------- */
   async function carregar() {
     try {
-      // Adicionei o "s" em Relatorios para bater com o C#
       const resposta = await fetch("/api/Relatorios/colaboradores");
       const colaboradores = await resposta.json();
 
@@ -1656,9 +1577,7 @@ function emailValido(valor) {
 
   carregar();
 })();
-/* =========================================================
-   15. TELA: AUDITORIA DE PONTO (Figura 14)
-   ========================================================= */
+
 (function telaAuditoriaRh() {
   const form = document.getElementById("formAuditoria");
   if (!form) return;
@@ -1690,7 +1609,6 @@ function emailValido(valor) {
     });
   }
 
-  /* ---------- Tabela ---------- */
   function renderizar(lista) {
     document.getElementById("contadorAuditoria").textContent = lista.length;
     if (!lista.length) {
@@ -1711,12 +1629,10 @@ function emailValido(valor) {
       .join("");
   }
 
-  /* ---------- Filtrar ---------- */
   async function aplicarFiltros() {
     try {
       const dados = await chamarApi("/api/auditoria", "GET");
 
-      // Converte a data string da API para objetos Date do JavaScript
       logs = dados.map(l => ({
         ...l,
         data: new Date(l.data)
@@ -1727,7 +1643,6 @@ function emailValido(valor) {
       if (periodo.value === "hoje") inicio.setHours(0, 0, 0, 0);
       else inicio.setDate(agora.getDate() - Number(periodo.value));
 
-      // Filtra os dados recebidos com base nos selects da tela
       const filtrados = logs.filter(
         (l) =>
           l.data >= inicio &&
@@ -1741,7 +1656,6 @@ function emailValido(valor) {
     }
   }
 
-  /* ---------- Carregar ---------- */
   function diasAtras(dias, hora) {
     const d = new Date();
     d.setDate(d.getDate() - dias);
@@ -1755,16 +1669,12 @@ function emailValido(valor) {
 
   aplicarFiltros();
 })();
-/* =========================================================
-   TELA: CONFIGURAÇÕES RH
-   ========================================================= */
 (function telaConfiguracoesRh() {
   const card = document.getElementById("cardDadosGestor");
   if (!card) return;
 
   const NIVEIS = { rh: "Gestor RH", admin: "Administrador" };
 
-  // Função auxiliar para exibir erros
   function mostrarErro(campoId, erroId, mensagem) {
     const campo = document.getElementById(campoId);
     const erro = document.getElementById(erroId);
@@ -1775,10 +1685,8 @@ function emailValido(valor) {
     }
   }
 
-  /* ---------- Carregar dados e preferências reais ---------- */
   async function carregar() {
     try {
-      // Pega o ID de quem está logado no navegador
       const usuarioId = sessionStorage.getItem("usuarioId") || 1;
 
       const [resMe, resPrefs] = await Promise.all([
@@ -1805,7 +1713,6 @@ function emailValido(valor) {
     }
   }
 
-  /* ---------- Guardar preferências automaticamente ---------- */
   document.querySelectorAll("[data-pref-rh]").forEach((el) => {
     el.addEventListener("change", async () => {
       const usuarioId = sessionStorage.getItem("usuarioId") || 1;
@@ -1828,12 +1735,11 @@ function emailValido(valor) {
         }
       } catch (erro) {
         console.error(erro);
-        if (el.type === "checkbox") el.checked = !el.checked; // Reverte se falhar
+        if (el.type === "checkbox") el.checked = !el.checked;
       }
     });
   });
 
-  /* ---------- Modal: Alterar Senha ---------- */
   const modal = document.getElementById("modalSenhaRh");
   const form = document.getElementById("formSenhaRh");
   const atual = document.getElementById("senhaAtualRh");
@@ -1968,9 +1874,7 @@ function emailValido(valor) {
 
   carregar();
 })();
-/* =========================================================
-   15. TELA: VISÃO GLOBAL DO ADMIN (Figura 16)
-   ========================================================= */
+
 (function telaVisaoGlobal() {
   const cardModulos = document.getElementById("cardModulos");
   if (!cardModulos) return;
@@ -1978,7 +1882,6 @@ function emailValido(valor) {
   const tabela = document.getElementById("tabelaAuditoriaRecente");
   const msg = document.getElementById("msgModulos");
 
-  // Cor do selo de cada tipo de usuário
   const BADGE_USUARIO = {
     "Gestor RH": "badge-info",
     Sistema: "badge-sistema",
@@ -1990,7 +1893,6 @@ function emailValido(valor) {
     setTimeout(() => (msg.textContent = ""), 2500);
   }
 
-  /* ---------- Módulos ---------- */
   function aplicarModulos(modulos) {
     document.querySelectorAll("[data-modulo]").forEach((chk) => {
       chk.checked = !!modulos[chk.dataset.modulo];
@@ -2002,7 +1904,6 @@ function emailValido(valor) {
     chk.addEventListener("change", async () => {
       const nome = chk.dataset.nome;
 
-      // Desligar um módulo afeta o RH, então pede confirmação
       if (
         !chk.checked &&
         !confirm(
@@ -2015,26 +1916,12 @@ function emailValido(valor) {
 
       chk.disabled = true;
 
-      /* [BACKEND] SUBSTITUIR PELA CHAMADA REAL:
-         const resposta = await fetch(`/api/modulos/${chk.dataset.modulo}`, {
-           method: "PUT",
-           headers: { "Content-Type": "application/json" },
-           body: JSON.stringify({ ativo: chk.checked })
-         });
-         if (!resposta.ok) {
-           chk.checked = !chk.checked;   // volta o toggle
-           avisar("Não foi possível alterar o módulo.");
-           chk.disabled = false;
-           return;
-         } */
-
       chk.disabled = false;
       chk.closest(".toggle-linha").classList.toggle("desligado", !chk.checked);
       avisar(`Módulo "${nome}" ${chk.checked ? "ativado" : "desativado"}.`);
     });
   });
 
-  /* ---------- Auditoria recente ---------- */
   function renderizarAuditoria(lista) {
     if (!lista.length) {
       tabela.innerHTML =
@@ -2053,13 +1940,10 @@ function emailValido(valor) {
       .join("");
   }
 
-  /* ---------- Carregar ---------- */
   async function carregar() {
     try {
-      // Busca as últimas movimentações reais do banco de dados
       const auditoriaRecente = await chamarApi("/VisaoGlobal/auditoria-recente", "GET");
 
-      // Módulos podem manter o padrão ativado por enquanto ou vir de uma API futura
       const modulos = { importacao: true, exportacao: true, edicaoPonto: true };
 
       aplicarModulos(modulos);
@@ -2071,9 +1955,7 @@ function emailValido(valor) {
 
   carregar();
 })();
-/* =========================================================
-   TELA: CONFIGURAÇÕES GLOBAIS DO ADMIN (Figura 17)
-   ========================================================= */
+
 (function telaConfiguracoesGlobais() {
   const formSeguranca = document.getElementById("formSeguranca");
   if (!formSeguranca) return;
@@ -2088,7 +1970,6 @@ function emailValido(valor) {
     setTimeout(() => (el.textContent = ""), 2500);
   }
 
-  /* ---------- Ativação de Módulos (salva a cada clique) ---------- */
   document.querySelectorAll("[data-config-modulo]").forEach((chk) => {
     chk.addEventListener("change", async () => {
       const nome = chk.dataset.nome;
@@ -2096,14 +1977,6 @@ function emailValido(valor) {
         chk.checked = true;
         return;
       }
-
-      /* [BACKEND] SUBSTITUIR PELA CHAMADA REAL (mesma rota da Visão Global):
-         const resposta = await fetch(`/api/modulos/${chk.dataset.configModulo}`, {
-           method: "PUT",
-           headers: { "Content-Type": "application/json" },
-           body: JSON.stringify({ ativo: chk.checked })
-         });
-         if (!resposta.ok) { chk.checked = !chk.checked; avisar("msgModulosGlobais", "Não foi possível alterar."); return; } */
 
       chk.closest(".toggle-linha").classList.toggle("desligado", !chk.checked);
       avisar(
@@ -2113,7 +1986,6 @@ function emailValido(valor) {
     });
   });
 
-  /* ---------- Políticas de Segurança ---------- */
   formSeguranca.addEventListener("submit", async (e) => {
     e.preventDefault();
     const minutos = Number(expiracao.value);
@@ -2133,7 +2005,6 @@ function emailValido(valor) {
     avisar("msgSeguranca", "Políticas de segurança salvas.");
   });
 
-  /* ---------- Backup ---------- */
   frequencia.addEventListener("change", async () => {
     await fetch("/api/config/backup", {
       method: "PUT",
@@ -2143,7 +2014,6 @@ function emailValido(valor) {
     avisar("msgBackup", `Frequência de backup alterada: ${frequencia.options[frequencia.selectedIndex].text}.`);
   });
 
-  /* ---------- Carregar ---------- */
   async function carregar() {
     const [segurancaRes, backupRes] = await Promise.all([
       fetch("/api/config/seguranca").then(r => r.json()),
@@ -2159,9 +2029,7 @@ function emailValido(valor) {
 
   carregar();
 })();
-/* =========================================================
-   16. TELA: PERMISSÕES DE ACESSO (Figura 18)
-   ========================================================= */
+
 (function telaPermissoes() {
   const tabela = document.getElementById("tabelaPermissoes");
   if (!tabela) return;
@@ -2181,11 +2049,9 @@ function emailValido(valor) {
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>';
 
   let funcoes = [];
-  let original = {}; // estado salvo:  { "importacao|rh": true, ... }
-  let atual = {}; // estado na tela
+  let original = {}; 
+  let atual = {}; 
 
-  /* ---------- Desenho de cada célula ---------- */
-  // Obs.: usa data-funcao / data-papel (NÃO usar data-perfil, que é do controle do menu)
   function celula(funcao, perfil) {
     const c = funcao.perfis[perfil];
     switch (c.tipo) {
@@ -2219,7 +2085,6 @@ function emailValido(valor) {
       .join("");
   }
 
-  /* ---------- Controle de alterações não salvas ---------- */
   function alteracoes() {
     return Object.keys(atual)
       .filter((chave) => atual[chave] !== original[chave])
@@ -2238,7 +2103,6 @@ function emailValido(valor) {
     avisoPendentes.classList.toggle("oculto", qtd === 0);
     avisoPendentes.textContent = `${qtd} ${qtd === 1 ? "alteração não salva" : "alterações não salvas"}`;
 
-    // Destaca as células alteradas
     tabela.querySelectorAll("[data-celula]").forEach((td) => {
       const chave = td.dataset.celula;
       td.classList.toggle(
@@ -2255,7 +2119,6 @@ function emailValido(valor) {
     atualizarEstado();
   });
 
-  // Avisa antes de sair da página com alterações não salvas
   window.addEventListener("beforeunload", (e) => {
     if (alteracoes().length) {
       e.preventDefault();
@@ -2263,7 +2126,6 @@ function emailValido(valor) {
     }
   });
 
-  /* ---------- Descartar ---------- */
   btnDescartar.addEventListener("click", () => {
     atual = { ...original };
     tabela.querySelectorAll("[data-funcao]").forEach((chk) => {
@@ -2272,7 +2134,6 @@ function emailValido(valor) {
     atualizarEstado();
   });
 
-  /* ---------- Salvar ---------- */
   btnSalvar.addEventListener("click", async () => {
   const lista = alteracoes();
   if (!lista.length) return;
@@ -2314,21 +2175,17 @@ function emailValido(valor) {
   setTimeout(() => (msg.textContent = ""), 3000);
 });
 
-  /* ---------- Carregar ---------- */
   async function carregar() {
   try {
-    // 1. Busca do banco de dados através da API que criamos no C#
     const resposta = await fetch("/api/permissoes");
     if (!resposta.ok) throw new Error("Erro ao carregar permissões do servidor.");
     
     funcoes = await resposta.json();
 
-    // 2. Mapeia o estado real que veio do banco para o objeto 'original'
     original = {};
     funcoes.forEach((f) => {
       PERFIS.forEach((p) => {
         if (f.perfis[p] && f.perfis[p].tipo === "editavel") {
-          // Lê exatamente a propriedade 'ativo' que veio do banco de dados
           original[`${f.id}|${p}`] = !!f.perfis[p].ativo;
         }
       });
@@ -2336,7 +2193,6 @@ function emailValido(valor) {
 
     atual = { ...original };
 
-    // 3. Desenha a tabela na tela com base nos dados reais do banco
     renderizar();
     atualizarEstado();
   } catch (erro) {
@@ -2348,9 +2204,7 @@ function emailValido(valor) {
 
   carregar();
 })();
-/* =========================================================
-   FIG. 19 — GESTÃO DE USUÁRIOS (Admin)
-   ========================================================= */
+
 (function telaGestaoUsuarios() {
   const card = document.getElementById("cardUsuarios");
   if (!card) return;
@@ -2411,7 +2265,6 @@ function emailValido(valor) {
     setTimeout(() => (msg.textContent = ""), 2500);
   }
 
-  /* ---------- Tabela ---------- */
   function renderizar() {
     const termo = normalizar(busca.value.trim());
     const perfil = filtroPerfil.value;
@@ -2544,7 +2397,6 @@ function emailValido(valor) {
     return ok;
   }
 
-  /* ---------- Salvar (Real via API) ---------- */
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     document.getElementById("erroUsuarioGeral").textContent = "";
@@ -2596,7 +2448,6 @@ function emailValido(valor) {
     }
   });
 
-  /* ---------- Remover (Real via API) ---------- */
   btnRemover.addEventListener("click", async () => {
     const u = usuarios.find((x) => x.id === editandoId);
     if (!u || !confirm(`Remover ${u.nome} do sistema? O acesso será bloqueado.`)) return;
@@ -2614,7 +2465,6 @@ function emailValido(valor) {
     }
   });
 
-  /* ---------- Carregar (Real via API) ---------- */
   async function carregar() {
     try {
       const resposta = await fetch("/api/admin/usuarios");
@@ -2642,12 +2492,10 @@ function emailValido(valor) {
 
   carregar();
 })();
-/* =========================================================
-   TELA: REGRAS E CONTRATOS (Figura 20)
-   ========================================================= */
+
 (function telaRegras() {
   const grade = document.getElementById("gradeRegras");
-  if (!grade) return; // não está na tela de regras
+  if (!grade) return; 
 
   const modal = document.getElementById("modalRegra");
   const form = document.getElementById("formRegra");
@@ -2669,7 +2517,6 @@ function emailValido(valor) {
   let regras = [];
   let editandoId = null;
 
-  /* ---------- Utilitários ---------- */
   function escapar(texto) {
     return String(texto).replace(
       /[&<>"']/g,
@@ -2693,7 +2540,6 @@ function emailValido(valor) {
     setTimeout(() => (msg.textContent = ""), 2500);
   }
 
-  /* ---------- Cards ---------- */
   function cartao(r) {
     const bloqueio = r.bloqueioHoraExtra;
     return `
@@ -2737,7 +2583,6 @@ function emailValido(valor) {
       : '<p class="texto-suave">Nenhuma regra cadastrada.</p>';
   }
 
-  /* ---------- Toggle de banco de horas direto no card ---------- */
   grade.addEventListener("change", async (e) => {
     const chk = e.target.closest("[data-banco]");
     if (!chk) return;
@@ -2770,7 +2615,6 @@ function emailValido(valor) {
     }
   });
 
-  /* ---------- Botão Editar Regra ---------- */
   grade.addEventListener("click", (e) => {
     const btn = e.target.closest("[data-editar]");
     if (btn) {
@@ -2783,9 +2627,7 @@ function emailValido(valor) {
     .getElementById("btnNovaRegra")
     .addEventListener("click", () => abrir(null));
 
-  /* ---------- Modal: abrir / fechar ---------- */
   function sincronizarBanco() {
-    // Com hora extra bloqueada, banco de horas positivo não faz sentido
     if (campos.bloqueio.checked) campos.banco.checked = false;
     campos.banco.disabled = campos.bloqueio.checked;
   }
@@ -2839,9 +2681,7 @@ function emailValido(valor) {
     if (e.key === "Escape" && !modal.classList.contains("oculto")) fechar();
   });
 
-  /* ---------- Validação ---------- */
   function lerCargas() {
-    // Aceita "8", "6, 4" ou "6 ou 4"
     return [
       ...new Set(
         campos.cargas.value
@@ -2915,7 +2755,6 @@ function emailValido(valor) {
     return ok;
   }
 
-  /* ---------- Salvar (Modal de Edição) ---------- */
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     document.getElementById("erroRegraGeral").textContent = "";
@@ -2954,7 +2793,6 @@ function emailValido(valor) {
     }
   });
 
-  /* ---------- Carregar ---------- */
   async function carregar() {
     try {
       const resposta = await fetch("/api/regras");
@@ -2968,9 +2806,7 @@ function emailValido(valor) {
 
   carregar();
 })();
-/* =========================================================
-   16. TELA: CALENDÁRIO E FERIADOS (Figura 21)
-   ========================================================= */
+
 (function telaCalendario() {
   const grade = document.getElementById("gradeCalendario");
   if (!grade) return;
@@ -2997,7 +2833,6 @@ function emailValido(valor) {
   const hoje = new Date();
   let mesAtual = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
 
-  /* ---------- Funções de data ---------- */
   const pad = (n) => String(n).padStart(2, "0");
   const paraISO = (d) =>
     `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -3022,7 +2857,6 @@ function emailValido(valor) {
     setTimeout(() => (msg.textContent = ""), 2500);
   }
 
-  /* ---------- Calendário ---------- */
   function renderizarCalendario() {
     const ano = mesAtual.getFullYear();
     const mes = mesAtual.getMonth();
@@ -3030,7 +2864,7 @@ function emailValido(valor) {
       mesAtual.toLocaleDateString("pt-BR", { month: "long", year: "numeric" }),
     );
 
-    const primeiroDia = new Date(ano, mes, 1).getDay(); // 0 = domingo
+    const primeiroDia = new Date(ano, mes, 1).getDay(); 
     const diasNoMes = new Date(ano, mes + 1, 0).getDate();
     const hojeISO = paraISO(hoje);
 
@@ -3055,7 +2889,6 @@ function emailValido(valor) {
     grade.innerHTML = html;
   }
 
-  /* ---------- Tabela (feriados do ano exibido) ---------- */
   function renderizarTabela() {
     const ano = mesAtual.getFullYear();
     document.getElementById("anoFeriados").textContent = ano;
@@ -3087,7 +2920,6 @@ function emailValido(valor) {
     renderizarTabela();
   }
 
-  /* ---------- Navegação entre meses ---------- */
   document.getElementById("btnMesAnterior").addEventListener("click", () => {
     mesAtual.setMonth(mesAtual.getMonth() - 1);
     renderizar();
@@ -3101,7 +2933,6 @@ function emailValido(valor) {
     renderizar();
   });
 
-  /* ---------- Modal ---------- */
   function limparErros() {
     [
       ["campoFeriadoData", "erroFeriadoData"],
@@ -3156,7 +2987,6 @@ function emailValido(valor) {
       fecharModal();
   });
 
-  // Clique em um dia: dia com feriado → editar | dia livre → cadastrar já com a data
   grade.addEventListener("click", (e) => {
     const dia = e.target.closest(".dia[data-data]");
     if (!dia) return;
@@ -3164,14 +2994,12 @@ function emailValido(valor) {
     f ? abrirModal(f) : abrirModal(null, dia.dataset.data);
   });
 
-  // Botão "Editar" da tabela
   tabela.addEventListener("click", (e) => {
     const b = e.target.closest("[data-editar]");
     if (!b) return;
     abrirModal(feriados.find((x) => String(x.id) === b.dataset.editar));
   });
 
-  /* ---------- Validação ---------- */
   function validar() {
     let ok = true;
 
@@ -3206,7 +3034,6 @@ function emailValido(valor) {
     return ok;
   }
 
-  /* ---------- Salvar ---------- */
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!validar()) return;
@@ -3246,7 +3073,6 @@ function emailValido(valor) {
       btnSalvar.textContent = "Salvar";
     }
   });
-  /* ---------- Excluir ---------- */
   btnExcluir.addEventListener("click", async () => {
     const f = feriados.find((x) => x.id === editandoId);
     if (!f || !confirm(`Excluir o feriado "${f.descricao}"? O dia volta a contar como dia útil.`)) return;
@@ -3263,8 +3089,6 @@ function emailValido(valor) {
       alert("Não foi possível excluir o feriado.");
     }
   });
-
-  /* ---------- Carregar ---------- */
   async function carregar() {
     try {
       const ano = mesAtual.getFullYear();
@@ -3282,9 +3106,6 @@ function emailValido(valor) {
 
   carregar();
 })();
-/* =========================================================
-   16. TELA: AUDITORIA DE LOGS DO ADMIN (Figura 22)
-   ========================================================= */
 (function telaLogs() {
   const tabela = document.getElementById("tabelaLogs");
   if (!tabela) return;
@@ -3304,7 +3125,6 @@ function emailValido(valor) {
     sistema: { texto: "Sistema", badge: "badge-sistema" },
   };
 
-  // Evita que textos vindos do banco quebrem o HTML
   function escapar(texto) {
     return String(texto ?? "").replace(
       /[&<>"']/g,
@@ -3328,9 +3148,7 @@ function emailValido(valor) {
 
   let logs = [];
 
-  /* ---------- Filtros ---------- */
   function filtrados() {
-    // [PROTÓTIPO] Filtra no navegador. [BACKEND] Na versão final, quem filtra é o servidor.
     return logs.filter(
       (l) =>
         (!filtroData.value || l.dataHora.slice(0, 10) === filtroData.value) &&
@@ -3340,7 +3158,6 @@ function emailValido(valor) {
     );
   }
 
-  /* ---------- Tabela ---------- */
   function renderizar() {
     const lista = filtrados();
     document.getElementById("contadorLogs").textContent =
@@ -3375,7 +3192,6 @@ function emailValido(valor) {
 
   [filtroData, filtroUsuario, filtroNivel].forEach((f) =>
     f.addEventListener("change", () => {
-      // [BACKEND] Buscar de novo com os filtros: carregar();
       renderizar();
     }),
   );
@@ -3389,7 +3205,6 @@ function emailValido(valor) {
       renderizar();
     });
 
-  /* ---------- Exportar ---------- */
   document.getElementById("btnExportarLogs").addEventListener("click", () => {
     const params = new URLSearchParams({
       data: filtroData.value, 
@@ -3399,7 +3214,6 @@ function emailValido(valor) {
     window.location.href = `/api/logs-sistema/exportar?${params}`;
   });
 
-  /* ---------- Carregar ---------- */
   async function carregar() {
     try {
       const params = new URLSearchParams({
@@ -3424,7 +3238,7 @@ function emailValido(valor) {
 (function modalRegrasContrato() {
   const modal = document.getElementById("modalRegras");
   const btnAbrir = document.getElementById("btnSaibaMaisRegras");
-  if (!modal || !btnAbrir) return; // só existe no inicio.html
+  if (!modal || !btnAbrir) return; 
 
   function horas(lista) {
     return lista.map((h) => h + "h").join(" ou ");
@@ -3461,17 +3275,13 @@ function emailValido(valor) {
       )
       .join("");
 
-    // A nota de bloqueio só aparece se o contrato bloqueia hora extra
     document
       .getElementById("regrasNotaBloqueio")
       .classList.toggle("oculto", !r.bloqueioHoraExtra);
   }
 
   async function abrir() {
-    /* [BACKEND] SUBSTITUIR PELA CHAMADA REAL:
-       const regras = await fetch("/api/regras/meu-contrato").then(r => r.json()); */
 
-    // [PROTÓTIPO] Regime de Estágio (Fig. 20). REMOVER depois.
     const regras = {
       nome: "Regime de Estágio",
       cargasDiarias: [6, 4],
@@ -3503,20 +3313,13 @@ function emailValido(valor) {
     if (e.key === "Escape" && !modal.classList.contains("oculto")) fechar();
   });
 
-  // Deixa disponível para outros botões da tela (ver passo opcional)
   window.abrirRegrasContrato = abrir;
 })();
-/* =========================================================
-   MODAL: CENTRAL DE AJUDA (botão "Ajuda" do menu do Funcionário)
-   A janela é criada aqui, então não precisa de HTML nas páginas.
-   ========================================================= */
+
 (function centralAjuda() {
   const botao = document.querySelector(".menu-ajuda");
-  if (!botao) return; // só existe nas telas do funcionário
+  if (!botao) return; 
 
-  /* [BACKEND] As perguntas podem vir do banco: GET /api/ajuda/faq
-     → [{ "pergunta": "...", "resposta": "...", "link": "ponto.html", "textoLink": "..." }] */
-  // [PROTÓTIPO] Perguntas fixas. Podem continuar no front se não mudarem com frequência.
   const PERGUNTAS = [
     {
       pergunta: "Como registro meu ponto?",
@@ -3568,10 +3371,8 @@ function emailValido(valor) {
     },
   ];
 
-  // [BACKEND] Contato do RH pode vir de GET /api/config/contato-rh
-  const CONTATO_RH = "rh@empresa.com"; // [PROTÓTIPO] trocar pelo e-mail real
+  const CONTATO_RH = "rh@empresa.com"; 
 
-  /* ---------- Cria a janela ---------- */
   document.body.insertAdjacentHTML(
     "beforeend",
     `
@@ -3616,7 +3417,6 @@ function emailValido(valor) {
       .toLowerCase();
   }
 
-  /* ---------- Lista de perguntas ---------- */
   function renderizar() {
     const termo = normalizar(busca.value.trim());
     const itens = PERGUNTAS.filter(
@@ -3642,13 +3442,12 @@ function emailValido(valor) {
 
   busca.addEventListener("input", renderizar);
 
-  // Links das respostas
   lista.addEventListener("click", (e) => {
     const b = e.target.closest("[data-ajuda-ir]");
     if (!b) return;
     fechar();
     const destino = b.dataset.ajudaIr;
-    // Se já estiver no Início, só abre o atestado sem recarregar
+
     if (
       destino.startsWith("inicio.html#") &&
       location.pathname.endsWith("inicio.html")
@@ -3659,7 +3458,6 @@ function emailValido(valor) {
     }
   });
 
-  /* ---------- Abrir / fechar ---------- */
   function abrir() {
     busca.value = "";
     renderizar();
