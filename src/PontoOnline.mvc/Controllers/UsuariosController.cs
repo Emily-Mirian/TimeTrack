@@ -22,7 +22,6 @@ namespace PontoOnline.mvc.Controllers
             _logService = logService;
         }
 
-        // 1. Listar todos os usuários para a tabela do diretório
         [HttpGet]
         public async Task<IActionResult> ListarUsuarios()
         {
@@ -43,7 +42,6 @@ namespace PontoOnline.mvc.Controllers
             return Ok(resultado);
         }
 
-        // 2. Cadastrar novo colaborador (POST)
         [HttpPost]
         public async Task<IActionResult> CriarUsuario([FromBody] UsuarioDto dto)
         {
@@ -73,7 +71,6 @@ namespace PontoOnline.mvc.Controllers
                 _context.Usuarios.Add(novoUsuario);
                 await _context.SaveChangesAsync();
 
-                // REGISTRA O LOG DE CADASTRO
                 await _logService.RegistrarAsync(
                     acao: "Cadastro de Colaborador",
                     modulo: "Gestão de Usuários",
@@ -90,7 +87,6 @@ namespace PontoOnline.mvc.Controllers
             }
         }
 
-        // 3. Editar colaborador existente (PUT)
         [HttpPut("{id}")]
         public async Task<IActionResult> AtualizarUsuario(int id, [FromBody] UsuarioDto dto)
         {
@@ -115,7 +111,6 @@ namespace PontoOnline.mvc.Controllers
 
                 await _context.SaveChangesAsync();
 
-                // REGISTRA O LOG DE EDIÇÃO
                 await _logService.RegistrarAsync(
                     acao: "Atualização de Colaborador",
                     modulo: "Gestão de Usuários",
@@ -132,7 +127,6 @@ namespace PontoOnline.mvc.Controllers
             }
         }
 
-        // 4. Remover usuário (DELETE)
         [HttpDelete("{id}")]
         public async Task<IActionResult> RemoverUsuario(int id)
         {
@@ -144,7 +138,6 @@ namespace PontoOnline.mvc.Controllers
             _context.Usuarios.Remove(usuario);
             await _context.SaveChangesAsync();
 
-            // REGISTRA O LOG DE EXCLUSÃO
             await _logService.RegistrarAsync(
                 acao: "Exclusão de Colaborador",
                 modulo: "Gestão de Usuários",
