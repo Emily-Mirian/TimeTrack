@@ -1,4 +1,3 @@
-// --- LOGIN ---
 const formLogin = document.getElementById("formLogin");
 if (formLogin) {
   formLogin.addEventListener("submit", async (evento) => {
@@ -41,7 +40,6 @@ if (formLogin) {
   });
 }
 
-// --- CADASTRO ---
 const formCadastro = document.getElementById("formCadastro");
 if (formCadastro) {
   formCadastro.addEventListener("submit", async (evento) => {
