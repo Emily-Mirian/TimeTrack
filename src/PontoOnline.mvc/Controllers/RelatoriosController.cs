@@ -223,7 +223,6 @@ namespace PontoOnline.API.Controllers
                 });
             });
 
-            // REGISTRA O LOG DE GERAÇÃO DE RELATÓRIO PDF
             await _logService.RegistrarAsync(
                 acao: "Geração de Espelho de Ponto (PDF)",
                 modulo: "Relatórios",
