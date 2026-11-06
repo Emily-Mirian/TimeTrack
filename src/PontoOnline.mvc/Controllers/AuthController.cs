@@ -57,7 +57,6 @@ public class AuthController : Controller
             _context.Usuarios.Add(novoUsuario);
             await _context.SaveChangesAsync();
 
-            // REGISTRA O LOG DE SISTEMA AUTOMATICAMENTE
             await _logService.RegistrarAsync(
                 acao: "Cadastro de Novo Usuário",
                 modulo: "Autenticação",
@@ -98,7 +97,6 @@ public class AuthController : Controller
             {
                 Console.WriteLine("[LOGIN] Usuário NÃO encontrado na tabela Usuario do MySQL.");
                 
-                // Registra tentativa de login com e-mail inexistente (Nível Alta por segurança)
                 await _logService.RegistrarAsync(
                     acao: "Tentativa de Login Falha",
                     modulo: "Autenticação",
@@ -116,7 +114,6 @@ public class AuthController : Controller
             {
                 Console.WriteLine("[LOGIN] A senha informada não confere com o Hash.");
                 
-                // Registra senha incorreta
                 await _logService.RegistrarAsync(
                     acao: "Falha de Autenticação",
                     modulo: "Autenticação",
@@ -128,7 +125,6 @@ public class AuthController : Controller
                 return Unauthorized(new { erro = "E-mail ou senha inválidos." });
             }
 
-            // Registra login bem-sucedido (Nível Baixa)
             await _logService.RegistrarAsync(
                 acao: "Login no Sistema",
                 modulo: "Autenticação",
