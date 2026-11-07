@@ -10,7 +10,6 @@
 </head>
 <body class="pagina-app">
 
-  <!-- MENU LATERAL DO FUNCIONÁRIO (Idêntico ao das outras telas) -->
   <aside class="menu-lateral">
     <div class="menu-logo">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
@@ -54,9 +53,21 @@
         Configurações
       </button>
     </nav>
+    <button class="menu-item menu-ajuda">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+        >
+          <circle cx="12" cy="12" r="9" />
+          <path d="M9.5 9a2.5 2.5 0 015 .5c0 1.5-2.5 2-2.5 3.5M12 17h.01" />
+        </svg>
+        Ajuda
+        <span class="seta-direita">›</span>
+      </button>
   </aside>
 
-  <!-- CONTEÚDO PRINCIPAL -->
   <main class="conteudo">
     <header class="topo">
       <div>
@@ -79,10 +90,8 @@
       </div>
     </header>
 
-    <!-- LINHA DE CONFIGURAÇÕES (Seguindo o padrão do CSS original) -->
     <section class="linha-config">
       
-      <!-- CARD 1: DADOS DA CONTA -->
       <div class="card">
         <div class="card-cabecalho">
           <h2 class="card-titulo">
@@ -114,7 +123,6 @@
         </div>
       </div>
 
-      <!-- CARD 2: SEGURANÇA E ACESSO (Alterar Senha) -->
       <div class="card">
         <h2 class="card-titulo">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -156,7 +164,6 @@
 
     </section>
 
-    <!-- NOTIFICAÇÕES -->
     <section class="card">
       <h2 class="card-titulo">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -190,7 +197,6 @@
 
   </main>
 
-  <!-- SCRIPTS USANDO AS MESMAS RETRILHAS DO PROJETO -->
   <script src="js/api.js"></script>
   <script src="js/main.js"></script>
 </body>
