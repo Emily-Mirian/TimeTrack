@@ -11,6 +11,10 @@ public class Usuario
     public DateTime DataAdmissao { get; set; }
     public string? Departamento { get; set; }
 
+    // ADM puro (dono do negócio): não bate ponto, não tem jornada e fica fora dos relatórios de espelho/faltas.
+    // Colaboradores com perfil de gestão/RH NÃO entram aqui: são colaboradores e batem o próprio ponto.
+    public bool EhAdminPuro => string.Equals(NivelAcesso, "admin", StringComparison.OrdinalIgnoreCase);
+
     public TipoContrato? TipoContrato { get; set; }
     public ICollection<RegistroPonto> RegistrosPonto { get; set; } = new List<RegistroPonto>();
     public ICollection<AusenciaJustificada> AusenciasJustificadas { get; set; } = new List<AusenciaJustificada>();

@@ -659,10 +659,12 @@ function emailValido(valor) {
   const areaUpload = document.getElementById("areaUpload");
   const nomeArquivo = document.getElementById("nomeArquivoAtestado");
   const btnEnviar = document.getElementById("btnEnviarAtestado");
-  const botaoMenu = document.querySelector('[data-ir$="#atestado"]');
-  const botaoInicio = document.querySelector(
+  const botoesMenu = document.querySelectorAll('[data-ir$="#atestado"]');
+  const botoesInicio = document.querySelectorAll(
     '.menu-item[data-ir="inicio.html"]',
   );
+  const marcar = (lista, ligado) =>
+    lista.forEach((b) => b.classList.toggle("ativo", ligado));
 
   const TIPOS_ACEITOS = ["application/pdf", "image/jpeg", "image/png"];
   const TAMANHO_MAX = 5 * 1024 * 1024; 
@@ -670,16 +672,16 @@ function emailValido(valor) {
   function abrir() {
     modal.classList.remove("oculto");
     document.body.classList.add("com-modal");
-    if (botaoMenu) botaoMenu.classList.add("ativo");
-    if (botaoInicio) botaoInicio.classList.remove("ativo");
+    marcar(botoesMenu, true);
+    marcar(botoesInicio, false);
     inicio.focus();
   }
 
   function fechar() {
     modal.classList.add("oculto");
     document.body.classList.remove("com-modal");
-    if (botaoMenu) botaoMenu.classList.remove("ativo");
-    if (botaoInicio) botaoInicio.classList.add("ativo");
+    marcar(botoesMenu, false);
+    marcar(botoesInicio, true);
     limpar();
     history.replaceState(null, "", location.pathname + location.search);
   }

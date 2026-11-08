@@ -29,7 +29,9 @@ namespace PontoOnline.API.Controllers
         [HttpGet("colaboradores")]
         public async Task<IActionResult> ListarColaboradores()
         {
+            // ADM puro não tem jornada: fica fora da lista de relatórios. Gestores/RH (que também são colaboradores) permanecem.
             var colaboradores = await _context.Usuarios
+                .Where(u => (u.NivelAcesso ?? "").ToLower() != "admin")
                 .Select(u => new { id = u.UsuarioId, nome = u.NomeCompleto })
                 .ToListAsync();
 
@@ -44,6 +46,7 @@ namespace PontoOnline.API.Controllers
                 .FirstOrDefaultAsync(u => u.UsuarioId == usuarioId);
 
             if (usuario == null) return NotFound("Colaborador não encontrado.");
+            if (usuario.EhAdminPuro) return BadRequest("O perfil Administrador não possui jornada.");
 
             usuario.RegistrosPonto = await _context.RegistrosPonto
                 .Where(r => r.IdUsuario == usuarioId)
@@ -108,13 +111,19 @@ namespace PontoOnline.API.Controllers
             int ano = DateTime.Now.Year;
             int mes = DateTime.Now.Month;
 
+            // Auditoria vinculada à identidade real de quem pediu o relatório (sem login genérico).
+            var solicitanteUsuario = solicitante.HasValue
+                ? await _context.Usuarios.FirstOrDefaultAsync(u => u.UsuarioId == solicitante.Value)
+                : null;
+            string autorLog = solicitanteUsuario?.NomeCompleto ?? "Não identificado";
+
             if (await _modulos.BloqueadoAsync(PontoOnline.mvc.Services.Modulos.Exportacao, solicitante, donoId: usuarioId))
             {
                 await _logService.RegistrarAsync(
                     acao: "Acesso Negado - Exportação PDF",
                     modulo: "Controle de Módulos",
                     detalhes: "Exportação bloqueada: módulo desativado na Visão Global.",
-                    usuario: "RH",
+                    usuario: autorLog,
                     nivel: "alta"
                 );
                 return StatusCode(403, new { erro = PontoOnline.mvc.Services.ModulosService.MensagemBloqueio(PontoOnline.mvc.Services.Modulos.Exportacao) });
@@ -140,7 +149,7 @@ namespace PontoOnline.API.Controllers
                     acao: "Acesso Negado - Exportação PDF",
                     modulo: "Segurança e Acessos",
                     detalhes: "Tentativa de exportar relatório em PDF bloqueada por falta de permissão.",
-                    usuario: "RH",
+                    usuario: autorLog,
                     nivel: "alta"
                 );
                 return StatusCode(403, new { erro = "Acesso negado: seu perfil não tem permissão para exportar relatórios." });
@@ -156,6 +165,9 @@ namespace PontoOnline.API.Controllers
             {
                 return NotFound("Colaborador não encontrado.");
             }
+
+            if (usuario.EhAdminPuro)
+                return BadRequest("O perfil Administrador não possui jornada: espelho de ponto não se aplica.");
 
             var feriados = await _context.Feriados
                 .Where(f => f.Data.Year == ano && f.Data.Month == mes)
@@ -296,7 +308,7 @@ namespace PontoOnline.API.Controllers
                 acao: "Geração de Espelho de Ponto (PDF)",
                 modulo: "Relatórios",
                 detalhes: "Relatório mensal gerado para o colaborador: " + usuario.NomeCompleto + " (" + mes.ToString("D2") + "/" + ano + ")",
-                usuario: "Admin",
+                usuario: autorLog,
                 nivel: "baixa"
             );
 
@@ -305,10 +317,6 @@ namespace PontoOnline.API.Controllers
 
             try
             {
-                var solicitanteUsuario = solicitante.HasValue
-                    ? await _context.Usuarios.FirstOrDefaultAsync(u => u.UsuarioId == solicitante.Value)
-                    : null;
-
                 _context.HistoricoArquivos.Add(new PontoOnline.Domain.Entities.HistoricoArquivo
                 {
                     Tipo = "exportacao",

@@ -53,7 +53,6 @@ using (var scope = app.Services.CreateScope())
         }
 
         GarantirUsuario("Administrador Master", "admin@empresa.com", "admin");
-        GarantirUsuario("Gestor RH Padrão", "rh@empresa.com", "rh");
         Console.WriteLine("[BANCO] Pronto.");
     }
     catch (Exception ex)
@@ -69,7 +68,16 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseCors("front");
-app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    // no-cache: o navegador sempre revalida html/js/css (evita menus antigos vindos do cache)
+    OnPrepareResponse = ctx =>
+    {
+        var ext = Path.GetExtension(ctx.File.Name).ToLowerInvariant();
+        if (ext is ".html" or ".js" or ".css")
+            ctx.Context.Response.Headers["Cache-Control"] = "no-cache";
+    }
+});
 app.UseRouting();
 app.UseAuthorization();
 

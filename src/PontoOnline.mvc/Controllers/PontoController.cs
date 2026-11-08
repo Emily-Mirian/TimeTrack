@@ -34,6 +34,9 @@ public class PontoController : Controller
                 return BadRequest("Usuário ou tipo de contrato não encontrado.");
             }
 
+            if (usuario.EhAdminPuro)
+                return BadRequest("O perfil Administrador não registra ponto.");
+
             var hoje = DateTime.Today;
             var registroPonto = await _context.RegistrosPonto
                 .FirstOrDefaultAsync(r => r.IdUsuario == usuarioId && r.DataRegistro == hoje);

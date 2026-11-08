@@ -12,8 +12,8 @@ using PontoOnline.Infrastructure.Context;
 namespace PontoOnline.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261108202115_HistoricoArquivos")]
-    partial class HistoricoArquivos
+    [Migration("20261108231257_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -102,6 +102,18 @@ namespace PontoOnline.Infrastructure.Migrations
                     b.Property<string>("FrequenciaBackup")
                         .IsRequired()
                         .HasColumnType("longtext");
+
+                    b.Property<bool>("ModuloAlertasJornada")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("ModuloEdicaoPonto")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("ModuloExportacao")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("ModuloImportacao")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<bool>("SenhaForte")
                         .HasColumnType("tinyint(1)");

@@ -26,7 +26,24 @@
       </div>
 
       <nav class="menu-itens">
-        <button class="menu-item" data-ir="inicio.html">
+        <p class="menu-secao" data-perfil="rh">Meu Ponto</p>
+        <button class="menu-item" data-perfil="rh" data-ir="inicio.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-7 9 7v9a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z" /></svg>
+          Início
+        </button>
+        <button class="menu-item ativo" data-perfil="rh" data-ir="ponto.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+          Registrar Ponto
+        </button>
+        <button class="menu-item" data-perfil="rh" data-ir="relatorios.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z" /><path d="M14 3v6h6M12 12v6M9 15l3 3 3-3" /></svg>
+          Exportar PDF
+        </button>
+        <button class="menu-item" data-perfil="rh" data-ir="inicio.html#atestado">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="4" width="14" height="17" rx="2" /><path d="M9 4V3h6v1M12 10v6M9 13h6" /></svg>
+          Enviar Atestado
+        </button>
+        <button class="menu-item" data-perfil="funcionario" data-ir="inicio.html">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -37,7 +54,7 @@
           </svg>
           Início
         </button>
-        <button class="menu-item ativo" data-ir="ponto.html">
+        <button class="menu-item ativo" data-perfil="funcionario" data-ir="ponto.html">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -49,7 +66,7 @@
           </svg>
           Ponto
         </button>
-        <button class="menu-item" data-ir="relatorios.html">
+        <button class="menu-item" data-perfil="funcionario" data-ir="relatorios.html">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -62,7 +79,7 @@
           Relatórios
         </button>
         <!-- [FRONT] Atestados abre um modal (Fig. 6). Será ligado quando fizermos essa tela. -->
-        <button class="menu-item" data-ir="inicio.html#atestado">
+        <button class="menu-item" data-perfil="funcionario" data-ir="inicio.html#atestado">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -74,7 +91,7 @@
           </svg>
           Atestados
         </button>
-        <button class="menu-item" data-ir="configuracoes-funcionario.html">
+        <button class="menu-item" data-perfil="funcionario" data-ir="configuracoes-funcionario.html">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -86,6 +103,27 @@
               d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"
             />
           </svg>
+          Configurações
+        </button>
+              <p class="menu-secao" data-perfil="rh">Portal do RH</p>
+        <button class="menu-item" data-perfil="rh" data-ir="pendencias.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" /><rect x="9" y="3" width="6" height="4" rx="1" /><path d="M12 11v3M12 17h.01" /></svg>
+          Pendências
+        </button>
+        <button class="menu-item" data-perfil="rh" data-ir="importar.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 18a5 5 0 01-.5-9.98A6 6 0 0118 9a4.5 4.5 0 01-1 8.9" /><path d="M12 12v8M9 15l3-3 3 3" /></svg>
+          Importar Planilhas (CSV)
+        </button>
+        <button class="menu-item" data-perfil="rh" data-ir="exportar.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z" /><path d="M14 3v6h6M12 12v6M9 15l3 3 3-3" /></svg>
+          Exportar Relatórios (PDF)
+        </button>
+        <button class="menu-item" data-perfil="rh" data-ir="auditoria.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>
+          Auditoria de Ponto
+        </button>
+        <button class="menu-item" data-perfil="rh" data-ir="configuracoes.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" /></svg>
           Configurações
         </button>
       </nav>
