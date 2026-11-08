@@ -291,6 +291,7 @@
             <option value="batida_impar">Batida Ímpar</option>
             <option value="atestado">Atestado Médico Enviado</option>
             <option value="falta">Falta Injustificada</option>
+            <option value="excesso_jornada">Excesso de Jornada</option>
           </select>
         </div>
 
@@ -371,41 +372,38 @@
           - retirar a pendência da lista
       -->
         <form id="formEditarPonto" class="form-modal" novalidate>
-          <div class="form-linha">
-            <div class="campo-modal" id="campoEditarData">
-              <label for="editarData">Data *</label>
-              <input type="date" id="editarData" required />
-              <p class="mensagem-erro" id="erroEditarData"></p>
-            </div>
-            <div class="campo-modal" id="campoEditarTipo">
-              <label for="editarTipo">Tipo de Ponto *</label>
-              <select id="editarTipo" required>
-                <option value="entrada">Entrada</option>
-                <option value="saidaAlmoco">Saída Almoço</option>
-                <option value="retornoAlmoco">Retorno Almoço</option>
-                <option value="saida">Saída</option>
-              </select>
-              <p class="mensagem-erro" id="erroEditarTipo"></p>
-            </div>
+          <div class="campo-modal" id="campoEditarData">
+            <label for="editarData">Data</label>
+            <input type="date" id="editarData" class="campo-bloqueado" readonly />
+            <p class="mensagem-erro" id="erroEditarData"></p>
           </div>
+
+          <p class="texto-suave pequeno">
+            Preencha todas as batidas que estiverem faltando. As já registradas
+            podem ser mantidas ou corrigidas.
+          </p>
 
           <div class="form-linha">
             <div class="campo-modal">
-              <label for="editarOriginal">Horário Original</label>
-              <!-- [BACKEND] Vem das batidas do dia: GET /api/rh/pontos?colaborador={id}&data={data} -->
-              <input
-                type="text"
-                id="editarOriginal"
-                class="campo-bloqueado"
-                readonly
-              />
+              <label for="editarEntrada">Entrada *</label>
+              <input type="time" id="editarEntrada" required />
             </div>
-            <div class="campo-modal" id="campoEditarNovo">
-              <label for="editarNovo">Novo Horário *</label>
-              <input type="time" id="editarNovo" required />
-              <p class="mensagem-erro" id="erroEditarNovo"></p>
+            <div class="campo-modal">
+              <label for="editarSaidaAlmoco">Saída Almoço *</label>
+              <input type="time" id="editarSaidaAlmoco" required />
             </div>
           </div>
+          <div class="form-linha">
+            <div class="campo-modal">
+              <label for="editarRetornoAlmoco">Retorno Almoço *</label>
+              <input type="time" id="editarRetornoAlmoco" required />
+            </div>
+            <div class="campo-modal">
+              <label for="editarSaida">Saída *</label>
+              <input type="time" id="editarSaida" required />
+            </div>
+          </div>
+          <p class="mensagem-erro" id="erroEditarNovo"></p>
 
           <div class="campo-modal" id="campoEditarJustificativa">
             <label for="editarJustificativa">Justificativa *</label>

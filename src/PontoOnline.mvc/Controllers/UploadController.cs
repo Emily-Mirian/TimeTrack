@@ -17,18 +17,63 @@ namespace PontoOnline.mvc.Controllers
     {
         private readonly AppDbContext _context;
         private readonly LogService _logService;
+        private readonly PontoOnline.mvc.Services.ModulosService _modulos;
 
-        public UploadController(AppDbContext context, LogService logService)
+        public UploadController(AppDbContext context, LogService logService, PontoOnline.mvc.Services.ModulosService modulos)
         {
             _context = context;
             _logService = logService;
+            _modulos = modulos;
         }
 
         [HttpPost("csv")]
-        public async Task<IActionResult> ReceberPlanilhaCsv(IFormFile arquivo)
+        public async Task<IActionResult> ReceberPlanilhaCsv(IFormFile arquivo, [FromForm(Name = "usuarioId")] int? solicitanteId = null)
         {
+            string nomeArquivoHistorico = arquivo?.FileName ?? "(sem arquivo)";
+            string quemImportou = "Não identificado";
+            if (solicitanteId.HasValue)
+            {
+                var u = await _context.Usuarios.FirstOrDefaultAsync(x => x.UsuarioId == solicitanteId.Value);
+                if (u != null) quemImportou = u.NomeCompleto;
+            }
+
+            async Task RegistrarHistorico(string status, int? linhas, string? detalhe)
+            {
+                try
+                {
+                    _context.HistoricoArquivos.Add(new HistoricoArquivo
+                    {
+                        Tipo = "importacao",
+                        NomeArquivo = nomeArquivoHistorico,
+                        DataHora = DateTime.Now,
+                        UsuarioId = solicitanteId,
+                        UsuarioNome = quemImportou,
+                        Status = status,
+                        Linhas = linhas,
+                        Detalhe = detalhe
+                    });
+                    await _context.SaveChangesAsync();
+                }
+                catch (Exception exHist)
+                {
+                    Console.WriteLine("[HISTORICO] Falha ao registrar importação: " + exHist.Message);
+                }
+            }
+
             try
             {
+                if (await _modulos.BloqueadoAsync(PontoOnline.mvc.Services.Modulos.Importacao, solicitanteId))
+                {
+                    await _logService.RegistrarAsync(
+                        acao: "Acesso Negado - Importação CSV",
+                        modulo: "Controle de Módulos",
+                        detalhes: "Importação bloqueada: módulo desativado na Visão Global.",
+                        usuario: quemImportou,
+                        nivel: "alta"
+                    );
+                    return StatusCode(403, new { Mensagem = PontoOnline.mvc.Services.ModulosService.MensagemBloqueio(PontoOnline.mvc.Services.Modulos.Importacao) });
+                }
+
                 var permissao = await _context.PermissoesPerfil
                     .FirstOrDefaultAsync(p => p.Funcao == "importacao" && p.Perfil == "rh");
 
@@ -100,11 +145,15 @@ namespace PontoOnline.mvc.Controllers
                     );
                 }
 
+                await RegistrarHistorico("concluido", novosRegistros.Count, novosRegistros.Count + " registros importados");
+
                 return Ok(new { Mensagem = novosRegistros.Count + " registros importados com sucesso pro banco!", Registros = resultados });
             }
             catch (Exception ex)
             {
                 string erroReal = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                _context.ChangeTracker.Clear();
+                await RegistrarHistorico("erro", null, erroReal);
                 return BadRequest(new { Mensagem = "Falha no C#: " + erroReal });
             }
         }

@@ -1370,6 +1370,10 @@ a:hover {
   --cor-saldo: var(--estado-critico);
   background: linear-gradient(135deg, #ffffff 60%, #fdecec 100%);
 }
+.saldo-neutro {
+  --cor-saldo: #2563eb;
+  background: linear-gradient(135deg, #ffffff 60%, #eaf1fd 100%);
+}
 .saldo-inativo {
   --cor-saldo: var(--texto-suave);
 }
@@ -3022,3 +3026,43 @@ body.com-modal {
     text-align: center;
   }
 }
+
+/* ===== Alertas de RH/Admin: bolinha no menu e faixa de aviso ===== */
+.menu-item { position: relative; }
+.badge-menu {
+  margin-left: auto;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #e53935;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 20px;
+  text-align: center;
+  box-shadow: 0 0 0 2px rgba(229, 57, 53, 0.25);
+}
+.badge-menu.oculto { display: none; }
+
+.faixa-alerta {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 0 0 16px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid #f5c2c0;
+  background: #fdecea;
+  color: #8a1c17;
+  font-size: 14px;
+  line-height: 1.4;
+}
+.faixa-alerta.atencao {
+  border-color: #f3dca0;
+  background: #fff6e0;
+  color: #7a5a00;
+}
+.faixa-alerta strong { font-weight: 700; }
+.faixa-alerta ul { margin: 4px 0 0; padding-left: 18px; }
+.faixa-alerta .faixa-link { margin-left: auto; white-space: nowrap; font-weight: 600; color: inherit; text-decoration: underline; cursor: pointer; background: none; border: 0; }

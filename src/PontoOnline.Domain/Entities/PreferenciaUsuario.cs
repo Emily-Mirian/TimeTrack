@@ -16,6 +16,8 @@ namespace PontoOnline.Domain.Entities
         public bool AlertaEstagiario { get; set; } = true;
         public bool AlertaAtestado { get; set; } = true;
         public bool ResumoPendencias { get; set; } = true;
+        public bool AlertaLimiteEmail { get; set; } = true;
+        public bool NotificarAtestados { get; set; } = true;
         public string FormatoExportacao { get; set; } = "pdf";
     }
 }

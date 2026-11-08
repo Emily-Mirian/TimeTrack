@@ -17,6 +17,11 @@ builder.Services.AddCors(o => o.AddPolicy("front", p =>
     p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
 builder.Services.AddScoped<CalculoPontoService>();
 builder.Services.AddScoped<LogService>();
+builder.Services.AddScoped<PontoOnline.mvc.Services.NotificacaoService>();
+builder.Services.AddScoped<PontoOnline.mvc.Services.EmailService>();
+builder.Services.AddScoped<PontoOnline.mvc.Services.ModulosService>();
+builder.Services.AddScoped<PontoOnline.mvc.Services.PoliticaSenhaService>();
+builder.Services.AddHostedService<PontoOnline.mvc.Services.LimiteJornadaEmailWorker>();
 
 QuestPDF.Settings.License = LicenseType.Community;
 

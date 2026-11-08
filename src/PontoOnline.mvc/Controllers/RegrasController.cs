@@ -47,6 +47,55 @@ namespace PontoOnline.mvc.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<IActionResult> CriarRegra([FromBody] RegraDto dto)
+        {
+            try
+            {
+                var nome = (dto.nome ?? "").Trim();
+                if (nome.Length < 3)
+                    return BadRequest(new { erro = "Informe o nome do regime (mínimo 3 caracteres)." });
+
+                var cargaHoras = dto.cargasDiarias.FirstOrDefault();
+                if (cargaHoras < 1 || cargaHoras > 12)
+                    return BadRequest(new { erro = "A carga diária deve estar entre 1 e 12 horas." });
+
+                if (dto.limiteSemanal < 1 || dto.limiteSemanal > 60)
+                    return BadRequest(new { erro = "O limite semanal deve estar entre 1 e 60 horas." });
+
+                bool existe = await _context.TiposContrato.AnyAsync(c => c.Nome.ToLower() == nome.ToLower());
+                if (existe)
+                    return Conflict(new { erro = "Já existe uma regra com esse nome." });
+
+                var contrato = new TipoContrato
+                {
+                    Nome = nome,
+                    CargaHorariaDiariaMinutos = cargaHoras * 60,
+                    CargaHorariaSemanaMinutos = dto.limiteSemanal * 60,
+                    ToleranciaMinutos = dto.toleranciaMin,
+                    PermiteHoraExtra = !dto.bloqueioHoraExtra,
+                    PermiteBancoHoras = dto.bloqueioHoraExtra ? false : dto.bancoHoras
+                };
+
+                _context.TiposContrato.Add(contrato);
+                await _context.SaveChangesAsync();
+
+                await _logService.RegistrarAsync(
+                    acao: "Criação de Regra / Contrato",
+                    modulo: "Regras e Contratos",
+                    detalhes: "Nova regra criada: " + nome,
+                    usuario: "Admin",
+                    nivel: "alta"
+                );
+
+                return Ok(new { mensagem = "Regra criada com sucesso!", id = contrato.ContratoId });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { erro = ex.Message, detalhe = ex.InnerException?.Message });
+            }
+        }
+
         [HttpPut("{id}")]
         public async Task<IActionResult> AtualizarRegra(int id, [FromBody] RegraDto dto)
         {

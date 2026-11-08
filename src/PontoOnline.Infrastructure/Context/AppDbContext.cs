@@ -17,6 +17,8 @@ public class AppDbContext : DbContext
     public DbSet<AuditoriaLog> AuditoriaLogs => Set<AuditoriaLog>();
     public DbSet<PreferenciaUsuario> PreferenciasUsuario => Set<PreferenciaUsuario>();
     public DbSet<Feriado> Feriado => Set<Feriado>();
+    public DbSet<Notificacao> Notificacoes => Set<Notificacao>();
+    public DbSet<HistoricoArquivo> HistoricoArquivos => Set<HistoricoArquivo>();
     public DbSet<LogSistema> LogsSistema => Set<LogSistema>();
     public DbSet<PermissaoPerfil> PermissoesPerfil => Set<PermissaoPerfil>();
     public DbSet<ConfiguracaoGlobal> ConfiguracoesGlobais => Set<ConfiguracaoGlobal>();

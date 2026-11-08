@@ -66,7 +66,7 @@ if (formCadastro) {
       erroGeral.textContent = "Selecione o tipo de contrato.";
       return;
     }
-    const contratoId = { clt: 1, estagio: 2, jovem_aprendiz: 3 }[tipo];
+    const contratoId = Number(tipo);
 
     try {
       await chamarApi("/auth/registrar", "POST", {
@@ -83,3 +83,20 @@ if (formCadastro) {
     }
   });
 }
+
+// Preenche o "Tipo de Contrato" do cadastro com as regras que existem no banco.
+(async function carregarContratosCadastro() {
+  const select = document.getElementById("tipoContrato");
+  if (!select) return;
+  try {
+    const regras = await chamarApi("/regras", "GET");
+    regras.forEach((r) => {
+      const op = document.createElement("option");
+      op.value = r.id;
+      op.textContent = r.nome;
+      select.appendChild(op);
+    });
+  } catch (e) {
+    console.error("Não foi possível carregar os tipos de contrato:", e);
+  }
+})();

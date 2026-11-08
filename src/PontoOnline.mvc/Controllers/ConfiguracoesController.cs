@@ -14,11 +14,13 @@ namespace PontoOnline.mvc.Controllers
     {
         private readonly AppDbContext _context;
         private readonly LogService _logService;
+        private readonly PontoOnline.mvc.Services.PoliticaSenhaService _politicaSenha;
 
-        public ConfiguracoesController(AppDbContext context, LogService logService)
+        public ConfiguracoesController(AppDbContext context, LogService logService, PontoOnline.mvc.Services.PoliticaSenhaService politicaSenha)
         {
             _context = context;
             _logService = logService;
+            _politicaSenha = politicaSenha;
         }
 
         [HttpGet("{usuarioId}")]
@@ -49,6 +51,8 @@ namespace PontoOnline.mvc.Controllers
                 return Ok(new {
                     alertaEstagiario = true,
                     alertaAtestado = true,
+                    alertaLimiteEmail = true,
+                    notificarAtestados = true,
                     resumoPendencias = true,
                     formatoExportacao = "pdf"
                 });
@@ -57,6 +61,8 @@ namespace PontoOnline.mvc.Controllers
             return Ok(new {
                 alertaEstagiario = pref.AlertaEstagiario,
                 alertaAtestado = pref.AlertaAtestado,
+                alertaLimiteEmail = pref.AlertaLimiteEmail,
+                notificarAtestados = pref.NotificarAtestados,
                 resumoPendencias = pref.ResumoPendencias,
                 formatoExportacao = pref.FormatoExportacao
             });
@@ -76,6 +82,8 @@ namespace PontoOnline.mvc.Controllers
 
             if (dto.alertaEstagiario.HasValue) pref.AlertaEstagiario = dto.alertaEstagiario.Value;
             if (dto.alertaAtestado.HasValue) pref.AlertaAtestado = dto.alertaAtestado.Value;
+            if (dto.alertaLimiteEmail.HasValue) pref.AlertaLimiteEmail = dto.alertaLimiteEmail.Value;
+            if (dto.notificarAtestados.HasValue) pref.NotificarAtestados = dto.notificarAtestados.Value;
             if (dto.resumoPendencias.HasValue) pref.ResumoPendencias = dto.resumoPendencias.Value;
             if (!string.IsNullOrEmpty(dto.formatoExportacao)) pref.FormatoExportacao = dto.formatoExportacao;
 
@@ -114,9 +122,10 @@ namespace PontoOnline.mvc.Controllers
                 return Unauthorized(new { erro = "Senha atual incorreta." });
             }
 
-            if (string.IsNullOrWhiteSpace(dto.NovaSenha) || dto.NovaSenha.Length < 8)
+            var erroSenha = await _politicaSenha.ValidarAsync(dto.NovaSenha);
+            if (erroSenha != null)
             {
-                return BadRequest(new { erro = "A nova senha deve ter no mínimo 8 caracteres." });
+                return BadRequest(new { erro = erroSenha });
             }
 
             usuario.SenhaHash = passHasher.HashPassword(usuario, dto.NovaSenha);
@@ -144,6 +153,8 @@ namespace PontoOnline.mvc.Controllers
     {
         public bool? alertaEstagiario { get; set; }
         public bool? alertaAtestado { get; set; }
+        public bool? alertaLimiteEmail { get; set; }
+        public bool? notificarAtestados { get; set; }
         public bool? resumoPendencias { get; set; }
         public string? formatoExportacao { get; set; }
     }

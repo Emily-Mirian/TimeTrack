@@ -36,7 +36,8 @@ namespace PontoOnline.mvc.Controllers
         {
             var config = await _context.ConfiguracoesGlobais.FirstOrDefaultAsync();
             var freq = config?.FrequenciaBackup ?? "6h";
-            return Ok(new { frequencia = freq, ultimoBackup = DateTime.Now.ToString("dd/MM/yyyy HH:mm") });
+            // Ainda não existe rotina de backup automático: não mostramos uma data inventada.
+            return Ok(new { frequencia = freq, ultimoBackup = (string?)null });
         }
 
         [HttpPut("seguranca")]

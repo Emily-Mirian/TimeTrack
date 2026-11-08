@@ -14,11 +14,13 @@ public class AuthController : Controller
     private readonly AppDbContext _context;
     private readonly LogService _logService;
     private readonly PasswordHasher<Usuario> _passwordHasher = new();
+    private readonly PontoOnline.mvc.Services.PoliticaSenhaService _politicaSenha;
 
-    public AuthController(AppDbContext context, LogService logService)
+    public AuthController(AppDbContext context, LogService logService, PontoOnline.mvc.Services.PoliticaSenhaService politicaSenha)
     {
         _context = context;
         _logService = logService;
+        _politicaSenha = politicaSenha;
     }
 
     [HttpPost("registrar")]
@@ -33,6 +35,10 @@ public class AuthController : Controller
                 Console.WriteLine("[REGISTRO ERRO] Dados vieram vazios.");
                 return BadRequest(new { erro = "Preencha todos os campos obrigatórios." });
             }
+
+            var erroSenha = await _politicaSenha.ValidarAsync(dto.Senha);
+            if (erroSenha != null)
+                return BadRequest(new { erro = erroSenha });
 
             var emailLimpo = dto.Email.Trim().ToLower();
 

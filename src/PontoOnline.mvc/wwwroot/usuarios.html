@@ -440,19 +440,10 @@
             <!-- [BACKEND] Opções vêm das regras de contrato (Fig. 20): GET /api/regras -->
             <select id="usuarioVinculo">
               <option value="" disabled selected>Selecione</option>
-              <option value="clt_8h">CLT 8h</option>
-              <option value="estagio_6h">Estágio 6h</option>
-              <option value="estagio_4h">Estágio 4h</option>
-              <option value="jovem_aprendiz">Jovem Aprendiz</option>
+              <!-- Opções carregadas do banco (GET /api/regras) pelo main.js -->
             </select>
             <p class="mensagem-erro" id="erroUsuarioVinculo"></p>
           </div>
-
-          <p class="usr-nota" id="notaConvite">
-            <span class="icone-info">i</span>
-            O colaborador receberá um e-mail com o link para criar a própria
-            senha.
-          </p>
 
           <p
             class="mensagem-erro erro-geral"

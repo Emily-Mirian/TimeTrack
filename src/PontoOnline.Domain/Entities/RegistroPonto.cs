@@ -11,6 +11,7 @@ public class RegistroPonto
     public int? SaldoDiarioMinutos { get; set; }
     public int IdUsuario { get; set; }
     public int? IdFeriado { get; set; }
+    public bool AlertaLimiteEnviado { get; set; }
 
     public Usuario? Usuario { get; set; }
     public Feriado? Feriado { get; set; }

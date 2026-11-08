@@ -41,7 +41,9 @@ namespace PontoOnline.mvc.Controllers
                     string acaoNormalizada = "edicao_ponto";
                     var acaoDb = (l.Acao ?? "").ToLower();
 
-                    if (acaoDb.Contains("atestado")) acaoNormalizada = "atestado";
+                    if (acaoDb.Contains("excesso")) acaoNormalizada = "excesso_jornada";
+                    else if (acaoDb.Contains("modulo")) acaoNormalizada = "modulo";
+                    else if (acaoDb.Contains("atestado")) acaoNormalizada = "atestado";
                     else if (acaoDb.Contains("bloqueio")) acaoNormalizada = "bloqueio";
                     else if (acaoDb.Contains("cadastro")) acaoNormalizada = "cadastro";
                     else if (acaoDb.Contains("importacao") || acaoDb.Contains("importação")) acaoNormalizada = "importacao";
@@ -60,7 +62,7 @@ namespace PontoOnline.mvc.Controllers
                         ator = classeAtor,       
                         autor = nomeAutor,       
                         tipo = acaoNormalizada, 
-                        detalhe = l.Detalhes
+                        detalhe = System.Text.RegularExpressions.Regex.Replace(l.Detalhes ?? "", @"^\[PONTO:\d+\]\s*", "")
                     };
                 });
 

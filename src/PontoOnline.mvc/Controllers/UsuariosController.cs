@@ -36,7 +36,8 @@ namespace PontoOnline.mvc.Controllers
                 email = u.Email,
                 departamento = u.Departamento ?? "Tecnologia",
                 perfil = u.NivelAcesso?.ToLower() ?? "funcionario",
-                vinculo = MapearIdParaVinculoString(u.IdTipoContrato)
+                vinculo = u.IdTipoContrato.ToString(),
+                vinculoNome = u.TipoContrato?.Nome ?? MapearIdParaVinculoString(u.IdTipoContrato)
             });
 
             return Ok(resultado);
@@ -53,7 +54,7 @@ namespace PontoOnline.mvc.Controllers
                     return Conflict(new { erro = "Este e-mail já está cadastrado." });
                 }
 
-                int tipoContratoId = MapearVinculoParaId(dto.vinculo);
+                int tipoContratoId = await ResolverContratoAsync(dto.vinculo);
 
                 var passHasher = new PasswordHasher<Usuario>();
                 var novoUsuario = new Usuario
@@ -107,7 +108,7 @@ namespace PontoOnline.mvc.Controllers
                 usuario.Email = dto.email;
                 usuario.Departamento = dto.departamento;
                 usuario.NivelAcesso = dto.perfil;
-                usuario.IdTipoContrato = MapearVinculoParaId(dto.vinculo);
+                usuario.IdTipoContrato = await ResolverContratoAsync(dto.vinculo);
 
                 await _context.SaveChangesAsync();
 
@@ -147,6 +148,15 @@ namespace PontoOnline.mvc.Controllers
             );
 
             return Ok(new { mensagem = "Usuário removido com sucesso." });
+        }
+
+        // O vínculo agora é o ID do contrato (qualquer regra criada em Regras e Contratos).
+        // Textos antigos (ex.: "estagio_6h") continuam sendo aceitos.
+        private async Task<int> ResolverContratoAsync(string vinculo)
+        {
+            if (int.TryParse(vinculo, out int id) && await _context.TiposContrato.AnyAsync(c => c.ContratoId == id))
+                return id;
+            return MapearVinculoParaId(vinculo);
         }
 
         private int MapearVinculoParaId(string vinculo)

@@ -28,7 +28,7 @@ namespace PontoOnline.mvc.Controllers
 
             var resultado = logs.Select(l => new {
                 usuario = l.UsuarioResponsavel?.NivelAcesso?.ToLower() == "rh" ? "Gestor RH" : "Administrador",
-                acao = l.Detalhes ?? l.Acao,
+                acao = System.Text.RegularExpressions.Regex.Replace(l.Detalhes ?? l.Acao, @"^\[PONTO:\d+\]\s*", ""),
                 dataHora = l.DataHora.ToString("dd/MM/yyyy HH:mm")
             });
 

@@ -106,14 +106,9 @@
       </button>
     </aside>
 
-    <!-- ======================================================
-       CONTEÚDO PRINCIPAL
-       ====================================================== -->
     <main class="conteudo">
-      <!-- ---------- Cabeçalho ---------- -->
       <header class="topo">
         <div>
-          <!-- [BACKEND] Nome do usuário logado (GET /api/me → "nome") -->
           <h1>Olá, <span id="nomeUsuario">Funcionário</span> 👋</h1>
           <p class="texto-suave">
             Aqui está um resumo da sua jornada de trabalho.
@@ -136,20 +131,12 @@
           </button>
           <div class="perfil-menu oculto" id="menuPerfil">
             <button data-ir="configuracoes-funcionario.html">Configurações</button>
-            <!-- [BACKEND] Sair: encerrar a sessão (POST /api/auth/logout) antes de voltar ao login -->
             <button id="btnSair">Sair</button>
           </div>
         </div>
       </header>
 
-      <!-- ======================================================
-         LINHA 1: RELÓGIO | JORNADA | REGRAS
-         [BACKEND] O estado da jornada vem do cálculo do servidor.
-         O main.js aplica a classe jornada-normal / jornada-atencao /
-         jornada-critico no elemento #painelJornada.
-         ====================================================== -->
       <section class="linha-topo">
-        <!-- ---------- Relógio + Registrar Ponto ---------- -->
         <div class="card card-relogio">
           <div class="relogio-linha">
             <div class="relogio-icone">
@@ -164,15 +151,12 @@
               </svg>
             </div>
             <div>
-              <!-- [BACKEND] O relógio usa a hora do navegador só para exibição.
-                 O horário oficial da batida deve ser gravado pelo SERVIDOR. -->
               <p class="relogio-hora" id="relogioHora">--:--:--</p>
               <p class="relogio-data" id="relogioData">--</p>
               <p class="relogio-dia" id="relogioDia">--</p>
             </div>
           </div>
 
-          <!-- [BACKEND] Registrar batida: POST /api/pontos -->
           <button class="btn btn-primario btn-registrar" id="btnRegistrar">
             <svg
               viewBox="0 0 24 24"
@@ -188,7 +172,6 @@
           </button>
           <p class="mensagem-sucesso" id="msgRegistro"></p>
 
-          <!-- [BACKEND] Últimas batidas do dia (GET /api/pontos/hoje) -->
           <div class="batidas">
             <div class="batida">
               <svg
@@ -224,7 +207,6 @@
           </div>
         </div>
 
-        <!-- ---------- Jornada do dia ---------- -->
         <div class="card card-jornada jornada-normal" id="painelJornada">
           <div class="jornada-cabecalho">
             <div>
@@ -237,7 +219,6 @@
               </p>
             </div>
             <div class="direita">
-              <!-- [BACKEND] Tipo de contrato e limite diário vêm das regras do contrato (Fig. 20) -->
               <span class="badge badge-info" id="tipoContrato">Estagiário</span>
               <p class="texto-suave pequeno">
                 Limite diário: <span id="limiteDiario">6h</span>
@@ -246,7 +227,6 @@
           </div>
 
           <div class="jornada-corpo">
-            <!-- Gráfico circular: o preenchimento usa a variável --pct (0 a 100) -->
             <div class="donut" id="donut" style="--pct: 0">
               <div class="donut-centro">
                 <strong id="pctJornada">0%</strong>
@@ -286,7 +266,6 @@
               </div>
             </div>
 
-            <!-- Alerta: muda de cor e ícone conforme o estado -->
             <div class="alerta-limite" id="alertaLimite">
               <p class="alerta-titulo">
                 <svg viewBox="0 0 24 24" fill="currentColor">
@@ -296,15 +275,11 @@
               </p>
               <p id="alertaTexto">Você já utilizou 0% da jornada diária.</p>
               <p id="alertaRestante">Restam --.</p>
-              <button class="link-acao" data-ir="relatorios.html">
-                Saiba mais sobre as regras ›
-              </button>
             </div>
           </div>
         </div>
 
-        <!-- ---------- Regras do contrato ---------- -->
-        <!-- [BACKEND] Título e texto vêm das regras do contrato do usuário (GET /api/regras/meu-contrato) -->
+
         <div class="card card-regras">
           <p class="regras-titulo">
             <span class="icone-info">i</span>
@@ -320,15 +295,10 @@
         </div>
       </section>
 
-      <!-- ======================================================
-         LINHA 2: HOJE | ESTA SEMANA | ESTE MÊS
-         [BACKEND] GET /api/jornada/resumo → cada período traz
-         horas, meta, percentual e estado (normal/atencao/critico).
-         ====================================================== -->
       <section class="linha-periodos">
         <div class="card card-periodo cor-verde" id="periodoHoje">
           <div class="periodo-topo">
-            <span>📅 Hoje</span><span class="seta-direita">›</span>
+            <span>📅 Hoje</span>
           </div>
           <div class="periodo-valores">
             <div>
@@ -346,7 +316,7 @@
 
         <div class="card card-periodo cor-azul" id="periodoSemana">
           <div class="periodo-topo">
-            <span>📅 Esta semana</span><span class="seta-direita">›</span>
+            <span>📅 Esta semana</span>
           </div>
           <div class="periodo-valores">
             <div>
@@ -364,7 +334,7 @@
 
         <div class="card card-periodo cor-roxo" id="periodoMes">
           <div class="periodo-topo">
-            <span>📅 Este mês</span><span class="seta-direita">›</span>
+            <span>📅 Este mês</span>
           </div>
           <div class="periodo-valores">
             <div>
@@ -381,10 +351,6 @@
         </div>
       </section>
 
-      <!-- ======================================================
-         LINHA 3: HISTÓRICO DE REGISTROS
-         [BACKEND] GET /api/pontos/historico?limite=5
-         ====================================================== -->
       <section class="card card-historico">
         <div class="historico-topo">
           <h2>
@@ -417,20 +383,11 @@
                 <th></th>
               </tr>
             </thead>
-            <!-- As linhas são preenchidas pelo main.js -->
             <tbody id="tabelaHistorico"></tbody>
           </table>
         </div>
       </section>
     </main>
-    <!-- ======================================================
-       MODAL: REGRAS DO CONTRATO ("Saiba mais" do card de regras)
-       [BACKEND] GET /api/regras/meu-contrato →
-         { "nome": "Regime de Estágio", "cargasDiarias": [6, 4], "cargaDoUsuario": 6,
-           "limiteSemanal": 30, "toleranciaMin": 5,
-           "bloqueioHoraExtra": true, "bancoHoras": false }
-       Mesmas regras cadastradas pelo Admin em Regras e Contratos (Fig. 20).
-       ====================================================== -->
     <div
       class="modal-fundo oculto"
       id="modalRegras"
@@ -453,10 +410,8 @@
         </div>
         <p class="texto-suave pequeno" id="regrasNomeContrato">--</p>
 
-        <!-- Regras (preenchidas pelo main.js) -->
         <ul class="regras-lista" id="listaRegras"></ul>
 
-        <!-- Como funciona o alerta de jornada -->
         <h3 class="regras-subtitulo">Como funciona o alerta de jornada</h3>
         <ul class="regras-alertas">
           <li>
@@ -501,10 +456,6 @@
         </div>
       </div>
     </div>
-    <!-- ======================================================
-       MODAL: ENVIAR ATESTADO MÉDICO (Figura 6)
-       Abre pelo botão "Atestados" do menu (inicio.html#atestado)
-       ====================================================== -->
     <div
       class="modal-fundo oculto"
       id="modalAtestado"
@@ -538,15 +489,6 @@
         <p class="texto-suave pequeno">
           O atestado será enviado para análise do RH.
         </p>
-
-        <!--
-        [BACKEND] ENVIO DO ATESTADO
-        Endpoint sugerido: POST /api/atestados  (multipart/form-data)
-          Envia: dataInicio, dataFim, motivo, arquivo
-          Retorna: 201 (criado) → o atestado entra como "Atestado Médico Enviado"
-                   na tela de Pendências do RH (Fig. 10)
-        [BACKEND] Validar tipo e tamanho do arquivo também no servidor.
-      -->
         <form id="formAtestado" class="form-modal" novalidate>
           <div class="form-linha">
             <div class="campo-modal" id="campoAtestadoInicio">

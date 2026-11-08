@@ -13,6 +13,8 @@ namespace PontoOnline.mvc.Controllers;
 [ApiController]
 public class AtestadoController : Controller
 {
+    private static readonly string[] ExtensoesPermitidas = { ".pdf", ".png", ".jpg", ".jpeg" };
+
     private readonly AppDbContext _context;
     private readonly LogService _logService;
 
@@ -30,19 +32,13 @@ public class AtestadoController : Controller
             var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.UsuarioId == dto.UsuarioId);
             if (usuario == null) return NotFound(new { erro = "Usuário não encontrado." });
 
-            if (dto.Arquivo != null && dto.Arquivo.Length > 0)
+            string extensao = string.Empty;
+            bool temArquivo = dto.Arquivo != null && dto.Arquivo.Length > 0;
+            if (temArquivo)
             {
-                var pastaDestino = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "atestados");
-                Directory.CreateDirectory(pastaDestino);
-
-                string extensao = Path.GetExtension(dto.Arquivo.FileName).ToLower();
-                string nomePadronizado = "atestado_" + dto.UsuarioId + "_" + dto.DataInicio.ToString("yyyyMMdd") + extensao;
-                var caminhoArquivo = Path.Combine(pastaDestino, nomePadronizado);
-                
-                using (var stream = new FileStream(caminhoArquivo, FileMode.Create))
-                {
-                    await dto.Arquivo.CopyToAsync(stream);
-                }
+                extensao = Path.GetExtension(dto.Arquivo!.FileName).ToLowerInvariant();
+                if (!ExtensoesPermitidas.Contains(extensao))
+                    return BadRequest(new { erro = "Formato não permitido. Envie PDF, PNG ou JPG." });
             }
 
             var ausencia = new AusenciaJustificada
@@ -55,6 +51,24 @@ public class AtestadoController : Controller
 
             _context.AusenciasJustificadas.Add(ausencia);
             await _context.SaveChangesAsync();
+
+            if (temArquivo)
+            {
+                var pastaDestino = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "atestados");
+                Directory.CreateDirectory(pastaDestino);
+
+                // usuário + data + id do atestado + código aleatório: nunca se repete entre envios.
+                string nomeUnico = "atestado_" + dto.UsuarioId + "_" + dto.DataInicio.ToString("yyyyMMdd") +
+                    "_" + ausencia.AusenciaId + "_" + Guid.NewGuid().ToString("N").Substring(0, 8) + extensao;
+
+                using (var stream = new FileStream(Path.Combine(pastaDestino, nomeUnico), FileMode.CreateNew))
+                {
+                    await dto.Arquivo!.CopyToAsync(stream);
+                }
+
+                ausencia.Anexo = nomeUnico;
+                await _context.SaveChangesAsync();
+            }
 
             await _logService.RegistrarAsync(
                 acao: "Envio de Atestado Médico",

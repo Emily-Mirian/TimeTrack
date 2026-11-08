@@ -8,6 +8,7 @@ public class AusenciaJustificada
     public string Motivo { get; set; } = string.Empty;
     public int IdUsuario { get; set; }
     public string? Status { get; set; }
+    public string? Anexo { get; set; }
 
     public Usuario? Usuario { get; set; }
 }

@@ -21,6 +21,19 @@ namespace PontoOnline.mvc.Controllers
             _context = context;
         }
 
+        // O filtro da tela usa categorias (admin/rh/sistema); no banco fica o nome real de quem agiu.
+        private static IQueryable<LogSistema> FiltrarPorUsuario(IQueryable<LogSistema> q, string usuario)
+        {
+            var u = usuario.ToLower();
+            return u switch
+            {
+                "admin" => q.Where(l => l.Usuario.ToLower().Contains("admin")),
+                "rh" => q.Where(l => l.Usuario.ToLower() == "rh" || l.Usuario.ToLower().Contains("gestor rh")),
+                "sistema" => q.Where(l => l.Usuario.ToLower() == "sistema"),
+                _ => q.Where(l => l.Usuario.ToLower() == u)
+            };
+        }
+
         [HttpGet]
         public async Task<IActionResult> ListarLogs([FromQuery] string? data, [FromQuery] string? usuario, [FromQuery] string? nivel)
         {
@@ -34,7 +47,7 @@ namespace PontoOnline.mvc.Controllers
                 }
                 if (!string.IsNullOrEmpty(usuario) && usuario != "todos")
                 {
-                    query = query.Where(l => l.Usuario.ToLower() == usuario.ToLower());
+                    query = FiltrarPorUsuario(query, usuario);
                 }
                 if (!string.IsNullOrEmpty(nivel) && nivel != "todos")
                 {
@@ -72,7 +85,7 @@ namespace PontoOnline.mvc.Controllers
             }
             if (!string.IsNullOrEmpty(usuario) && usuario != "todos")
             {
-                query = query.Where(l => l.Usuario.ToLower() == usuario.ToLower());
+                query = FiltrarPorUsuario(query, usuario);
             }
             if (!string.IsNullOrEmpty(nivel) && nivel != "todos")
             {

@@ -17,11 +17,13 @@ namespace PontoOnline.API.Controllers
     {
         private readonly AppDbContext _context;
         private readonly LogService _logService;
+        private readonly PontoOnline.mvc.Services.ModulosService _modulos;
 
-        public RelatoriosController(AppDbContext context, LogService logService)
+        public RelatoriosController(AppDbContext context, LogService logService, PontoOnline.mvc.Services.ModulosService modulos)
         {
             _context = context;
             _logService = logService;
+            _modulos = modulos;
         }
 
         [HttpGet("colaboradores")]
@@ -37,22 +39,43 @@ namespace PontoOnline.API.Controllers
         [HttpGet("saldo/{usuarioId}")]
         public async Task<IActionResult> ObterSaldo(int usuarioId)
         {
-            var registros = await _context.RegistrosPonto
-                .Where(r => r.IdUsuario == usuarioId && r.SaldoDiarioMinutos != null)
+            var usuario = await _context.Usuarios
+                .Include(u => u.TipoContrato)
+                .FirstOrDefaultAsync(u => u.UsuarioId == usuarioId);
+
+            if (usuario == null) return NotFound("Colaborador não encontrado.");
+
+            usuario.RegistrosPonto = await _context.RegistrosPonto
+                .Where(r => r.IdUsuario == usuarioId)
+                .ToListAsync();
+            usuario.AusenciasJustificadas = await _context.AusenciasJustificadas
+                .Where(a => a.IdUsuario == usuarioId)
                 .ToListAsync();
 
-            int saldoTotal = registros.Sum(r => r.SaldoDiarioMinutos!.Value);
-            bool positivo = saldoTotal >= 0;
+            var feriadosTodos = (await _context.Feriados.Select(f => f.Data).ToListAsync())
+                .Select(d => d.Date)
+                .ToHashSet();
+
+            var fechamentoService = new PontoOnline.Domain.Services.FechamentoService();
+            int cargaHoraria = usuario.TipoContrato?.CargaHorariaDiariaMinutos ?? 480;
+
+            bool permiteHoraExtra = usuario.TipoContrato?.PermiteHoraExtra ?? true;
+
+            int saldoTotal = fechamentoService.CalcularSaldoPeriodo(
+                usuario, cargaHoraria, DateTime.MinValue, DateTime.Today, feriadosTodos, permiteHoraExtra);
             int absSaldo = Math.Abs(saldoTotal);
+            string sinal = saldoTotal > 0 ? "+" : (saldoTotal < 0 ? "-" : "");
 
             return Ok(new
             {
                 bancoHorasAtivo = true,
-                saldo = (positivo ? "+" : "-") + (absSaldo / 60) + "h " + (absSaldo % 60).ToString("D2") + "min",
-                positivo = positivo,
+                saldo = sinal + (absSaldo / 60) + "h " + (absSaldo % 60).ToString("D2") + "min",
+                saldoMinutos = saldoTotal,
+                positivo = saldoTotal >= 0,
                 atualizadoEm = DateTime.Now.ToString("dd/MM/yyyy")
             });
         }
+
 
         [HttpGet("meses/{usuarioId}")]
         public async Task<IActionResult> ObterMeses(int usuarioId)
@@ -67,19 +90,37 @@ namespace PontoOnline.API.Controllers
 
             var meses = registros.Select(r => new
             {
-                valor = r.Month,
+                valor = r.Year + "-" + r.Month.ToString("D2"),
                 texto = new DateTime(r.Year, r.Month, 1).ToString("MMMM/yyyy", new CultureInfo("pt-BR"))
             });
 
             return Ok(meses);
         }
 
-        [HttpGet("espelho/{usuarioId}/{anoMes}")] 
-        public async Task<IActionResult> GerarRelatorioMensal(int usuarioId, string anoMes)
+        // Rota usada pelas telas: /espelho/{usuario}/{ano}/{mes}
+        [HttpGet("espelho/{usuarioId}/{ano:int}/{mes:int}")]
+        public Task<IActionResult> GerarRelatorioMensalAnoMes(int usuarioId, int ano, int mes, [FromQuery] int? solicitante = null)
+            => GerarRelatorioMensal(usuarioId, ano + "/" + mes, solicitante);
+
+        [HttpGet("espelho/{usuarioId}/{anoMes}")]
+        public async Task<IActionResult> GerarRelatorioMensal(int usuarioId, string anoMes, [FromQuery] int? solicitante = null)
         {
             int ano = DateTime.Now.Year;
-            int mes = 11;
+            int mes = DateTime.Now.Month;
 
+            if (await _modulos.BloqueadoAsync(PontoOnline.mvc.Services.Modulos.Exportacao, solicitante, donoId: usuarioId))
+            {
+                await _logService.RegistrarAsync(
+                    acao: "Acesso Negado - Exportação PDF",
+                    modulo: "Controle de Módulos",
+                    detalhes: "Exportação bloqueada: módulo desativado na Visão Global.",
+                    usuario: "RH",
+                    nivel: "alta"
+                );
+                return StatusCode(403, new { erro = PontoOnline.mvc.Services.ModulosService.MensagemBloqueio(PontoOnline.mvc.Services.Modulos.Exportacao) });
+            }
+
+            anoMes = anoMes.Replace('-', '/');
             if (anoMes.Contains("/"))
             {
                 var partes = anoMes.Split('/');
@@ -121,7 +162,8 @@ namespace PontoOnline.API.Controllers
                 .ToListAsync();
 
             var fechamentoService = new PontoOnline.Domain.Services.FechamentoService();
-            int cargaHoraria = usuario.TipoContrato?.CargaHorariaDiariaMinutos ?? 480; 
+            int cargaHoraria = usuario.TipoContrato?.CargaHorariaDiariaMinutos ?? 480;
+            bool permiteHoraExtraPdf = usuario.TipoContrato?.PermiteHoraExtra ?? true;
 
             int totalDiasMes = DateTime.DaysInMonth(ano, mes);
             var diasDoMes = Enumerable.Range(1, totalDiasMes)
@@ -129,6 +171,8 @@ namespace PontoOnline.API.Controllers
                 .ToList();
 
             TimeSpan saldoMensalTotal = TimeSpan.Zero;
+            int totalExcessoMin = 0;
+            int qtdDiasExcesso = 0;
 
             var documentoPdf = Document.Create(container =>
             {
@@ -172,7 +216,9 @@ namespace PontoOnline.API.Controllers
                         foreach (var dataDia in diasDoMes)
                         {
                             var registroPonto = usuario.RegistrosPonto
-                                .FirstOrDefault(r => r.DataRegistro.Date == dataDia.Date);
+                                .Where(r => r.DataRegistro.Date == dataDia.Date)
+                                .OrderBy(r => r.PontoId)
+                                .FirstOrDefault();
 
                             bool ehFeriado = feriados.Any(f => f.Data.Date == dataDia.Date);
                             bool temAtestado = usuario.AusenciasJustificadas.Any(a => 
@@ -182,7 +228,7 @@ namespace PontoOnline.API.Controllers
 
                             if (registroPonto != null)
                             {
-                                int saldoMinutos = fechamentoService.CalcularSaldoDiario(registroPonto, cargaHoraria);
+                                int saldoMinutos = fechamentoService.CalcularSaldoDiario(registroPonto, cargaHoraria, permiteHoraExtraPdf);
                                 saldoMensalTotal = saldoMensalTotal.Add(TimeSpan.FromMinutes(saldoMinutos));
 
                                 table.Cell().Text(registroPonto.Entrada1?.ToString("HH:mm") ?? "-");
@@ -190,13 +236,29 @@ namespace PontoOnline.API.Controllers
                                 table.Cell().Text(registroPonto.RetornoAlmoco?.ToString("HH:mm") ?? "-");
                                 table.Cell().Text(registroPonto.Saida2?.ToString("HH:mm") ?? "-");
                                 
-                                string textoSaldo = saldoMinutos >= 0 ? "+" + saldoMinutos + " min" : saldoMinutos + " min";
-                                table.Cell().Text(textoSaldo).FontColor(saldoMinutos >= 0 ? Colors.Green.Darken2 : Colors.Red.Darken2);
+                                int excessoMin = fechamentoService.CalcularExcessoJornadaProibida(registroPonto, cargaHoraria, permiteHoraExtraPdf);
+                                if (excessoMin > 0)
+                                {
+                                    totalExcessoMin += excessoMin;
+                                    qtdDiasExcesso++;
+                                    table.Cell().Column(c =>
+                                    {
+                                        c.Item().Text("+0 min (sem banco)").FontColor(Colors.Grey.Darken1);
+                                        c.Item().Text("EXCESSO DE JORNADA: " + PontoOnline.Domain.Services.FechamentoService.FormatarMinutos(excessoMin) + " acima do limite")
+                                            .Bold().FontSize(8).FontColor(Colors.Red.Darken2);
+                                    });
+                                }
+                                else
+                                {
+                                    string textoSaldo = saldoMinutos >= 0 ? "+" + saldoMinutos + " min" : saldoMinutos + " min";
+                                    table.Cell().Text(textoSaldo).FontColor(saldoMinutos >= 0 ? Colors.Green.Darken2 : Colors.Red.Darken2);
+                                }
                             }
                             else if (fechamentoService.DiaGeraFalta(dataDia, usuario, ehFeriado))
                             {
                                 table.Cell().ColumnSpan(4).AlignCenter().Text("FALTA").FontColor(Colors.Red.Medium);
-                                table.Cell().Text("Ausente").FontColor(Colors.Red.Medium);
+                                saldoMensalTotal = saldoMensalTotal.Subtract(TimeSpan.FromMinutes(cargaHoraria));
+                                table.Cell().Text("Ausente -" + cargaHoraria + " min").FontColor(Colors.Red.Medium);
                             }
                             else if (temAtestado)
                             {
@@ -218,6 +280,13 @@ namespace PontoOnline.API.Controllers
                         int totalMinutos = (int)saldoMensalTotal.TotalMinutes;
                         string sinal = totalMinutos < 0 ? "-" : "+";
                         col.Item().PaddingTop(5).Text("Banco de Horas do Mês: " + sinal + Math.Abs(totalMinutos / 60) + "h " + Math.Abs(totalMinutos % 60) + "m").SemiBold().FontSize(12);
+                        if (qtdDiasExcesso > 0)
+                        {
+                            col.Item().PaddingTop(3).Text("ATENÇÃO: " + qtdDiasExcesso + " dia(s) com excesso de jornada (" +
+                                PontoOnline.Domain.Services.FechamentoService.FormatarMinutos(totalExcessoMin) +
+                                " no total), proibido para o contrato " + (usuario.TipoContrato?.Nome ?? "N/A") + ". Horas não computadas no banco.")
+                                .Bold().FontSize(9).FontColor(Colors.Red.Darken2);
+                        }
                         col.Item().AlignCenter().Text(x => x.CurrentPageNumber());
                     });
                 });
@@ -232,7 +301,35 @@ namespace PontoOnline.API.Controllers
             );
 
             var pdfBytes = documentoPdf.GeneratePdf();
-            return File(pdfBytes, "application/pdf", "Relatorio_" + usuario.NomeCompleto.Replace(" ", "_") + "_" + mes + "_" + ano + ".pdf");
+            string nomePdf = "Relatorio_" + usuario.NomeCompleto.Replace(" ", "_") + "_" + mes + "_" + ano + ".pdf";
+
+            try
+            {
+                var solicitanteUsuario = solicitante.HasValue
+                    ? await _context.Usuarios.FirstOrDefaultAsync(u => u.UsuarioId == solicitante.Value)
+                    : null;
+
+                _context.HistoricoArquivos.Add(new PontoOnline.Domain.Entities.HistoricoArquivo
+                {
+                    Tipo = "exportacao",
+                    NomeArquivo = nomePdf,
+                    DataHora = DateTime.Now,
+                    UsuarioId = solicitanteUsuario?.UsuarioId,
+                    UsuarioNome = solicitanteUsuario?.NomeCompleto ?? "Não identificado",
+                    Status = "concluido",
+                    Detalhe = "Espelho de ponto de " + usuario.NomeCompleto + " (" + mes.ToString("D2") + "/" + ano + ")",
+                    ColaboradorId = usuarioId,
+                    Ano = ano,
+                    Mes = mes
+                });
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("[HISTORICO] Falha ao registrar exportação: " + ex.Message);
+            }
+
+            return File(pdfBytes, "application/pdf", nomePdf);
         }
     }
 }

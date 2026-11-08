@@ -4,6 +4,25 @@ function mostrarErro(campoId, erroId, mensagem) {
   document.getElementById(erroId).textContent = mensagem || "";
 }
 
+// Controle de Módulos (Visão Global). Retorna true se o módulo está desligado E quem usa não é administrador.
+async function moduloBloqueado(modulo) {
+  try {
+    const perfil = (localStorage.getItem("perfil") || "").toLowerCase();
+    if (perfil === "admin") return false;
+    const resp = await fetch("/api/modulos");
+    if (!resp.ok) return false; // o servidor também valida; aqui é só aviso antecipado
+    const estado = await resp.json();
+    return estado[modulo] === false;
+  } catch {
+    return false;
+  }
+}
+const NOMES_MODULO = {
+  importacao: "Importação CSV",
+  exportacao: "Exportação PDF",
+  edicaoPonto: "Edição de Ponto",
+};
+
 function emailValido(valor) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(valor.trim());
 }
@@ -312,6 +331,17 @@ function emailValido(valor) {
       };
 
       renderizarJornada(dadosJornada, dadosContrato);
+
+      try {
+        const respModulos = await fetch("/api/modulos");
+        if (respModulos.ok) {
+          const modulos = await respModulos.json();
+          const cartaoAlerta = document.getElementById("alertaLimite");
+          if (cartaoAlerta) cartaoAlerta.classList.toggle("oculto", modulos.alertasJornada === false);
+        }
+      } catch (e) {
+        console.error("Não foi possível ler os módulos:", e);
+      }
       
       renderizarPeriodo("periodoHoje", {
         horas: dadosJornada.trabalhadas,
@@ -549,7 +579,8 @@ function emailValido(valor) {
 
   function renderizarSaldo(s) {
     const card = document.getElementById("cardSaldo");
-    card.classList.remove("saldo-positivo", "saldo-negativo", "saldo-inativo");
+    card.classList.remove("saldo-positivo", "saldo-negativo", "saldo-neutro", "saldo-inativo");
+
 
     if (!s.bancoHorasAtivo) {
       card.classList.add("saldo-inativo");
@@ -557,6 +588,11 @@ function emailValido(valor) {
       document.getElementById("saldoInfo").textContent = "Seu tipo de contrato não possui banco de horas.";
       return;
     }
+    const classe = s.saldoMinutos > 0 ? "saldo-positivo"
+             : s.saldoMinutos < 0 ? "saldo-negativo"
+             : "saldo-neutro";
+    card.classList.add(classe);
+
     card.classList.add(s.positivo ? "saldo-positivo" : "saldo-negativo");
     document.getElementById("saldoValor").textContent = s.saldo;
     document.getElementById("saldoInfo").textContent = `Banco de horas atualizado em ${s.atualizadoEm}.`;
@@ -588,7 +624,7 @@ function emailValido(valor) {
           <td><strong>${m.texto}</strong></td>
           <td>Disponível</td>
           <td class="acoes">
-            <a href="/api/Relatorios/espelho/${usuarioId}/${String(m.valor).replace('-', '/')}" target="_blank" ...>
+            <a href="/api/Relatorios/espelho/${usuarioId}/${String(m.valor).replace('-', '/')}?solicitante=${usuarioId}" target="_blank" class="btn-baixar">
               ${ICONE_DOWNLOAD} Baixar PDF
             </a>
           </td>
@@ -605,7 +641,7 @@ function emailValido(valor) {
     const mesValor = selectMes.value;
     if (!mesValor) return;
     const usuarioId = sessionStorage.getItem("usuarioId") || 1;
-    window.open(`/api/Relatorios/espelho/${usuarioId}/${mesValor}`, "_blank");
+    window.open(`/api/Relatorios/espelho/${usuarioId}/${String(mesValor).replace("-", "/")}?solicitante=${usuarioId}`, "_blank");
   });
 
   carregar();
@@ -959,6 +995,7 @@ function emailValido(valor) {
     batida_impar: { texto: "Batida Ímpar", badge: "badge-atencao" },
     atestado: { texto: "Atestado Médico Enviado", badge: "badge-info" },
     falta: { texto: "Falta Injustificada", badge: "badge-critico" },
+    excesso_jornada: { texto: "Excesso de Jornada", badge: "badge-critico" },
   };
 
   function botoes(p) {
@@ -966,6 +1003,7 @@ function emailValido(valor) {
       return `<button class="btn-acao primario" data-acao="editar" data-id="${p.id}">Editar Ponto</button>`;
     if (p.tipo === "atestado")
       return `<button class="btn-acao" data-acao="anexo" data-id="${p.id}">Visualizar Anexo</button>
+              <button class="btn-acao perigo" data-acao="rejeitar" data-id="${p.id}">Rejeitar</button>
               <button class="btn-acao primario" data-acao="aprovar" data-id="${p.id}">Aprovar</button>`;
     return `<button class="btn-acao perigo" data-acao="tratar" data-id="${p.id}">Tratar Ocorrência</button>`;
   }
@@ -1005,6 +1043,7 @@ function emailValido(valor) {
     setTimeout(() => {
       pendencias = pendencias.filter((p) => String(p.id) !== String(id));
       renderizar();
+      if (window.atualizarAlertasRh) window.atualizarAlertasRh();
     }, 400);
     const msg = document.getElementById("msgPendencias");
     msg.textContent = mensagem;
@@ -1018,6 +1057,10 @@ function emailValido(valor) {
 
     switch (btn.dataset.acao) {
       case "editar":
+        if (await moduloBloqueado("edicaoPonto")) {
+          alert("O módulo Edição de Ponto está desativado pelo Administrador.");
+          break;
+        }
         window.abrirEditarPonto(p, () =>
           resolver(p.id, `Ponto de ${p.colaborador} corrigido.`),
         );
@@ -1050,7 +1093,57 @@ function emailValido(valor) {
         }
         break;
 
+      case "rejeitar":
+        if (
+          !confirm(
+            `Rejeitar o atestado de ${p.colaborador}? Os dias não serão abonados e o colaborador poderá ter falta computada.`,
+          )
+        )
+          break;
+        btn.disabled = true;
+        try {
+          const idNumerico = p.id.split("_")[1];
+          const usuarioLogadoId = sessionStorage.getItem("usuarioId") || localStorage.getItem("usuarioId") || 1;
+
+          await chamarApi(`/Pendencias/atestado/${idNumerico}/rejeitar`, "PUT", {
+            UsuarioResponsavelId: parseInt(usuarioLogadoId)
+          });
+
+          resolver(p.id, `Atestado de ${p.colaborador} rejeitado.`);
+        } catch (erro) {
+          console.error("Erro ao rejeitar:", erro);
+          alert("Erro ao rejeitar atestado.");
+          btn.disabled = false;
+        }
+        break;
+
       case "tratar":
+        if (p.tipo === "excesso_jornada") {
+          const justificativa = (
+            prompt(
+              `Excesso de jornada de ${p.colaborador} em ${p.data}.\nInforme a providência adotada (ex.: orientado, gestor ciente, jornada ajustada):`,
+            ) || ""
+          ).trim();
+          if (!justificativa) {
+            alert("A justificativa é obrigatória para tratar a ocorrência.");
+            break;
+          }
+          btn.disabled = true;
+          try {
+            const pontoId = p.id.split("_")[1];
+            const usuarioLogadoId = sessionStorage.getItem("usuarioId") || localStorage.getItem("usuarioId") || 1;
+            await chamarApi(`/Pendencias/excesso/${pontoId}/tratar`, "PUT", {
+              UsuarioResponsavelId: parseInt(usuarioLogadoId),
+              Justificativa: justificativa,
+            });
+            resolver(p.id, `Excesso de jornada de ${p.colaborador} tratado e registrado na auditoria.`);
+          } catch (erro) {
+            console.error("Erro ao tratar excesso:", erro);
+            alert("Erro ao registrar o tratamento.");
+            btn.disabled = false;
+          }
+          break;
+        }
         if (
           confirm(
             `Confirmar a falta de ${p.colaborador} em ${p.data} como tratada?`,
@@ -1081,12 +1174,24 @@ function emailValido(valor) {
 
   const form = document.getElementById("formEditarPonto");
   const data = document.getElementById("editarData");
-  const tipo = document.getElementById("editarTipo");
-  const original = document.getElementById("editarOriginal");
-  const novo = document.getElementById("editarNovo");
   const justificativa = document.getElementById("editarJustificativa");
   const contador = document.getElementById("contadorJustificativa");
   const btnSalvar = document.getElementById("btnSalvarEditar");
+  const erroHorarios = document.getElementById("erroEditarNovo");
+
+  const campos = {
+    entrada1: document.getElementById("editarEntrada"),
+    saidaAlmoco: document.getElementById("editarSaidaAlmoco"),
+    retornoAlmoco: document.getElementById("editarRetornoAlmoco"),
+    saida2: document.getElementById("editarSaida"),
+  };
+  const ROTULOS = {
+    entrada1: "Entrada",
+    saidaAlmoco: "Saída Almoço",
+    retornoAlmoco: "Retorno Almoço",
+    saida2: "Saída",
+  };
+  const ORDEM = ["entrada1", "saidaAlmoco", "retornoAlmoco", "saida2"];
 
   let pendenciaAtual = null;
   let aoSalvar = null;
@@ -1095,8 +1200,6 @@ function emailValido(valor) {
     const [d, m, a] = dataBR.split("/");
     return `${a}-${m}-${d}`;
   }
-
-  async function carregarOriginal() {}
 
   function abrir(pendencia, callback) {
     pendenciaAtual = pendencia;
@@ -1113,12 +1216,17 @@ function emailValido(valor) {
       .toUpperCase();
 
     data.value = paraISO(pendencia.data);
-    tipo.value = pendencia.tipoPonto || "entrada";
-    carregarOriginal();
+
+    const batidas = pendencia.batidas || {};
+    ORDEM.forEach((chave) => {
+      campos[chave].value = batidas[chave] || "";
+      campos[chave].classList.toggle("campo-faltando", !batidas[chave]);
+    });
 
     modal.classList.remove("oculto");
     document.body.classList.add("com-modal");
-    novo.focus();
+    const primeiroVazio = ORDEM.find((c) => !campos[c].value) || "entrada1";
+    campos[primeiroVazio].focus();
   }
 
   function fechar() {
@@ -1133,10 +1241,9 @@ function emailValido(valor) {
     contador.classList.remove("limite");
     btnSalvar.disabled = false;
     btnSalvar.textContent = "Salvar";
+    erroHorarios.textContent = "";
     document.getElementById("erroEditarGeral").textContent = "";
     [
-      ["campoEditarData", "erroEditarData"],
-      ["campoEditarNovo", "erroEditarNovo"],
       ["campoEditarJustificativa", "erroEditarJustificativa"],
     ].forEach(([c, e]) => mostrarErro(c, e, ""));
   }
@@ -1154,9 +1261,6 @@ function emailValido(valor) {
     if (e.key === "Escape" && !modal.classList.contains("oculto")) fechar();
   });
 
-  data.addEventListener("change", carregarOriginal);
-  tipo.addEventListener("change", carregarOriginal);
-
   justificativa.addEventListener("input", () => {
     const total = justificativa.value.length;
     contador.textContent = `${total}/500`;
@@ -1165,27 +1269,22 @@ function emailValido(valor) {
 
   function validar() {
     let ok = true;
+    erroHorarios.textContent = "";
 
-    if (!data.value) {
-      mostrarErro("campoEditarData", "erroEditarData", "Informe a data.");
+    const faltando = ORDEM.filter((c) => !campos[c].value);
+    if (faltando.length) {
+      erroHorarios.textContent =
+        "Preencha: " + faltando.map((c) => ROTULOS[c]).join(", ") + ".";
       ok = false;
-    } else mostrarErro("campoEditarData", "erroEditarData", "");
-
-    if (!novo.value) {
-      mostrarErro(
-        "campoEditarNovo",
-        "erroEditarNovo",
-        "Informe o novo horário.",
-      );
-      ok = false;
-    } else if (novo.value === original.value) {
-      mostrarErro(
-        "campoEditarNovo",
-        "erroEditarNovo",
-        "O novo horário é igual ao original.",
-      );
-      ok = false;
-    } else mostrarErro("campoEditarNovo", "erroEditarNovo", "");
+    } else {
+      for (let i = 1; i < ORDEM.length; i++) {
+        if (campos[ORDEM[i]].value <= campos[ORDEM[i - 1]].value) {
+          erroHorarios.textContent = `${ROTULOS[ORDEM[i]]} deve ser depois de ${ROTULOS[ORDEM[i - 1]]}.`;
+          ok = false;
+          break;
+        }
+      }
+    }
 
     if (justificativa.value.trim().length < 10) {
       mostrarErro(
@@ -1199,6 +1298,7 @@ function emailValido(valor) {
 
     return ok;
   }
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     document.getElementById("erroEditarGeral").textContent = "";
@@ -1209,25 +1309,21 @@ function emailValido(valor) {
 
     try {
       const pontoId = parseInt(pendenciaAtual.id.split("_")[1]);
-      
-      const [ano, mes, dia] = data.value.split("-");
-      const [hora, minuto] = novo.value.split(":");
-      const dataHoraCompleta = new Date(ano, mes - 1, dia, hora, minuto, 0);
 
       const usuarioConectado = JSON.parse(localStorage.getItem("usuario") || sessionStorage.getItem("usuario") || "{}");
-      const idAutor = usuarioConectado.id || usuarioConectado.usuarioId || 2;
+      const idAutor = usuarioConectado.id || usuarioConectado.usuarioId || sessionStorage.getItem("usuarioId") || 2;
 
+      // Horários enviados como "HH:mm": o servidor monta a data/hora com o dia do registro (sem fuso).
       const resposta = await fetch(`/api/pendencias/ponto/${pontoId}/resolver`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          pontoId: pontoId,
-          entrada1: dataHoraCompleta.toISOString(),
-          saidaAlmoco: null,
-          retornoAlmoco: null,
-          saida2: dataHoraCompleta.toISOString(),
-          justificativa: justificativa.value,
-          usuarioResponsavelId: idAutor
+          entrada1: campos.entrada1.value,
+          saidaAlmoco: campos.saidaAlmoco.value,
+          retornoAlmoco: campos.retornoAlmoco.value,
+          saida2: campos.saida2.value,
+          justificativa: justificativa.value.trim(),
+          usuarioResponsavelId: parseInt(idAutor)
         })
       });
 
@@ -1237,7 +1333,7 @@ function emailValido(valor) {
       }
 
       fechar();
-      window.location.reload();
+      if (typeof aoSalvar === "function") aoSalvar();
 
     } catch (error) {
       console.error(error);
@@ -1281,12 +1377,22 @@ function emailValido(valor) {
         (i) => `
         <tr>
           <td><strong>${i.arquivo}</strong>${i.erroResumo ? `<div class="erros-importacao">${i.erroResumo}</div>` : ""}</td>
-          <td>${i.data}</td>
+          <td>${i.data}${i.por ? `<div class="texto-suave pequeno">por ${i.por}</div>` : ""}</td>
           <td>${i.linhas != null ? i.linhas.toLocaleString("pt-BR") : "--"}</td>
           <td>${STATUS[i.status] || i.status}</td>
         </tr>`,
       )
       .join("");
+  }
+
+  async function carregarHistorico() {
+    try {
+      const resp = await fetch("/api/historico/importacao");
+      if (resp.ok) importacoes = await resp.json();
+    } catch (erro) {
+      console.error("Erro ao carregar histórico de importações:", erro);
+    }
+    renderizarTabela();
   }
 
   function contarLinhasCsv(file) {
@@ -1373,6 +1479,7 @@ function emailValido(valor) {
     try {
       const payload = new FormData();
       payload.append("arquivo", arquivo);
+      payload.append("usuarioId", sessionStorage.getItem("usuarioId") || localStorage.getItem("usuarioId") || "");
 
       const resposta = await fetch("/api/Upload/csv", {
         method: "POST",
@@ -1393,8 +1500,7 @@ function emailValido(valor) {
         status: "concluido"
       };
 
-      importacoes.unshift(resultado);
-      renderizarTabela();
+      await carregarHistorico();
       
       const msg = document.getElementById("msgImportar");
       msg.textContent = dados.Mensagem;
@@ -1409,8 +1515,7 @@ function emailValido(valor) {
         status: "erro",
         erroResumo: erro.message
       };
-      importacoes.unshift(resultadoErro);
-      renderizarTabela();
+      await carregarHistorico();
     } finally {
       setTimeout(() => {
         progresso.classList.add("oculto");
@@ -1421,15 +1526,13 @@ function emailValido(valor) {
   });
 
   async function carregar() {
-
-    if (!modulo.ativo) {
-      document
-        .getElementById("avisoModuloDesativado")
-        .classList.remove("oculto");
+    // O servidor também bloqueia (403); aqui o RH já vê o aviso e a área de upload some.
+    if (await moduloBloqueado("importacao")) {
+      document.getElementById("avisoModuloDesativado")?.classList.remove("oculto");
       area.classList.add("oculto");
-      document.querySelector(".importar-acoes").classList.add("oculto");
+      document.querySelector(".importar-acoes")?.classList.add("oculto");
     }
-    renderizarTabela();
+    await carregarHistorico();
   }
 
   carregar();
@@ -1492,21 +1595,25 @@ function emailValido(valor) {
       .map(
         (r) => `
         <tr>
-          <td><strong>${r.arquivo}</strong></td>
-          <td>${r.geradoEm}</td>
-          <td>${r.geradoPor}</td>
-          <td class="acoes"><button class="btn-baixar" data-id="${r.id}">${ICONE_DOWNLOAD} Baixar PDF</button></td>
+          <td><strong>${r.arquivo}</strong>${r.detalhe ? `<div class="texto-suave pequeno">${r.detalhe}</div>` : ""}</td>
+          <td>${r.data}</td>
+          <td>${r.por}</td>
+          <td class="acoes"><button class="btn-baixar" data-id="${r.id}" data-colab="${r.colaboradorId}" data-ano="${r.ano}" data-mes="${r.mes}">${ICONE_DOWNLOAD} Baixar PDF</button></td>
         </tr>`,
       )
       .join("");
   }
 
-  tabela.addEventListener("click", (e) => {
+  tabela.addEventListener("click", async (e) => {
     const b = e.target.closest(".btn-baixar");
     if (!b) return;
-    alert(
-      `[Protótipo] O download do relatório ${b.dataset.id} será feito pelo back-end.`,
-    );
+    if (await moduloBloqueado("exportacao")) {
+      alert("O módulo Exportação PDF está desativado pelo Administrador.");
+      return;
+    }
+    const solicitante = sessionStorage.getItem("usuarioId") || localStorage.getItem("usuarioId") || "";
+    window.open(`/api/Relatorios/espelho/${b.dataset.colab}/${b.dataset.ano}/${b.dataset.mes}?solicitante=${solicitante}`, "_blank");
+    setTimeout(carregarHistorico, 2500);
   });
 
   function nomeArquivo() {
@@ -1528,6 +1635,11 @@ function emailValido(valor) {
       return;
     }
 
+    if (await moduloBloqueado("exportacao")) {
+      alert("O módulo Exportação PDF está desativado pelo Administrador.");
+      return;
+    }
+
     btn.disabled = true;
     btn.textContent = "Gerando...";
 
@@ -1539,7 +1651,9 @@ function emailValido(valor) {
         const ano = partesData[0];
         const mesNum = partesData[1];
         
-        window.open(`/api/Relatorios/espelho/${colaboradorId}/${ano}/${parseInt(mesNum)}`, '_blank');
+        const solicitante = sessionStorage.getItem("usuarioId") || localStorage.getItem("usuarioId") || "";
+        window.open(`/api/Relatorios/espelho/${colaboradorId}/${ano}/${parseInt(mesNum)}?solicitante=${solicitante}`, '_blank');
+        setTimeout(carregarHistorico, 2500);
         
         const msg = document.getElementById("msgExportarRh");
         if(msg) {
@@ -1558,17 +1672,26 @@ function emailValido(valor) {
     }
   });
 
+  async function carregarHistorico() {
+    try {
+      const resp = await fetch("/api/historico/exportacao");
+      if (resp.ok) exportacoes = await resp.json();
+    } catch (erro) {
+      console.error("Erro ao carregar histórico de exportações:", erro);
+    }
+    renderizarTabela();
+  }
+
   async function carregar() {
     try {
       const resposta = await fetch("/api/Relatorios/colaboradores");
       const colaboradores = await resposta.json();
 
       const setores = []; 
-      exportacoes = []; 
 
       preencherAlvos(setores, colaboradores);
       preencherMeses();
-      renderizarTabela();
+      await carregarHistorico();
 
     } catch (error) {
       console.error("Erro ao carregar colaboradores do banco:", error);
@@ -1594,7 +1717,9 @@ function emailValido(valor) {
   };
   const EVENTOS = {
     edicao_ponto: { texto: "Edição de ponto", badge: "badge-atencao" },
-    atestado: { texto: "Aprovação de atestado", badge: "badge-normal" },
+    excesso_jornada: { texto: "Tratamento de excesso de jornada", badge: "badge-critico" },
+    modulo: { texto: "Controle de módulos", badge: "badge-info" },
+    atestado: { texto: "Validação de atestado", badge: "badge-normal" },
     bloqueio: { texto: "Bloqueio de acesso", badge: "badge-critico" },
     cadastro: { texto: "Cadastro de usuário", badge: "badge-info" },
     importacao: { texto: "Importação de planilha", badge: "badge-info" },
@@ -1727,6 +1852,7 @@ function emailValido(valor) {
         });
 
         if (!resposta.ok) throw new Error("Falha ao guardar preferência.");
+        if (window.atualizarAlertasRh) window.atualizarAlertasRh();
 
         const msg = document.getElementById("msgPrefRh");
         if (msg) {
@@ -1915,10 +2041,27 @@ function emailValido(valor) {
       }
 
       chk.disabled = true;
+      const desejado = chk.checked;
 
-      chk.disabled = false;
-      chk.closest(".toggle-linha").classList.toggle("desligado", !chk.checked);
-      avisar(`Módulo "${nome}" ${chk.checked ? "ativado" : "desativado"}.`);
+      try {
+        const resp = await fetch(`/api/modulos/${chk.dataset.modulo}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ativo: desejado }),
+        });
+        const dados = await resp.json().catch(() => ({}));
+        if (!resp.ok) throw new Error(dados.erro || "Não foi possível salvar.");
+
+        avisar(`Módulo "${nome}" ${desejado ? "ativado" : "desativado"}.`);
+        carregarAuditoriaRecente();
+      } catch (erro) {
+        console.error(erro);
+        chk.checked = !desejado; // volta ao estado real
+        avisar(erro.message);
+      } finally {
+        chk.disabled = false;
+        chk.closest(".toggle-linha").classList.toggle("desligado", !chk.checked);
+      }
     });
   });
 
@@ -1940,17 +2083,27 @@ function emailValido(valor) {
       .join("");
   }
 
+  async function carregarAuditoriaRecente() {
+    try {
+      const resp = await fetch("/api/VisaoGlobal/auditoria-recente");
+      if (!resp.ok) throw new Error("Falha ao carregar a auditoria recente.");
+      renderizarAuditoria(await resp.json());
+    } catch (erro) {
+      console.error("Erro ao carregar auditoria recente:", erro);
+      tabela.innerHTML =
+        '<tr><td colspan="3" class="tabela-vazia">Não foi possível carregar a auditoria recente.</td></tr>';
+    }
+  }
+
   async function carregar() {
     try {
-      const auditoriaRecente = await chamarApi("/VisaoGlobal/auditoria-recente", "GET");
-
-      const modulos = { importacao: true, exportacao: true, edicaoPonto: true };
-
-      aplicarModulos(modulos);
-      renderizarAuditoria(auditoriaRecente);
+      const resp = await fetch("/api/modulos");
+      if (!resp.ok) throw new Error("Falha ao carregar os módulos.");
+      aplicarModulos(await resp.json());
     } catch (erro) {
-      console.error("Erro ao carregar visão global:", erro);
+      console.error("Erro ao carregar módulos:", erro);
     }
+    await carregarAuditoriaRecente();
   }
 
   carregar();
@@ -1978,13 +2131,41 @@ function emailValido(valor) {
         return;
       }
 
-      chk.closest(".toggle-linha").classList.toggle("desligado", !chk.checked);
-      avisar(
-        "msgModulosGlobais",
-        `"${nome}" ${chk.checked ? "ativado" : "desativado"}.`,
-      );
+      const desejado = chk.checked;
+      chk.disabled = true;
+      try {
+        const resp = await fetch(`/api/modulos/${chk.dataset.configModulo}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ativo: desejado }),
+        });
+        const dados = await resp.json().catch(() => ({}));
+        if (!resp.ok) throw new Error(dados.erro || "Não foi possível salvar.");
+        avisar("msgModulosGlobais", `"${nome}" ${desejado ? "ativado" : "desativado"}.`);
+      } catch (erro) {
+        console.error(erro);
+        chk.checked = !desejado;
+        avisar("msgModulosGlobais", erro.message);
+      } finally {
+        chk.disabled = false;
+        chk.closest(".toggle-linha").classList.toggle("desligado", !chk.checked);
+      }
     });
   });
+
+  async function carregarModulos() {
+    try {
+      const resp = await fetch("/api/modulos");
+      if (!resp.ok) return;
+      const estado = await resp.json();
+      document.querySelectorAll("[data-config-modulo]").forEach((chk) => {
+        chk.checked = estado[chk.dataset.configModulo] !== false;
+        chk.closest(".toggle-linha").classList.toggle("desligado", !chk.checked);
+      });
+    } catch (erro) {
+      console.error("Erro ao carregar módulos:", erro);
+    }
+  }
 
   formSeguranca.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -2022,6 +2203,7 @@ function emailValido(valor) {
 
     expiracao.value = segurancaRes.expiracaoSessao;
     senhaForte.checked = segurancaRes.senhaForte;
+    await carregarModulos();
 
     frequencia.value = backupRes.frequencia;
     document.getElementById("ultimoBackup").textContent = backupRes.ultimoBackup;
@@ -2230,12 +2412,19 @@ function emailValido(valor) {
     rh: { texto: "Gestor RH", badge: "usr-perfil-rh" },
     admin: { texto: "Administrador", badge: "usr-perfil-admin" },
   };
-  const VINCULOS = {
-    clt_8h: "CLT 8h",
-    estagio_6h: "Estágio 6h",
-    estagio_4h: "Estágio 4h",
-    jovem_aprendiz: "Jovem Aprendiz",
-  };
+  // Os vínculos vêm do banco (Regras e Contratos); o valor do select é o ID do contrato.
+  async function carregarContratos() {
+    try {
+      const resp = await fetch("/api/regras");
+      if (!resp.ok) throw new Error("Falha ao carregar contratos.");
+      const regras = await resp.json();
+      campos.vinculo.innerHTML =
+        '<option value="" disabled selected>Selecione</option>' +
+        regras.map((r) => `<option value="${r.id}">${esc(r.nome)}</option>`).join("");
+    } catch (erro) {
+      console.error(erro);
+    }
+  }
 
   let usuarios = [];
   let editandoId = null;
@@ -2291,7 +2480,7 @@ function emailValido(valor) {
           <td class="colaborador"><strong>${esc(u.nome)}</strong><span>${esc(u.departamento)}</span></td>
           <td>${esc(u.email)}</td>
           <td><span class="badge ${PERFIS[u.perfil]?.badge || 'usr-perfil-func'}">${PERFIS[u.perfil]?.texto || u.perfil}</span></td>
-          <td>${VINCULOS[u.vinculo] || esc(u.vinculo)}</td>
+          <td>${esc(u.vinculoNome || u.vinculo)}</td>
           <td class="acoes"><button type="button" class="btn-acao" data-editar="${u.id}">Editar</button></td>
         </tr>`,
       )
@@ -2329,8 +2518,6 @@ function emailValido(valor) {
       ? "Editar Colaborador"
       : "Adicionar Novo Colaborador";
     document
-      .getElementById("notaConvite")
-      .classList.toggle("oculto", !!usuario);
     btnRemover.classList.toggle("oculto", !usuario);
 
     if (usuario) {
@@ -2467,6 +2654,7 @@ function emailValido(valor) {
 
   async function carregar() {
     try {
+      await carregarContratos();
       const resposta = await fetch("/api/admin/usuarios");
       if (!resposta.ok) throw new Error("Erro ao carregar usuários.");
       
@@ -2773,20 +2961,26 @@ function emailValido(valor) {
     };
 
     try {
-      const resposta = await fetch(`/api/regras/${editandoId}`, {
-        method: "PUT",
+      const criando = !editandoId;
+      const resposta = await fetch(criando ? "/api/regras" : `/api/regras/${editandoId}`, {
+        method: criando ? "POST" : "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(dados)
       });
 
-      if (!resposta.ok) throw new Error("Erro ao salvar regra.");
+      if (!resposta.ok) {
+        const erroJson = await resposta.json().catch(() => ({}));
+        throw new Error(erroJson.erro || "Erro ao salvar regra.");
+      }
 
       await carregar();
       fechar();
-      avisar(`Regra "${dados.nome}" atualizada com sucesso!`);
+      avisar(criando
+        ? `Regra "${dados.nome}" criada com sucesso! Já está disponível no cadastro de colaboradores.`
+        : `Regra "${dados.nome}" atualizada com sucesso!`);
     } catch (erro) {
       console.error(erro);
-      document.getElementById("erroRegraGeral").textContent = "Não foi possível salvar a regra.";
+      document.getElementById("erroRegraGeral").textContent = erro.message || "Não foi possível salvar a regra.";
     } finally {
       btnSalvar.disabled = false;
       btnSalvar.textContent = "Salvar Regra";
@@ -3125,6 +3319,19 @@ function emailValido(valor) {
     sistema: { texto: "Sistema", badge: "badge-sistema" },
   };
 
+  // O banco guarda o NOME de quem fez a ação (ex.: "Administrador Master"); classifica para o filtro/etiqueta.
+  function infoUsuario(nome) {
+    const original = String(nome ?? "").trim();
+    const lc = original.toLowerCase();
+    let chave = "outro";
+    if (lc === "sistema") chave = "sistema";
+    else if (lc === "rh" || lc.includes("gestor rh") || /(^|s)rh(s|$)/.test(lc)) chave = "rh";
+    else if (lc.includes("admin")) chave = "admin";
+
+    if (chave === "outro") return { chave, texto: original || "—", badge: "badge-info" };
+    return { chave, ...USUARIOS[chave] };
+  }
+
   function escapar(texto) {
     return String(texto ?? "").replace(
       /[&<>"']/g,
@@ -3153,7 +3360,7 @@ function emailValido(valor) {
       (l) =>
         (!filtroData.value || l.dataHora.slice(0, 10) === filtroData.value) &&
         (filtroUsuario.value === "todos" ||
-          l.usuario === filtroUsuario.value) &&
+          infoUsuario(l.usuario).chave === filtroUsuario.value) &&
         (filtroNivel.value === "todos" || l.nivel === filtroNivel.value),
     );
   }
@@ -3171,15 +3378,15 @@ function emailValido(valor) {
 
     tabela.innerHTML = lista
       .map((l) => {
-        const n = NIVEIS[l.nivel];
-        const u = USUARIOS[l.usuario];
+        const n = NIVEIS[l.nivel] || NIVEIS.baixa;
+        const u = infoUsuario(l.usuario);
         return `
           <tr class="${l.nivel === "alta" ? "linha-critica" : ""}">
             <td class="log-data">${formatarData(l.dataHora)}</td>
             <td>
               <div class="log-usuario">
                 <span class="nivel-icone ${n.classe}" title="Criticidade ${n.texto}">${n.icone}</span>
-                <span class="badge ${u.badge}">${u.texto}</span>
+                <span class="badge ${u.badge}">${escapar(u.texto)}</span>
               </div>
             </td>
             <td><strong>${escapar(l.acao)}</strong></td>
@@ -3399,7 +3606,6 @@ function emailValido(valor) {
             <strong>Não encontrou o que procurava?</strong>
             <span>Fale com o RH: ${CONTATO_RH}</span>
           </div>
-          <a class="btn btn-primario" id="btnContatoRh" href="mailto:${CONTATO_RH}?subject=Dúvida%20-%20Registro%20de%20Presença">Falar com o RH</a>
         </div>
       </div>
     </div>`,
@@ -3480,4 +3686,216 @@ function emailValido(valor) {
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && !modal.classList.contains("oculto")) fechar();
   });
+})();
+
+(function preferenciasFuncionario() {
+  const campos = document.querySelectorAll("[data-pref-func]");
+  if (!campos.length) return;
+
+  const usuarioId = sessionStorage.getItem("usuarioId") || localStorage.getItem("usuarioId") || 1;
+
+  function atualizarVisual(chk) {
+    const linha = chk.closest(".toggle-linha");
+    if (linha) linha.classList.toggle("desligado", !chk.checked);
+  }
+
+  async function carregar() {
+    try {
+      const resp = await fetch(`/api/me/preferencias/${usuarioId}`);
+      if (!resp.ok) throw new Error("Falha ao carregar preferências.");
+      const prefs = await resp.json();
+      campos.forEach((chk) => {
+        const chave = chk.dataset.prefFunc;
+        if (chave in prefs) chk.checked = !!prefs[chave];
+        atualizarVisual(chk);
+      });
+    } catch (erro) {
+      console.error(erro);
+    }
+  }
+
+  campos.forEach((chk) => {
+    chk.addEventListener("change", async () => {
+      atualizarVisual(chk);
+      try {
+        const resp = await fetch(`/api/me/preferencias/${usuarioId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ [chk.dataset.prefFunc]: chk.checked }),
+        });
+        if (!resp.ok) throw new Error("Falha ao guardar preferência.");
+      } catch (erro) {
+        console.error(erro);
+        chk.checked = !chk.checked;
+        atualizarVisual(chk);
+        alert("Não foi possível guardar a preferência. Tente novamente.");
+      }
+    });
+  });
+
+  carregar();
+})();
+
+(function avisosDoRhNaInicio() {
+  if (!document.getElementById("painelJornada")) return;
+
+  const usuarioId = sessionStorage.getItem("usuarioId") || localStorage.getItem("usuarioId");
+  if (!usuarioId) return;
+
+  (async function () {
+    try {
+      const resp = await fetch(`/api/notificacoes/pendentes/${usuarioId}`);
+      if (!resp.ok) return;
+      const avisos = await resp.json();
+      for (const a of avisos) alert(a.mensagem);
+    } catch (erro) {
+      console.error("Erro ao buscar avisos:", erro);
+    }
+  })();
+})();
+
+(function alertasRhAdmin() {
+  const itemPendencias = document.querySelector('.menu-item[data-ir="pendencias.html"]');
+  const conteudo = document.querySelector("main.conteudo");
+  if (!itemPendencias || !conteudo) return; // só nas telas de RH/Admin
+
+  const usuarioId = sessionStorage.getItem("usuarioId") || localStorage.getItem("usuarioId") || 1;
+
+  let bolinha = itemPendencias.querySelector(".badge-menu");
+  if (!bolinha) {
+    bolinha = document.createElement("span");
+    bolinha.className = "badge-menu oculto";
+    bolinha.setAttribute("aria-label", "Pendências");
+    itemPendencias.appendChild(bolinha);
+  }
+
+  let faixa = document.getElementById("faixaAlertaEstagiarios");
+  if (!faixa) {
+    faixa = document.createElement("div");
+    faixa.id = "faixaAlertaEstagiarios";
+    faixa.className = "faixa-alerta oculto";
+    faixa.setAttribute("role", "alert");
+    conteudo.insertBefore(faixa, conteudo.firstChild);
+  }
+
+  const ROTULO = {
+    ultrapassou: "ultrapassou o limite",
+    atingiu: "atingiu o limite",
+    proximo: "está perto do limite",
+  };
+  const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  async function obterJson(url) {
+    try {
+      const r = await fetch(url);
+      return r.ok ? await r.json() : null;
+    } catch {
+      return null;
+    }
+  }
+
+  async function atualizar() {
+    const prefs = (await obterJson(`/api/me/preferencias/${usuarioId}`)) || {};
+    const avisarEstagiario = prefs.alertaEstagiario !== false;
+    const avisarAtestado = prefs.alertaAtestado !== false;
+
+    // Bolinha vermelha com o número de pendências (atestados só se a preferência estiver ligada).
+    const pendencias = (await obterJson("/api/Pendencias")) || [];
+    const total = pendencias.filter((p) => {
+      if (p.tipo === "atestado") return avisarAtestado;
+      if (p.tipo === "excesso_jornada") return avisarEstagiario;
+      return true;
+    }).length;
+    bolinha.textContent = total > 99 ? "99+" : String(total);
+    bolinha.classList.toggle("oculto", total === 0);
+
+    // Faixa no topo: estagiários perto/no/além do limite hoje.
+    let lista = [];
+    if (avisarEstagiario) lista = (await obterJson("/api/alertas/estagiarios")) || [];
+
+    if (!lista.length) {
+      faixa.classList.add("oculto");
+      faixa.innerHTML = "";
+      return;
+    }
+
+    const critico = lista.some((a) => a.situacao !== "proximo");
+    faixa.classList.toggle("atencao", !critico);
+    faixa.classList.remove("oculto");
+    faixa.innerHTML = `
+      <span aria-hidden="true">⚠️</span>
+      <div>
+        <strong>${lista.length === 1 ? "1 estagiário" : lista.length + " estagiários"} no limite da jornada hoje</strong>
+        <ul>${lista.map((a) => `<li>${esc(a.nome)} ${ROTULO[a.situacao]}: ${esc(a.trabalhado)} de ${esc(a.limite)} (${a.percentual}%)${a.encerrado ? " — jornada encerrada" : ""}</li>`).join("")}</ul>
+      </div>
+      <button type="button" class="faixa-link" id="faixaIrPendencias">Ver pendências</button>`;
+    const ir = document.getElementById("faixaIrPendencias");
+    if (ir) ir.addEventListener("click", () => itemPendencias.click());
+  }
+
+  window.atualizarAlertasRh = atualizar;
+  atualizar();
+  setInterval(atualizar, 60000);
+})();
+
+(function expiracaoDeSessao() {
+  const pagina = location.pathname.toLowerCase();
+  if (pagina.endsWith("/login.html") || pagina.endsWith("/cadastro.html") || pagina === "/" ) return;
+
+  const usuarioId = sessionStorage.getItem("usuarioId");
+  if (!usuarioId) return; // ninguém logado nesta aba
+
+  const CHAVE = "timetrack_ultima_atividade";
+  let limiteMs = 30 * 60 * 1000;
+
+  function agora() { return Date.now(); }
+  function registrar() {
+    try { localStorage.setItem(CHAVE, String(agora())); } catch {}
+  }
+  function ultima() {
+    try { return Number(localStorage.getItem(CHAVE)) || agora(); } catch { return agora(); }
+  }
+
+  function encerrar() {
+    try {
+      sessionStorage.clear();
+      localStorage.removeItem("token");
+      localStorage.removeItem("perfil");
+      localStorage.removeItem("usuario");
+      localStorage.removeItem(CHAVE);
+    } catch {}
+    alert("Sua sessão expirou por inatividade. Faça login novamente.");
+    window.location.href = "/login.html";
+  }
+
+  let ultimoRegistro = 0;
+  function atividade() {
+    const t = agora();
+    if (t - ultimoRegistro > 5000) { // evita gravar a cada movimento do mouse
+      ultimoRegistro = t;
+      registrar();
+    }
+  }
+  ["mousemove", "keydown", "click", "scroll", "touchstart"].forEach((ev) =>
+    window.addEventListener(ev, atividade, { passive: true }),
+  );
+
+  async function carregarLimite() {
+    try {
+      const resp = await fetch("/api/config/seguranca");
+      if (resp.ok) {
+        const cfg = await resp.json();
+        if (cfg.expiracaoSessao >= 1) limiteMs = cfg.expiracaoSessao * 60 * 1000;
+      }
+    } catch (e) {
+      console.error("Não foi possível ler a política de sessão:", e);
+    }
+  }
+
+  registrar();
+  carregarLimite();
+  setInterval(() => {
+    if (agora() - ultima() > limiteMs) encerrar();
+  }, 15000);
+  setInterval(carregarLimite, 5 * 60 * 1000); // pega mudanças feitas pelo administrador
 })();
