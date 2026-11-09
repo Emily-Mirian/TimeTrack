@@ -12,7 +12,7 @@ using PontoOnline.Infrastructure.Context;
 namespace PontoOnline.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261108231257_InitialCreate")]
+    [Migration("20261109004533_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

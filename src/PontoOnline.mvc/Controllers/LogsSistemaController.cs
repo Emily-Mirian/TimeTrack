@@ -29,7 +29,10 @@ namespace PontoOnline.mvc.Controllers
             {
                 "admin" => q.Where(l => l.Usuario.ToLower().Contains("admin")),
                 "rh" => q.Where(l => l.Usuario.ToLower() == "rh" || l.Usuario.ToLower().Contains("gestor rh")),
-                "sistema" => q.Where(l => l.Usuario.ToLower() == "sistema"),
+                "nao_identificado" => q.Where(l => l.Usuario.ToLower() == "não identificado"
+                                                   || l.Usuario.ToLower() == "nao identificado"
+                                                   || l.Usuario.ToLower() == "desconhecido"
+                                                   || l.Usuario.ToLower() == "sistema"),
                 _ => q.Where(l => l.Usuario.ToLower() == u)
             };
         }

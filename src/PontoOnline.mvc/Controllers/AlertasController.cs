@@ -36,9 +36,18 @@ namespace PontoOnline.mvc.Controllers
                             && !r.Usuario.TipoContrato.PermiteHoraExtra)
                 .ToListAsync();
 
+            var marcadoresTratados = await _context.AuditoriaLogs
+                .Where(l => l.Acao == "tratamento_excesso_jornada")
+                .Select(l => l.Detalhes)
+                .ToListAsync();
+
             var alertas = new List<object>();
             foreach (var r in registros)
             {
+                // Excesso já tratado pelo RH: não avisa mais.
+                if (marcadoresTratados.Any(d => d != null && d.Contains("[PONTO:" + r.PontoId + "]")))
+                    continue;
+
                 var contrato = r.Usuario!.TipoContrato!;
                 int meta = contrato.CargaHorariaDiariaMinutos;
                 if (meta <= 0) continue;
@@ -55,6 +64,10 @@ namespace PontoOnline.mvc.Controllers
                     trabalhado > meta + FechamentoService.ToleranciaExcessoMinutos ? "ultrapassou"
                     : trabalhado >= meta - FechamentoService.ToleranciaExcessoMinutos ? "atingiu"
                     : "proximo";
+
+                // Jornada já encerrada só vira alerta se realmente passou do limite;
+                // "perto/atingiu" só faz sentido enquanto o dia está em andamento.
+                if (encerrado && situacao != "ultrapassou") continue;
 
                 alertas.Add(new
                 {

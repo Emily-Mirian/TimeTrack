@@ -66,7 +66,7 @@ public class AuthController : Controller
             await _logService.RegistrarAsync(
                 acao: "Cadastro de Novo Usuário",
                 modulo: "Autenticação",
-                detalhes: "Usuário cadastrado: ${dto.Nome} (${emailLimpo})",
+                detalhes: $"Usuário cadastrado: {dto.Nome} ({emailLimpo})",
                 usuario: dto.Nome,
                 nivel: "media"
             );
@@ -106,8 +106,8 @@ public class AuthController : Controller
                 await _logService.RegistrarAsync(
                     acao: "Tentativa de Login Falha",
                     modulo: "Autenticação",
-                    detalhes: "E-mail não encontrado: ${emailLimpo}",
-                    usuario: "Desconhecido",
+                    detalhes: $"E-mail não encontrado: {emailLimpo}",
+                    usuario: "Não identificado",
                     nivel: "alta"
                 );
 
@@ -123,7 +123,7 @@ public class AuthController : Controller
                 await _logService.RegistrarAsync(
                     acao: "Falha de Autenticação",
                     modulo: "Autenticação",
-                    detalhes: "Senha incorreta para o e-mail: ${emailLimpo}",
+                    detalhes: $"Senha incorreta para o e-mail: {emailLimpo}",
                     usuario: usuario.NomeCompleto,
                     nivel: "alta"
                 );
@@ -134,7 +134,7 @@ public class AuthController : Controller
             await _logService.RegistrarAsync(
                 acao: "Login no Sistema",
                 modulo: "Autenticação",
-                detalhes: "Usuário logado com sucesso: ${usuario.NomeCompleto}",
+                detalhes: $"Usuário logado com sucesso: {usuario.NomeCompleto}",
                 usuario: usuario.NomeCompleto,
                 nivel: "baixa"
             );

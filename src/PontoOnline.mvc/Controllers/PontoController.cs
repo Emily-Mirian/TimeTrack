@@ -248,6 +248,9 @@ public class PontoController : Controller
                 minutosTrabalhados = minutosTrabalhadosHoje,
                 minutosRestantes = minutosRestantes,
                 metaDiariaMinutos = metaDiariaMinutos,
+                // 5 dias úteis por semana e 4 semanas por mês (CLT 8h => 40h/160h; estágio 6h => 30h/120h).
+                metaSemanaMinutos = metaDiariaMinutos * 5,
+                metaMesMinutos = metaDiariaMinutos * 20,
                 statusCor = statusCor,
                 horasTrabalhadasFormatadas = $"{minutosTrabalhadosHoje / 60}h {minutosTrabalhadosHoje % 60}min",
                 horasRestantesFormatadas = $"{minutosRestantes / 60}h {minutosRestantes % 60}min",

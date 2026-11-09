@@ -351,20 +351,23 @@ function emailValido(valor) {
       });
 
       const minTotaisSemana = (statusAtual.minutosSemanaReais || 0); 
-      const pctSemana = Math.min(Math.round((statusAtual.minutosSemanaNumerico / 2400) * 100), 100) || percentual;
+      const fmtMeta = (min) => `${Math.round((min / 60) * 10) / 10}h`;
+      const metaSemanaMin = statusAtual.metaSemanaMinutos || 2400;
+      const metaMesMin = statusAtual.metaMesMinutos || 9600;
+      const pctSemana = Math.min(Math.round((statusAtual.minutosSemanaNumerico / metaSemanaMin) * 100), 100) || percentual;
 
       renderizarPeriodo("periodoSemana", {
         horas: statusAtual.semanaFormatada || "0h 0min",
-        meta: "40h",
+        meta: fmtMeta(metaSemanaMin),
         percentual: pctSemana,
         estado: pctSemana >= 97 ? "critico" : pctSemana >= 85 ? "atencao" : "normal"
       });
 
-      const pctMes = Math.min(Math.round((statusAtual.minutosMesNumerico / 9600) * 100), 100) || percentual;
+      const pctMes = Math.min(Math.round((statusAtual.minutosMesNumerico / metaMesMin) * 100), 100) || percentual;
 
       renderizarPeriodo("periodoMes", {
         horas: statusAtual.mesFormatada || "0h 0min",
-        meta: "160h",
+        meta: fmtMeta(metaMesMin),
         percentual: pctMes,
         estado: pctMes >= 97 ? "critico" : pctMes >= 85 ? "atencao" : "normal"
       });   
@@ -1715,16 +1718,11 @@ function emailValido(valor) {
   const AUTORES = {
     rh: { classe: "autor-rh" },
     admin: { classe: "autor-admin" },
-    sistema: { classe: "autor-sistema" },
   };
   const EVENTOS = {
     edicao_ponto: { texto: "Edição de ponto", badge: "badge-atencao" },
     excesso_jornada: { texto: "Tratamento de excesso de jornada", badge: "badge-critico" },
-    modulo: { texto: "Controle de módulos", badge: "badge-info" },
     atestado: { texto: "Validação de atestado", badge: "badge-normal" },
-    bloqueio: { texto: "Bloqueio de acesso", badge: "badge-critico" },
-    cadastro: { texto: "Cadastro de usuário", badge: "badge-info" },
-    importacao: { texto: "Importação de planilha", badge: "badge-info" },
   };
 
   let logs = [];
@@ -3318,7 +3316,7 @@ function emailValido(valor) {
   const USUARIOS = {
     admin: { texto: "Administrador", badge: "badge-admin" },
     rh: { texto: "Gestor RH", badge: "badge-info" },
-    sistema: { texto: "Sistema", badge: "badge-sistema" },
+    nao_identificado: { texto: "Não identificado", badge: "badge-sistema" },
   };
 
   // O banco guarda o NOME de quem fez a ação (ex.: "Administrador Master"); classifica para o filtro/etiqueta.
@@ -3326,7 +3324,7 @@ function emailValido(valor) {
     const original = String(nome ?? "").trim();
     const lc = original.toLowerCase();
     let chave = "outro";
-    if (lc === "sistema") chave = "sistema";
+    if (lc === "não identificado" || lc === "nao identificado" || lc === "desconhecido" || lc === "sistema") chave = "nao_identificado";
     else if (lc === "rh" || lc.includes("gestor rh") || /(^|s)rh(s|$)/.test(lc)) chave = "rh";
     else if (lc.includes("admin")) chave = "admin";
 
@@ -3760,6 +3758,11 @@ function emailValido(valor) {
   const itemPendencias = document.querySelector('.menu-item[data-ir="pendencias.html"]');
   const conteudo = document.querySelector("main.conteudo");
   if (!itemPendencias || !conteudo) return; // só nas telas de RH/Admin
+
+  // As telas de funcionário também têm o item "Pendências" no HTML (apenas escondido),
+  // então o perfil precisa ser checado: só RH e Admin recebem avisos de estagiário.
+  const perfilAtual = (localStorage.getItem("perfil") || "").toLowerCase();
+  if (perfilAtual !== "rh" && perfilAtual !== "admin") return;
 
   const usuarioId = sessionStorage.getItem("usuarioId") || localStorage.getItem("usuarioId") || 1;
 

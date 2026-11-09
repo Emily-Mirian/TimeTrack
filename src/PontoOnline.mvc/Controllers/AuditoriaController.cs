@@ -24,9 +24,18 @@ namespace PontoOnline.mvc.Controllers
         {
             try
             {
-                var logsDoBanco = await _context.AuditoriaLogs
+                // Esta tela é só a auditoria de PONTO: eventos de módulos, bloqueio de acesso,
+                // cadastro de usuário e importação ficam de fora (ficam no registro global de logs).
+                var logsDoBanco = (await _context.AuditoriaLogs
                     .OrderByDescending(l => l.DataHora)
-                    .ToListAsync();
+                    .ToListAsync())
+                    .Where(l =>
+                    {
+                        var a = (l.Acao ?? "").ToLower();
+                        return !(a.Contains("modulo") || a.Contains("bloqueio") || a.Contains("cadastro")
+                                 || a.Contains("importacao") || a.Contains("importação"));
+                    })
+                    .ToList();
 
                 var idsUsuarios = logsDoBanco
                     .Select(l => l.UsuarioResponsavelId)
@@ -42,11 +51,7 @@ namespace PontoOnline.mvc.Controllers
                     var acaoDb = (l.Acao ?? "").ToLower();
 
                     if (acaoDb.Contains("excesso")) acaoNormalizada = "excesso_jornada";
-                    else if (acaoDb.Contains("modulo")) acaoNormalizada = "modulo";
                     else if (acaoDb.Contains("atestado")) acaoNormalizada = "atestado";
-                    else if (acaoDb.Contains("bloqueio")) acaoNormalizada = "bloqueio";
-                    else if (acaoDb.Contains("cadastro")) acaoNormalizada = "cadastro";
-                    else if (acaoDb.Contains("importacao") || acaoDb.Contains("importação")) acaoNormalizada = "importacao";
 
                     string nomeAutor = "Administrador";
                     string classeAtor = "admin";
