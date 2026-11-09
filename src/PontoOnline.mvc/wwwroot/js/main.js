@@ -326,7 +326,7 @@ function emailValido(valor) {
       };
 
       const dadosContrato = {
-        contrato: "Regime Padrão",
+        contrato: (statusAtual.contrato && statusAtual.contrato.nome) || "Contrato",
         limiteDiario: `${statusAtual.metaDiariaMinutos / 60}h`
       };
 
@@ -3488,18 +3488,29 @@ function emailValido(valor) {
   }
 
   async function abrir() {
+    const usuarioId = sessionStorage.getItem("usuarioId") || 1;
+    let c;
+    try {
+      const status = await chamarApi(`/Ponto/status-atual/${usuarioId}`, "GET");
+      c = status.contrato;
+    } catch (e) {
+      console.error("Erro ao carregar regras do contrato:", e);
+    }
+    if (!c) {
+      alert("Não foi possível carregar as regras do seu contrato.");
+      return;
+    }
 
-    const regras = {
-      nome: "Regime de Estágio",
-      cargasDiarias: [6, 4],
-      cargaDoUsuario: 6,
-      limiteSemanal: 30,
-      toleranciaMin: 5,
-      bloqueioHoraExtra: true,
-      bancoHoras: false,
-    };
-
-    renderizar(regras);
+    const cargaHoras = Math.round((c.cargaDiariaMinutos / 60) * 10) / 10;
+    renderizar({
+      nome: c.nome,
+      cargasDiarias: [cargaHoras],
+      cargaDoUsuario: cargaHoras,
+      limiteSemanal: Math.round((c.limiteSemanalMinutos / 60) * 10) / 10,
+      toleranciaMin: c.toleranciaMinutos,
+      bloqueioHoraExtra: !c.permiteHoraExtra,
+      bancoHoras: c.permiteBancoHoras,
+    });
     modal.classList.remove("oculto");
     document.body.classList.add("com-modal");
     document.getElementById("btnEntendiRegras").focus();

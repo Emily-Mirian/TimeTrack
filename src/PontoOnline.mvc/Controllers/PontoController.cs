@@ -252,6 +252,17 @@ public class PontoController : Controller
                 metaSemanaMinutos = metaDiariaMinutos * 5,
                 metaMesMinutos = metaDiariaMinutos * 20,
                 statusCor = statusCor,
+                contrato = new
+                {
+                    nome = usuario.TipoContrato.Nome,
+                    cargaDiariaMinutos = metaDiariaMinutos,
+                    limiteSemanalMinutos = usuario.TipoContrato.CargaHorariaSemanaMinutos > 0
+                        ? usuario.TipoContrato.CargaHorariaSemanaMinutos
+                        : metaDiariaMinutos * 5,
+                    toleranciaMinutos = usuario.TipoContrato.ToleranciaMinutos,
+                    permiteHoraExtra = usuario.TipoContrato.PermiteHoraExtra,
+                    permiteBancoHoras = usuario.TipoContrato.PermiteBancoHoras
+                },
                 horasTrabalhadasFormatadas = $"{minutosTrabalhadosHoje / 60}h {minutosTrabalhadosHoje % 60}min",
                 horasRestantesFormatadas = $"{minutosRestantes / 60}h {minutosRestantes % 60}min",
                 
