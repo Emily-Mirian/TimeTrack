@@ -4,13 +4,12 @@ function mostrarErro(campoId, erroId, mensagem) {
   document.getElementById(erroId).textContent = mensagem || "";
 }
 
-// Controle de Módulos (Visão Global). Retorna true se o módulo está desligado E quem usa não é administrador.
 async function moduloBloqueado(modulo) {
   try {
     const perfil = (localStorage.getItem("perfil") || "").toLowerCase();
     if (perfil === "admin") return false;
     const resp = await fetch("/api/modulos");
-    if (!resp.ok) return false; // o servidor também valida; aqui é só aviso antecipado
+    if (!resp.ok) return false; 
     const estado = await resp.json();
     return estado[modulo] === false;
   } catch {
@@ -1493,7 +1492,7 @@ function emailValido(valor) {
 
       const dados = await resposta.json();
       
-      if (!resposta.ok) throw new Error(dados.Mensagem || "Erro ao processar arquivo");
+      if (!resposta.ok) throw new Error(dados.mensagem || "Erro ao processar arquivo");
 
       barra.style.width = "100%";
       texto.textContent = "Concluído!";
@@ -1501,14 +1500,14 @@ function emailValido(valor) {
       const resultado = {
         arquivo: arquivo.name,
         data: new Date().toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" }),
-        linhas: dados.Registros ? dados.Registros.length : null,
+        linhas: dados.registros ? dados.registros.length : null,
         status: "concluido"
       };
 
       await carregarHistorico();
       
       const msg = document.getElementById("msgImportar");
-      msg.textContent = dados.Mensagem;
+      msg.textContent = dados.mensagem;
       setTimeout(() => msg.textContent = "", 3000);
 
     } catch (erro) {
