@@ -94,20 +94,40 @@ namespace PontoOnline.mvc.Controllers
 
                 var resultados = new List<object>();
                 var novosRegistros = new List<RegistroPonto>();
+                var idsValidos = (await _context.Usuarios.Select(u => u.UsuarioId).ToListAsync()).ToHashSet();
+                var linhasIgnoradas = new List<string>();
+                int numeroLinha = 1;
 
                 using (var stream = new StreamReader(arquivo.OpenReadStream()))
                 {
-                    await stream.ReadLineAsync();
+                    var cabecalho = await stream.ReadLineAsync() ?? "";
+                    char separador = cabecalho.Count(c => c == ';') > cabecalho.Count(c => c == ',') ? ';' : ',';
 
                     while (!stream.EndOfStream)
                     {
                         var linha = await stream.ReadLineAsync();
+                        numeroLinha++;
                         if (string.IsNullOrWhiteSpace(linha)) continue;
 
-                        var colunas = linha.Split(',');
+                        var colunas = linha.Split(separador).Select(c => c.Trim().Trim('"')).ToArray();
 
-                        if (colunas.Length < 6) continue;
-                        int.TryParse(colunas[0], out int usuarioId);
+                        if (colunas.Length < 6)
+                        {
+                            linhasIgnoradas.Add($"Linha {numeroLinha}: menos de 6 colunas");
+                            continue;
+                        }
+
+                        if (!int.TryParse(colunas[0], out int usuarioId))
+                        {
+                            linhasIgnoradas.Add($"Linha {numeroLinha}: ID '{colunas[0]}' não é numérico");
+                            continue;
+                        }
+
+                        if (!idsValidos.Contains(usuarioId))
+                        {
+                            linhasIgnoradas.Add($"Linha {numeroLinha}: usuário {usuarioId} não cadastrado");
+                            continue;
+                        }
                         DateTime.TryParse(colunas[1], out DateTime dataSomente);
                         TimeSpan.TryParse(colunas[2], out TimeSpan tEntrada1);
                         TimeSpan.TryParse(colunas[3], out TimeSpan tSaidaAlmoco);
@@ -145,9 +165,14 @@ namespace PontoOnline.mvc.Controllers
                     );
                 }
 
-                await RegistrarHistorico("concluido", novosRegistros.Count, novosRegistros.Count + " registros importados");
+                await RegistrarHistorico("concluido", novosRegistros.Count, $"{novosRegistros.Count} registros importados, {linhasIgnoradas.Count} ignorados");
 
-                return Ok(new { Mensagem = novosRegistros.Count + " registros importados com sucesso pro banco!", Registros = resultados });
+                return Ok(new
+                {
+                    Mensagem = $"{novosRegistros.Count} registros importados, {linhasIgnoradas.Count} ignorados.",
+                    Registros = resultados,
+                    Ignoradas = linhasIgnoradas
+                });
             }
             catch (Exception ex)
             {
